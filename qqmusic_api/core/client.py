@@ -33,7 +33,7 @@ from ..models.request import (
 )
 from ..utils.common import bool_to_int
 from ..utils.qimei import QimeiResult, get_qimei
-from .exceptions import ApiError, HTTPError, NetworkError, build_api_error, extract_api_error_code
+from .exceptions import ApiDataError, ApiError, HTTPError, NetworkError, build_api_error, extract_api_error_code
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
 
 if TYPE_CHECKING:
@@ -294,15 +294,12 @@ class Client:
                 return self._qimei_cache
 
             try:
-                qimei_app_version = self._version_policy.get_qimei_app_version()
-                qimei_sdk_version = self._version_policy.get_qimei_sdk_version()
-
                 self._qimei_cache = await get_qimei(
                     device=device,
-                    version=qimei_app_version,
+                    version=self._version_policy.get_qimei_app_version(),
                     session=self._session,
                     request_timeout=self.qimei_timeout,
-                    sdk_version=qimei_sdk_version,
+                    sdk_version=self._version_policy.get_qimei_sdk_version(),
                 )
                 self._qimei_loaded = True
 
@@ -338,14 +335,11 @@ class Client:
         """
         target_platform = platform or self.platform
         qimei = await self._get_qimei_cached() if target_platform == Platform.ANDROID else None
-        qimei_data: dict[str, str] | None = None
-        if qimei is not None:
-            qimei_data = {"q16": qimei["q16"], "q36": qimei["q36"]}
         basecomm = self._version_policy.build_comm(
             platform=target_platform,
             credential=credential,
             device=await self._ensure_device(),
-            qimei=qimei_data,
+            qimei={"q16": qimei["q16"], "q36": qimei["q36"]} if qimei is not None else None,
             guid=self._guid,
         )
         if comm:
@@ -374,7 +368,7 @@ class Client:
     @overload
     async def execute(self, request: "Request") -> ResponseData: ...
 
-    async def execute(self, request: "Request") -> RequestValue:  # noqa: C901
+    async def execute(self, request: "Request") -> RequestValue:
         """执行单个请求描述符并解析返回结果.
 
         调用中间件进行请求预处理, 随后根据请求格式 (JCE/JSON) 分发调用底层发包方法,
@@ -419,13 +413,12 @@ class Client:
                     data=item.data,
                     context={"module": request.module, "method": request.method, "is_jce": True},
                 )
-            response_model = request.response_model
             if item.data is None:
                 raise ApiError("缺少响应数据: req_0.data", code=-1, data=item)
-            if response_model is None:
+            if request.response_model is None:
                 return item.data
             try:
-                return self._build_result(item.data, response_model)
+                return self._build_result(item.data, request.response_model)
             except Exception as exc:
                 raise ApiError("响应数据校验失败", code=-1, data=item.data, cause=exc) from exc
 
@@ -454,15 +447,15 @@ class Client:
                 context={"module": request.module, "method": request.method, "is_jce": False},
             )
         response_model = request.response_model
-        raw = item.get("data")
-        if raw is None:
-            raise ApiError("缺少响应数据: req_0.data", code=-1, data=item)
+        raw = item.get("data", {})
+        if not raw:
+            raise ApiDataError("缺少响应数据: req_0.data", data=item)
         if response_model is None:
             return raw
         try:
             return self._build_result(raw, response_model)
         except Exception as exc:
-            raise ApiError("响应数据校验失败", code=-1, data=raw, cause=exc) from exc
+            raise ApiDataError("响应数据校验失败", data=raw) from exc
 
     @overload
     @staticmethod

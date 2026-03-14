@@ -151,7 +151,7 @@ def extract_api_error_code(payload: Any) -> tuple[int | None, int | None]:
 
 
 class ApiDataError(ApiError):
-    """API 请求成功但数据格式错误异常.
+    """API 请求成功但数据错误异常.
 
     通常在 JSON 解析失败、关键字段缺失或数据校验失败时抛出。
     """
@@ -299,25 +299,6 @@ _SUBCODE_TO_MESSAGE: dict[int, str] = {
 }
 
 
-def _default_api_error_message(code: int, subcode: int | None) -> str:
-    """构建默认的 API 错误描述信息.
-
-    Args:
-        code (int): 主错误码.
-        subcode (int | None): 子错误码.
-
-    Returns:
-        str: 格式化后的错误信息字符串.
-    """
-    if subcode is not None and subcode in _SUBCODE_TO_MESSAGE:
-        return f"{_SUBCODE_TO_MESSAGE[subcode]}(code={code}, subcode={subcode})"
-    if code in _CODE_TO_MESSAGE:
-        return f"{_CODE_TO_MESSAGE[code]}(code={code})"
-    if subcode is None:
-        return f"请求返回错误(code={code})"
-    return f"请求返回错误(code={code}, subcode={subcode})"
-
-
 def build_api_error(
     *,
     code: int | None = None,
@@ -362,7 +343,17 @@ def build_api_error(
             return RateLimitError(message=message, data=data_dict)
         return RateLimitError(data=data_dict)
 
-    resolved_message = message or _default_api_error_message(resolved_code, subcode)
+    if message is None:
+        if subcode is not None and subcode in _SUBCODE_TO_MESSAGE:
+            resolved_message = f"{_SUBCODE_TO_MESSAGE[subcode]}(code={resolved_code}, subcode={subcode})"
+        elif resolved_code in _CODE_TO_MESSAGE:
+            resolved_message = f"{_CODE_TO_MESSAGE[resolved_code]}(code={resolved_code})"
+        elif subcode is None:
+            resolved_message = f"请求返回错误(code={resolved_code})"
+        else:
+            resolved_message = f"请求返回错误(code={resolved_code}, subcode={subcode})"
+    else:
+        resolved_message = message
 
     return ApiError(
         resolved_message,

@@ -9,7 +9,7 @@ import pytest
 from pydantic import BaseModel
 
 from qqmusic_api import Client, Platform
-from qqmusic_api.core.exceptions import ApiError, HTTPError, RequestGroupResultMissingError
+from qqmusic_api.core.exceptions import ApiDataError, ApiError, HTTPError, RequestGroupResultMissingError
 from qqmusic_api.core.versioning import DEFAULT_VERSION_POLICY
 from qqmusic_api.modules._base import ApiModule
 
@@ -54,7 +54,7 @@ async def test_request_musicu_uses_version_policy_comm() -> None:
 
     async def handler(request: httpx.Request) -> httpx.Response:
         captured["json"] = json.loads(request.content)
-        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0, "data": {}}})
+        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0, "data": {"ok": True}}})
 
     transport = httpx.MockTransport(handler)
     client = Client(transport=transport, platform=Platform.DESKTOP)
@@ -109,7 +109,7 @@ async def test_request_musicu_comm_override_takes_priority() -> None:
 
     async def handler(request: httpx.Request) -> httpx.Response:
         captured["json"] = json.loads(request.content)
-        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0, "data": {}}})
+        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0, "data": {"ok": True}}})
 
     transport = httpx.MockTransport(handler)
     client = Client(transport=transport, platform=Platform.DESKTOP)
@@ -134,8 +134,8 @@ async def test_request_musicu_comm_override_takes_priority() -> None:
 
 
 @pytest.mark.anyio
-async def test_execute_raises_api_error_when_response_data_is_missing() -> None:
-    """验证单请求缺少 data 时统一抛出 ApiError."""
+async def test_execute_raises_api_data_error_when_response_data_is_missing() -> None:
+    """验证单请求缺少 data 时抛出 ApiDataError."""
 
     async def handler(_request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json={"code": 0, "req_0": {"code": 0}})
@@ -144,15 +144,32 @@ async def test_execute_raises_api_error_when_response_data_is_missing() -> None:
     client = Client(transport=transport, platform=Platform.DESKTOP)
     request = client.user._build_request("music.test.Module", "TestMethod", {})
 
-    with pytest.raises(ApiError, match="缺少响应数据"):
+    with pytest.raises(ApiDataError, match="缺少响应数据"):
         await client.execute(request)
 
     await client.close()
 
 
 @pytest.mark.anyio
-async def test_execute_wraps_response_model_validation_error_as_api_error() -> None:
-    """验证单请求响应模型校验失败时统一抛出 ApiError."""
+async def test_execute_raises_api_data_error_when_response_data_is_empty_dict() -> None:
+    """验证单请求空 data 字典时抛出 ApiDataError."""
+
+    async def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0, "data": {}}})
+
+    transport = httpx.MockTransport(handler)
+    client = Client(transport=transport, platform=Platform.DESKTOP)
+    request = client.user._build_request("music.test.Module", "TestMethod", {})
+
+    with pytest.raises(ApiDataError, match="缺少响应数据"):
+        await client.execute(request)
+
+    await client.close()
+
+
+@pytest.mark.anyio
+async def test_execute_wraps_response_model_validation_error_as_api_data_error() -> None:
+    """验证单请求响应模型校验失败时统一抛出 ApiDataError."""
 
     class DemoModel(BaseModel):
         """测试用响应模型."""
@@ -166,7 +183,7 @@ async def test_execute_wraps_response_model_validation_error_as_api_error() -> N
     client = Client(transport=transport, platform=Platform.DESKTOP)
     request = client.user._build_request("music.test.Module", "TestMethod", {}, response_model=DemoModel)
 
-    with pytest.raises(ApiError, match="响应数据校验失败"):
+    with pytest.raises(ApiDataError, match="响应数据校验失败"):
         await client.execute(request)
 
     await client.close()

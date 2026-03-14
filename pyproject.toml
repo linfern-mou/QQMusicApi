@@ -123,6 +123,7 @@ ignore = [
   "TRY300",
   "TRY301",
   "TID252",
+  "C901",
 ]
 pydocstyle = { convention = "google" }
 

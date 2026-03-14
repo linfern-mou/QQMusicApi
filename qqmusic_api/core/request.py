@@ -9,7 +9,7 @@ from anyio.abc import ObjectSendStream
 from pydantic import BaseModel
 
 from ..models.request import Credential, RequestItem, RequestResult, RequestValue, ResponseData
-from .exceptions import ApiError, RequestGroupResultMissingError, build_api_error, extract_api_error_code
+from .exceptions import ApiDataError, ApiError, RequestGroupResultMissingError, build_api_error, extract_api_error_code
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -122,23 +122,10 @@ class RequestGroup:
         return (
             request.is_jce,
             platform_key,
-            self._freeze_comm(request.comm),
+            tuple(sorted(request.comm.items(), key=lambda kv: kv[0])) if request.comm is not None else None,
             credential_musicid,
             credential_musickey,
         )
-
-    def _freeze_comm(self, comm: dict[str, int | str | bool] | None) -> FrozenCommKey:
-        """将 comm 转为稳定可哈希结构.
-
-        Args:
-            comm: 原始 comm 值.
-
-        Returns:
-            FrozenCommKey: 可哈希且顺序稳定的结构.
-        """
-        if comm is None:
-            return None
-        return tuple(sorted(comm.items(), key=lambda kv: kv[0]))
 
     async def execute(self) -> list[RequestValue | Exception]:
         """执行当前批量请求并返回混合结果列表.
@@ -287,8 +274,7 @@ class RequestGroup:
             if first.is_jce:
                 item_data = getattr(item, "data", None)
             elif isinstance(item, dict):
-                raw_item_data = item.get("data")
-                item_data = raw_item_data if isinstance(raw_item_data, dict) else None
+                item_data = item.get("data")
             else:
                 item_data = None
             if code is not None and code != 0:
@@ -310,8 +296,8 @@ class RequestGroup:
 
             try:
                 response_model = req.response_model
-                if item_data is None:
-                    raise ApiError("缺少响应数据", code=-1, data=item)
+                if not isinstance(item_data, dict) or not item_data:
+                    raise ApiDataError("缺少或无效的响应数据", data=item)
                 result = (
                     self._client._build_result(item_data, response_model) if response_model is not None else item_data
                 )
@@ -334,14 +320,14 @@ class RequestGroup:
                         error=exc,
                     ),
                 )
-            except Exception as exc:
+            except Exception:
                 output.append(
                     RequestGroupResult(
                         index=origin_idx,
                         module=req.module,
                         method=req.method,
                         success=False,
-                        error=ApiError("响应数据校验失败", code=-1, data=item, cause=exc),
+                        error=ApiDataError("响应数据校验失败", data=item),
                     ),
                 )
         return output

@@ -59,28 +59,6 @@ class VersionPolicy:
             return self.desktop
         return self.web
 
-    def _build_cache_key(
-        self,
-        platform: Platform,
-        credential: Credential,
-        device: Device,
-        qimei: dict[str, str] | None,
-        guid: str,
-    ) -> tuple:
-        """构建 comm 缓存键."""
-        if platform == Platform.ANDROID:
-            device_key: tuple = (
-                device.android_id,
-                device.version.release,
-                device.model,
-                device.version.sdk,
-                device.fingerprint,
-            )
-        else:
-            device_key = ()
-        qimei_key = tuple(sorted(qimei.items())) if qimei else None
-        return (platform, credential, device_key, qimei_key, guid)
-
     def build_comm(
         self,
         platform: Platform,
@@ -101,14 +79,26 @@ class VersionPolicy:
         Returns:
             构建后的 comm 参数字典.
         """
-        cache_key = self._build_cache_key(platform, credential, device, qimei, guid)
+        cache_key = (
+            platform,
+            credential,
+            (
+                device.android_id,
+                device.version.release,
+                device.model,
+                device.version.sdk,
+                device.fingerprint,
+            )
+            if platform == Platform.ANDROID
+            else (),
+            tuple(sorted(qimei.items())) if qimei else None,
+            guid,
+        )
         cached = self._comm_cache.get(cache_key)
         if cached is not None:
             return cached.copy()
 
         profile = self.get_profile(platform)
-        qimei_data = qimei or {}
-
         if platform == Platform.ANDROID:
             params = CommonParams(
                 ct=profile.ct,
@@ -118,8 +108,8 @@ class VersionPolicy:
                 qq=str(credential.musicid) if credential.musicid else None,
                 authst=credential.musickey or None,
                 tmeLoginType=credential.login_type,
-                QIMEI=qimei_data.get("q16", ""),
-                QIMEI36=qimei_data.get("q36", ""),
+                QIMEI=qimei["q16"] if qimei is not None else "",
+                QIMEI36=qimei["q36"] if qimei is not None else "",
                 OpenUDID=guid,
                 udid=guid,
                 OpenUDID2=guid,
@@ -191,9 +181,6 @@ class VersionPolicy:
     def get_qimei_app_version(self) -> str:
         """获取 QIMEI 请求 appVersion.
 
-        Args:
-            platform: 平台枚举.
-
         Returns:
             QIMEI appVersion.
         """
@@ -202,9 +189,6 @@ class VersionPolicy:
 
     def get_qimei_sdk_version(self) -> str:
         """获取 QIMEI 请求 sdkVersion.
-
-        Args:
-            platform: 平台枚举.
 
         Returns:
             QIMEI sdkVersion.
