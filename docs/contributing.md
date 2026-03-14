@@ -7,7 +7,7 @@
 * **Python 3.10+**
 * **git**
 * [**uv**](https://docs.astral.sh/uv/)
-* [**pre-commit**](https://pre-commit.com/)
+* [**prek**](https://github.com/j178/prek)
 
 ## 开发流程
 
@@ -25,8 +25,7 @@ cd QQMusicApi
 uv sync
 
 # 安装 Git hooks
-uv run pre-commit install
-uv run pre-commit install --hook-type commit-msg
+uv run prek install
 ```
 
 ### API 编写
@@ -45,8 +44,8 @@ uv run pytest
 uv run ruff check qqmusic_api tests
 uv run pyrefly check
 
-# 按当前 pre-commit 配置执行全部检查
-uv run pre-commit run --all-files
+# 按当前 prek 配置执行全部检查
+uv run prek run --all-files
 ```
 
 ### 构建文档

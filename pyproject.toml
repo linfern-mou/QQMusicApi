@@ -63,7 +63,7 @@ docs = [
   "mkdocstrings-python>=2.0.3",
   "zensical>=0.0.26",
 ]
-linting = ["pre-commit>=4.5.1", "pyrefly", "ruff>=0.14.14"]
+linting = ["prek>=0.3.5", "pyrefly", "ruff>=0.14.14"]
 testing = ["pytest>=9.0.2", "pytest-sugar>=1.1.1"]
 
 [build-system]

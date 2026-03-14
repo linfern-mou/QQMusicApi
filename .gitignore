@@ -11,6 +11,9 @@ device.json
 # C extensions
 *.so
 
+# AI
+.ccb/
+
 # Distribution / packaging
 .Python
 build/

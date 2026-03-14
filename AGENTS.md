@@ -13,7 +13,7 @@
 * 运行 Ruff 检查：`uv run ruff check qqmusic_api tests`
 * 运行 Pyrefly 检查：`uv run pyrefly check`
 * 运行 Docs 构建：`uv run zensical build`
-* 本地预提交检查：`uv run pre-commit run --all-files`
+* 本地预提交检查：`uv run prek run --all-files`
 
 ## Commit messages
 
@@ -41,7 +41,7 @@
 ## Tooling notes
 
 * 运行时核心依赖包括：`anyio`、`httpx[http2]`、`orjson`、`pydantic v2`、`tarsio`、`httpx-ws`、`cryptography`。
-* pre-commit 的本地 Python 钩子包括：`ruff --fix`、`ruff format`、`pyrefly check`。
+* prek 的本地 Python 钩子包括：`ruff --fix`、`ruff format`、`pyrefly check`。
 * `docs build` 只在 `pre-push` 阶段运行；`ruff`、`ruff-format`、`pyrefly` 在 `pre-commit` 阶段运行。
 
 ## Agent behavior
