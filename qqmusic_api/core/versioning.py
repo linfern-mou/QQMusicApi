@@ -13,7 +13,6 @@ class Platform(str, Enum):
     """请求平台枚举."""
 
     ANDROID = "android"
-    ANDROID_JCE = "android_jce"
     DESKTOP = "desktop"
     WEB = "web"
 
@@ -45,16 +44,16 @@ class VersionPolicy:
         compare=False,
     )
 
-    def get_profile(self, platform: Platform | str) -> VersionProfile:
+    def get_profile(self, platform: Platform) -> VersionProfile:
         """获取平台对应的版本档案.
 
         Args:
-            platform: 平台字符串.
+            platform: 平台枚举.
 
         Returns:
             对应的版本档案.
         """
-        if platform in {Platform.ANDROID, Platform.ANDROID_JCE}:
+        if platform == Platform.ANDROID:
             return self.android
         if platform == Platform.DESKTOP:
             return self.desktop
@@ -62,14 +61,14 @@ class VersionPolicy:
 
     def _build_cache_key(
         self,
-        platform: Platform | str,
+        platform: Platform,
         credential: Credential,
         device: Device,
         qimei: dict[str, str] | None,
         guid: str,
     ) -> tuple:
         """构建 comm 缓存键."""
-        if platform in {Platform.ANDROID, Platform.ANDROID_JCE}:
+        if platform == Platform.ANDROID:
             device_key: tuple = (
                 device.android_id,
                 device.version.release,
@@ -84,7 +83,7 @@ class VersionPolicy:
 
     def build_comm(
         self,
-        platform: Platform | str,
+        platform: Platform,
         credential: Credential,
         device: Device,
         qimei: dict[str, str] | None,
@@ -93,7 +92,7 @@ class VersionPolicy:
         """构建统一 comm 参数.
 
         Args:
-            platform: 平台字符串.
+            platform: 平台枚举.
             credential: 登录凭证.
             device: 设备信息.
             qimei: QIMEI 缓存.
@@ -110,7 +109,7 @@ class VersionPolicy:
         profile = self.get_profile(platform)
         qimei_data = qimei or {}
 
-        if platform in {Platform.ANDROID, Platform.ANDROID_JCE}:
+        if platform == Platform.ANDROID:
             params = CommonParams(
                 ct=profile.ct,
                 cv=profile.cv,
@@ -154,17 +153,15 @@ class VersionPolicy:
             )
 
         comm = params.model_dump(by_alias=True, exclude_none=True)
-        if platform == Platform.ANDROID_JCE:
-            comm = {k: str(v) for k, v in comm.items()}
 
         self._comm_cache[cache_key] = comm
         return comm.copy()
 
-    def build_query_params(self, platform: Platform | str) -> dict[str, int]:
+    def build_query_params(self, platform: Platform) -> dict[str, int]:
         """构建查询接口通用参数.
 
         Args:
-            platform: 平台字符串.
+            platform: 平台枚举.
 
         Returns:
             查询参数中的通用版本字段.
@@ -172,18 +169,18 @@ class VersionPolicy:
         profile = self.get_profile(platform)
         return {"ct": profile.ct, "cv": profile.cv}
 
-    def get_user_agent(self, platform: Platform | str, device: Device) -> str:
+    def get_user_agent(self, platform: Platform, device: Device) -> str:
         """根据平台获取 UA.
 
         Args:
-            platform: 平台字符串.
+            platform: 平台枚举.
             device: 设备信息.
 
         Returns:
             UA 字符串.
         """
         profile = self.get_profile(platform)
-        if platform in {Platform.ANDROID, Platform.ANDROID_JCE}:
+        if platform == Platform.ANDROID:
             ua_version = profile.ua_version or profile.cv
             return f"QQMusic {ua_version}(android {device.version.release})"
         return (
@@ -191,28 +188,28 @@ class VersionPolicy:
             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
 
-    def get_qimei_app_version(self, platform: Platform | str = Platform.ANDROID) -> str:
+    def get_qimei_app_version(self) -> str:
         """获取 QIMEI 请求 appVersion.
 
         Args:
-            platform: 平台字符串.
+            platform: 平台枚举.
 
         Returns:
             QIMEI appVersion.
         """
-        profile = self.get_profile(platform)
+        profile = self.get_profile(Platform.ANDROID)
         return profile.qimei_app_version or "14.9.0.8"
 
-    def get_qimei_sdk_version(self, platform: Platform | str = Platform.ANDROID) -> str:
+    def get_qimei_sdk_version(self) -> str:
         """获取 QIMEI 请求 sdkVersion.
 
         Args:
-            platform: 平台字符串.
+            platform: 平台枚举.
 
         Returns:
             QIMEI sdkVersion.
         """
-        profile = self.get_profile(platform)
+        profile = self.get_profile(Platform.ANDROID)
         return profile.qimei_sdk_version or "1.2.13.6"
 
     @staticmethod

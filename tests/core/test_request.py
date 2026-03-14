@@ -1,16 +1,15 @@
 """requests 模块测试."""
 
-import gc
-import warnings
 from typing import Any, cast
 
 import anyio
 import httpx
 import orjson as json
 import pytest
+from pydantic import BaseModel
 
 from qqmusic_api import Client, Platform
-from qqmusic_api.core.exceptions import HTTPError
+from qqmusic_api.core.exceptions import ApiError, HTTPError, RequestGroupResultMissingError
 from qqmusic_api.core.versioning import DEFAULT_VERSION_POLICY
 from qqmusic_api.modules._base import ApiModule
 
@@ -135,6 +134,45 @@ async def test_request_musicu_comm_override_takes_priority() -> None:
 
 
 @pytest.mark.anyio
+async def test_execute_raises_api_error_when_response_data_is_missing() -> None:
+    """验证单请求缺少 data 时统一抛出 ApiError."""
+
+    async def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0}})
+
+    transport = httpx.MockTransport(handler)
+    client = Client(transport=transport, platform=Platform.DESKTOP)
+    request = client.user._build_request("music.test.Module", "TestMethod", {})
+
+    with pytest.raises(ApiError, match="缺少响应数据"):
+        await client.execute(request)
+
+    await client.close()
+
+
+@pytest.mark.anyio
+async def test_execute_wraps_response_model_validation_error_as_api_error() -> None:
+    """验证单请求响应模型校验失败时统一抛出 ApiError."""
+
+    class DemoModel(BaseModel):
+        """测试用响应模型."""
+
+        name: str
+
+    async def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"code": 0, "req_0": {"code": 0, "data": {"id": 1}}})
+
+    transport = httpx.MockTransport(handler)
+    client = Client(transport=transport, platform=Platform.DESKTOP)
+    request = client.user._build_request("music.test.Module", "TestMethod", {}, response_model=DemoModel)
+
+    with pytest.raises(ApiError, match="响应数据校验失败"):
+        await client.execute(request)
+
+    await client.close()
+
+
+@pytest.mark.anyio
 async def test_request_musicu_raises_http_error_on_non_200() -> None:
     """验证 request_musicu 在 HTTP 非 200 时抛出 HTTPError."""
 
@@ -181,15 +219,16 @@ async def test_request_jce_raises_http_error_on_non_200() -> None:
 
 
 @pytest.mark.anyio
-async def test_build_common_params_for_android_jce_stringifies_values() -> None:
-    """验证 android_jce 的 comm 字段值会被字符串化."""
+async def test_build_common_params_for_android_contains_qimei() -> None:
+    """验证 android 的 comm 字段会包含 QIMEI 信息."""
     client = Client(platform=Platform.ANDROID)
     client._qimei_loaded = True
     client._qimei_cache = {"q16": "q16-default", "q36": "q36-default"}
 
-    comm = await client._build_common_params(Platform.ANDROID_JCE, client.credential)
+    comm = await client._build_common_params(Platform.ANDROID, client.credential)
 
-    assert all(isinstance(value, str) for value in comm.values())
+    assert comm["QIMEI"] == "q16-default"
+    assert comm["QIMEI36"] == "q36-default"
     await client.close()
 
 
@@ -243,6 +282,54 @@ async def test_request_group_execute_returns_full_results_list() -> None:
 
     assert len(consumed) == 6
     assert all(isinstance(c, dict) for c in consumed)
+    await client.close()
+
+
+@pytest.mark.anyio
+async def test_request_group_execute_raises_api_error_when_failure_result_has_no_exception(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """验证 execute 在失败结果缺少异常对象时抛出 ApiError."""
+    client = Client(platform=Platform.DESKTOP)
+
+    async def fake_execute_iter(self):
+        yield type(
+            "Result",
+            (),
+            {"success": False, "error": None, "index": 0, "module": "music.test.Module", "method": "TestMethod"},
+        )()
+
+    group = client.request_group()
+    monkeypatch.setattr(type(group), "execute_iter", fake_execute_iter)
+    group._requests.append(client.user._build_request("music.test.Module", "TestMethod", {}))
+
+    with pytest.raises(ApiError, match="缺少异常对象"):
+        await group.execute()
+
+    await client.close()
+
+
+@pytest.mark.anyio
+async def test_request_group_execute_raises_missing_error_when_result_not_filled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """验证 execute 在结果未回填时抛出 RequestGroupResultMissingError."""
+    client = Client(platform=Platform.DESKTOP)
+
+    async def fake_execute_iter(self):
+        if False:
+            yield
+
+    group = client.request_group()
+    monkeypatch.setattr(type(group), "execute_iter", fake_execute_iter)
+    group._requests.append(client.user._build_request("music.test.Module", "TestMethod", {}))
+
+    with pytest.raises(RequestGroupResultMissingError) as exc_info:
+        await group.execute()
+
+    assert exc_info.value.context["index"] == 0
+    assert exc_info.value.context["module"] == "music.test.Module"
+    assert exc_info.value.context["method"] == "TestMethod"
     await client.close()
 
 
@@ -415,29 +502,3 @@ def test_client_build_result_returns_raw_tarsdict_when_response_model_is_none() 
     result = Client._build_result(raw_data, None)
 
     assert result is raw_data
-
-
-def test_request_warns_when_never_awaited() -> None:
-    """测试未消费的 Request 会发出运行时告警."""
-    client = Client()
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always", RuntimeWarning)
-        request = client.user._build_request("music.test.Module", "TestMethod", {})
-        del request
-        gc.collect()
-
-    assert any(str(item.message) == "Request 'music.test.Module.TestMethod' was never awaited" for item in caught)
-
-
-def test_request_group_add_marks_request_as_consumed() -> None:
-    """测试加入 RequestGroup 的 Request 不会发出未消费告警."""
-    client = Client()
-    group = client.request_group()
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always", RuntimeWarning)
-        request = client.user._build_request("music.test.Module", "TestMethod", {})
-        group.add(request)
-        del request
-        gc.collect()
-
-    assert caught == []

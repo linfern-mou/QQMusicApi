@@ -1,16 +1,15 @@
 """请求描述符与批量请求容器. 提供对 API 请求的抽象与调度."""
 
-import warnings
 from collections.abc import AsyncIterator, Generator
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, Literal
 
 import anyio
 from anyio.abc import ObjectSendStream
 from pydantic import BaseModel
 
 from ..models.request import Credential, RequestItem, RequestResult, RequestValue, ResponseData
-from .exceptions import ApiError, build_api_error, extract_api_error_code
+from .exceptions import ApiError, RequestGroupResultMissingError, build_api_error, extract_api_error_code
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
 
 
 FrozenCommKey = tuple[tuple[str, int | str | bool], ...] | None
-BaseGroupKey = tuple[bool, str | Platform, FrozenCommKey, int, str]
+BaseGroupKey = tuple[bool, Platform | Literal[""], FrozenCommKey, int, str]
 
 
 @dataclass
@@ -33,7 +32,7 @@ class Request(Generic[RequestResult]):
     comm: dict[str, int | str | bool] | None = None
     is_jce: bool = False
     credential: Credential | None = None
-    platform: Platform | str | None = None
+    platform: Platform | None = None
     _consumed: bool = field(default=False, init=False, repr=False, compare=False)
 
     def _mark_consumed(self) -> None:
@@ -44,17 +43,6 @@ class Request(Generic[RequestResult]):
         """使 Request 对象可被 await 执行."""
         self._mark_consumed()
         return self._client.execute(self).__await__()
-
-    def __del__(self) -> None:
-        """在请求未被消费时发出运行时告警."""
-        if self._consumed:
-            return
-        warnings.warn(
-            f"Request '{self.module}.{self.method}' was never awaited",
-            category=RuntimeWarning,
-            stacklevel=2,
-            source=self,
-        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -168,13 +156,21 @@ class RequestGroup:
                 results[result.index] = result.data
             else:
                 if result.error is None:
-                    raise RuntimeError("批量请求失败结果缺少异常对象")
+                    raise ApiError(
+                        "批量请求失败结果缺少异常对象",
+                        code=-1,
+                        data={"index": result.index, "module": result.module, "method": result.method},
+                    )
                 results[result.index] = result.error
 
         finalized: list[RequestValue | Exception] = []
-        for item in results:
+        for index, item in enumerate(results):
             if item is None:
-                raise RuntimeError("批量请求结果存在未填充项")
+                request = self._requests[index]
+                raise RequestGroupResultMissingError(
+                    "批量请求结果存在未填充项",
+                    context={"index": index, "module": request.module, "method": request.method},
+                )
             finalized.append(item)
         return finalized
 
@@ -328,7 +324,7 @@ class RequestGroup:
                         data=result,
                     ),
                 )
-            except Exception as exc:
+            except ApiError as exc:
                 output.append(
                     RequestGroupResult(
                         index=origin_idx,
@@ -336,6 +332,16 @@ class RequestGroup:
                         method=req.method,
                         success=False,
                         error=exc,
+                    ),
+                )
+            except Exception as exc:
+                output.append(
+                    RequestGroupResult(
+                        index=origin_idx,
+                        module=req.module,
+                        method=req.method,
+                        success=False,
+                        error=ApiError("响应数据校验失败", code=-1, data=item, cause=exc),
                     ),
                 )
         return output

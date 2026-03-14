@@ -220,7 +220,7 @@ async def get_qimei(
         return QimeiResult(q16=device.qimei, q36=device.qimei36)
 
     try:
-        target_sdk_version = sdk_version or DEFAULT_VERSION_POLICY.get_qimei_sdk_version("android")
+        target_sdk_version = sdk_version or DEFAULT_VERSION_POLICY.get_qimei_sdk_version()
         _, headers, request_json = await to_thread.run_sync(_build_qimei_request, device, version, target_sdk_version)
 
         client = session or httpx.AsyncClient()

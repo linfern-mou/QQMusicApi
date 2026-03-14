@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Any
 
+from ..core.versioning import Platform
 from ..utils.common import get_searchID
 from ._base import ApiModule
 
@@ -135,5 +136,5 @@ class SearchApi(ApiModule):
                 "highlight": highlight,
                 "grp": True,
             },
-            platform="mobile",
+            platform=Platform.ANDROID,
         )

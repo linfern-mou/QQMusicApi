@@ -4,6 +4,7 @@ from qqmusic_api.core.exceptions import (
     ApiError,
     HTTPError,
     LoginExpiredError,
+    RequestGroupResultMissingError,
     SignInvalidError,
     build_api_error,
     extract_api_error_code,
@@ -45,3 +46,11 @@ def test_http_error_contains_status_code() -> None:
     error = HTTPError("failed", status_code=500)
     assert error.status_code == 500
     assert error.context.get("status_code") == 500
+
+
+def test_request_group_result_missing_error_is_api_error() -> None:
+    """验证 RequestGroupResultMissingError 属于 ApiError 体系."""
+    error = RequestGroupResultMissingError("missing", context={"index": 1})
+    assert isinstance(error, ApiError)
+    assert error.code == -1
+    assert error.context.get("index") == 1

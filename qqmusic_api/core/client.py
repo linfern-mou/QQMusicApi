@@ -97,7 +97,7 @@ class Client:
         device_path: str | anyio.Path | None = None,
         *,
         enable_sign: bool = False,
-        platform: Platform | str = Platform.ANDROID,
+        platform: Platform = Platform.ANDROID,
         max_concurrency: int = 10,
         max_connections: int = 20,
         qimei_timeout: float = 1.5,
@@ -264,7 +264,7 @@ class Client:
             self._limiter.release()
 
     async def _ensure_device(self) -> "Device":
-        """获取与当前凭证关联的设备信息 (状态防漂移).
+        """获取与当前 Client 绑定的设备信息.
 
         Returns:
             Device: 当前活动的设备对象.
@@ -275,7 +275,7 @@ class Client:
         """获取并缓存 QIMEI 信息.
 
         如果设备对象中已有缓存则直接返回, 否则向服务器请求新的 QIMEI,
-        并将其持久化到设备存储中. 该方法保证并发请求时的安全性 (Lock).
+        并将其持久化到当前 Client 绑定的设备存储中. 该方法保证并发请求时的安全性 (Lock).
 
         Returns:
             QimeiResult | None: 成功则返回 QIMEI 字典数据, 失败则返回 None.
@@ -294,8 +294,8 @@ class Client:
                 return self._qimei_cache
 
             try:
-                qimei_app_version = self._version_policy.get_qimei_app_version(self.platform)
-                qimei_sdk_version = self._version_policy.get_qimei_sdk_version(self.platform)
+                qimei_app_version = self._version_policy.get_qimei_app_version()
+                qimei_sdk_version = self._version_policy.get_qimei_sdk_version()
 
                 self._qimei_cache = await get_qimei(
                     device=device,
@@ -320,7 +320,7 @@ class Client:
 
     async def _build_common_params(
         self,
-        platform: Platform | str | None,
+        platform: Platform | None,
         credential: Credential,
         comm: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
@@ -337,7 +337,7 @@ class Client:
             dict[str, Any]: 组装好的 comm 参数字典.
         """
         target_platform = platform or self.platform
-        qimei = await self._get_qimei_cached() if target_platform in {Platform.ANDROID, Platform.ANDROID_JCE} else None
+        qimei = await self._get_qimei_cached() if target_platform == Platform.ANDROID else None
         qimei_data: dict[str, str] | None = None
         if qimei is not None:
             qimei_data = {"q16": qimei["q16"], "q36": qimei["q36"]}
@@ -374,7 +374,7 @@ class Client:
     @overload
     async def execute(self, request: "Request") -> ResponseData: ...
 
-    async def execute(self, request: "Request") -> RequestValue:
+    async def execute(self, request: "Request") -> RequestValue:  # noqa: C901
         """执行单个请求描述符并解析返回结果.
 
         调用中间件进行请求预处理, 随后根据请求格式 (JCE/JSON) 分发调用底层发包方法,
@@ -420,9 +420,14 @@ class Client:
                     context={"module": request.module, "method": request.method, "is_jce": True},
                 )
             response_model = request.response_model
+            if item.data is None:
+                raise ApiError("缺少响应数据: req_0.data", code=-1, data=item)
             if response_model is None:
                 return item.data
-            return self._build_result(item.data, response_model)
+            try:
+                return self._build_result(item.data, response_model)
+            except Exception as exc:
+                raise ApiError("响应数据校验失败", code=-1, data=item.data, cause=exc) from exc
 
         response = await self.request_musicu(
             data=data,
@@ -450,9 +455,14 @@ class Client:
             )
         response_model = request.response_model
         raw = item.get("data")
+        if raw is None:
+            raise ApiError("缺少响应数据: req_0.data", code=-1, data=item)
         if response_model is None:
             return raw
-        return self._build_result(raw, response_model)
+        try:
+            return self._build_result(raw, response_model)
+        except Exception as exc:
+            raise ApiError("响应数据校验失败", code=-1, data=raw, cause=exc) from exc
 
     @overload
     @staticmethod
@@ -506,7 +516,7 @@ class Client:
         """
         await self.close()
 
-    async def _get_user_agent(self, platform: Platform | str | None = None) -> str:
+    async def _get_user_agent(self, platform: Platform | None = None) -> str:
         """根据指定或默认平台生成请求所需的 User-Agent.
 
         Args:
@@ -544,7 +554,7 @@ class Client:
         method: str,
         url: str,
         credential: Credential | None = None,
-        platform: Platform | str | None = None,
+        platform: Platform | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
         """发送带有凭证和 User-Agent 的 HTTP 请求.
@@ -581,7 +591,7 @@ class Client:
         comm: dict[str, Any] | None = None,
         credential: Credential | None = None,
         url: str = "https://u.y.qq.com/cgi-bin/musicu.fcg",
-        platform: Platform | str | None = None,
+        platform: Platform | None = None,
     ) -> dict[str, Any]:
         """发送标准 QQ 音乐请求 (Musicu/JSON) 并解析响应.
 
@@ -644,7 +654,7 @@ class Client:
         comm: dict[str, Any] | None = None,
         url: str = "http://u.y.qq.com/cgi-bin/musicw.fcg",
     ) -> JceResponse:
-        """发送 JCE 格式的请求并解析响应.
+        """发送 Android 语义的 JCE 格式请求并解析响应.
 
         Args:
             data: JCE 请求项, 支持单个或批量.
@@ -668,7 +678,12 @@ class Client:
             return {key: value for key, value in p.items() if isinstance(key, int)}
 
         payload = JceRequest(
-            await self._build_common_params(Platform.ANDROID_JCE, credential or self.credential, comm),
+            {
+                k: str(v)
+                for k, v in (
+                    await self._build_common_params(Platform.ANDROID, credential or self.credential, comm)
+                ).items()
+            },
             {
                 f"req_{idx}": JceRequestItem(
                     module=req["module"],

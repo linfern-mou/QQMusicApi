@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, overload
 import httpx
 
 from ..core.exceptions import NotLoginError
+from ..core.versioning import Platform
 
 if TYPE_CHECKING:
     from ..core.client import Client
@@ -73,7 +74,7 @@ class ApiModule:
         method: str,
         url: str,
         credential: "Credential | None" = None,
-        platform: str | None = None,
+        platform: Platform | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
         """发送请求并自动携带对应凭证与平台 User-Agent.
@@ -96,7 +97,7 @@ class ApiModule:
             **kwargs,
         )
 
-    def _build_query_common_params(self, platform: str | None = None) -> dict[str, int]:
+    def _build_query_common_params(self, platform: Platform | None = None) -> dict[str, int]:
         """构建查询接口使用的通用版本参数.
 
         Args:
@@ -118,7 +119,7 @@ class ApiModule:
         *,
         is_jce: bool = False,
         credential: "Credential | None" = None,
-        platform: str | None = None,
+        platform: Platform | None = None,
     ) -> "Request[ResponseData]": ...
 
     @overload
@@ -132,7 +133,7 @@ class ApiModule:
         *,
         is_jce: bool = False,
         credential: "Credential | None" = None,
-        platform: str | None = None,
+        platform: Platform | None = None,
     ) -> "Request[ResponseModel]": ...
 
     def _build_request(
@@ -145,7 +146,7 @@ class ApiModule:
         *,
         is_jce: bool = False,
         credential: "Credential | None" = None,
-        platform: str | None = None,
+        platform: Platform | None = None,
     ) -> "Request[Any]":
         """构建可 await 的请求描述符.
 

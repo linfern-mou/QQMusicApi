@@ -9,8 +9,7 @@ def test_version_policy_profiles() -> None:
     """验证版本策略返回正确平台档案."""
     android = DEFAULT_VERSION_POLICY.get_profile(Platform.ANDROID)
     desktop = DEFAULT_VERSION_POLICY.get_profile(Platform.DESKTOP)
-    desktop = DEFAULT_VERSION_POLICY.get_profile("desktop")
-    web = DEFAULT_VERSION_POLICY.get_profile("unknown")
+    web = DEFAULT_VERSION_POLICY.get_profile(Platform.WEB)
 
     assert android.ct == 11
     assert android.cv == 14090008
@@ -25,7 +24,6 @@ def test_version_policy_user_agent() -> None:
     device = Device(model="MI 6")
     android_ua = DEFAULT_VERSION_POLICY.get_user_agent(Platform.ANDROID, device)
     desktop_ua = DEFAULT_VERSION_POLICY.get_user_agent(Platform.DESKTOP, device)
-    desktop_ua = DEFAULT_VERSION_POLICY.get_user_agent("desktop", device)
 
     assert android_ua == "QQMusic 14090008(android 10)"
     assert "Mozilla/5.0" in desktop_ua
@@ -33,18 +31,17 @@ def test_version_policy_user_agent() -> None:
 
 def test_version_policy_qimei_versions() -> None:
     """验证 QIMEI 请求版本由策略提供."""
-    assert DEFAULT_VERSION_POLICY.get_qimei_app_version(Platform.ANDROID) == "14.9.0.8"
-    assert DEFAULT_VERSION_POLICY.get_qimei_sdk_version(Platform.ANDROID) == "1.2.13.6"
-    assert DEFAULT_VERSION_POLICY.get_qimei_sdk_version("android") == "1.2.13.6"
+    assert DEFAULT_VERSION_POLICY.get_qimei_app_version() == "14.9.0.8"
+    assert DEFAULT_VERSION_POLICY.get_qimei_sdk_version() == "1.2.13.6"
 
 
-def test_version_policy_build_comm_with_unknown_platform() -> None:
-    """验证未知平台回退到 web 档案."""
+def test_version_policy_build_comm_with_web_platform() -> None:
+    """验证 web 平台使用 web 档案."""
     credential = Credential(musicid=10001, musickey="key")
     device = Device()
 
     comm = DEFAULT_VERSION_POLICY.build_comm(
-        platform="unknown",
+        platform=Platform.WEB,
         credential=credential,
         device=device,
         qimei=None,
@@ -54,6 +51,25 @@ def test_version_policy_build_comm_with_unknown_platform() -> None:
     assert comm["ct"] == 24
     assert comm["cv"] == 4747474
     assert comm["platform"] == "yqq.json"
+
+
+def test_version_policy_build_comm_with_android_platform() -> None:
+    """验证 android 平台使用 android 档案."""
+    credential = Credential(musicid=10001, musickey="key")
+    device = Device(model="MI 6")
+
+    comm = DEFAULT_VERSION_POLICY.build_comm(
+        platform=Platform.ANDROID,
+        credential=credential,
+        device=device,
+        qimei={"q16": "a", "q36": "b"},
+        guid="abc",
+    )
+
+    assert comm["ct"] == 11
+    assert comm["cv"] == 14090008
+    assert comm["QIMEI"] == "a"
+    assert comm["phonetype"] == "MI 6"
 
 
 def test_build_comm_cache_hit_returns_same_content() -> None:
@@ -133,4 +149,4 @@ def test_build_comm_cache_populates_on_all_platforms() -> None:
         )
         assert "ct" in comm
 
-    assert len(policy._comm_cache) == 4
+    assert len(policy._comm_cache) == 3

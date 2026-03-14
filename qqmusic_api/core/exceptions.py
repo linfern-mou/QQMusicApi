@@ -223,7 +223,7 @@ class LoginError(BaseError):
         super().__init__(message, cause=cause)
 
 
-class RequestGroupResultMissingError(BaseError):
+class RequestGroupResultMissingError(ApiError):
     """RequestGroup 结果缺失异常.
 
     当批量请求执行完成后, 某个索引位置未被任何批次写回时抛出。
@@ -236,7 +236,7 @@ class RequestGroupResultMissingError(BaseError):
             message: 错误描述信息.
             context: 结果缺失对应的请求上下文.
         """
-        super().__init__(message, context=context)
+        super().__init__(message, code=-1, context=context)
 
 
 class SignInvalidError(ApiError):
