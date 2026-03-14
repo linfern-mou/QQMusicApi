@@ -12,6 +12,7 @@
 ### 功能重构
 
 * **(api)** 统一请求架构并重构模块与批处理模型 ([7099103](https://github.com/L-1124/QQMusicApi/commit/7099103d92587de2c7d7c1a17be48587b1f9b53d)) by [@L-1124](https://github.com/L-1124) in [#226](https://github.com/L-1124/QQMusicApi/pull/226)
+* **(core)** 收敛核心层异常与平台语义 ([57de232](https://github.com/L-1124/QQMusicApi/commit/57de232b14c03f47c5960db144dd02a2bc1b8271)) by [@L-1124](https://github.com/L-1124)
 
 ### 文档更新
 
