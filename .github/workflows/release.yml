@@ -2,8 +2,8 @@ name: Release And Publish Python Package
 
 on:
   push:
-    branches:
-      - "main"
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -12,18 +12,18 @@ permissions:
 jobs:
   generate-release-body:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, 'chore(release)')
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate release body
         id: git-cliff
         uses: orhun/git-cliff-action@v4
         with:
-          args: -vv --unreleased --strip all
+          args: -vv --latest --strip all
 
   publish:
     runs-on: ubuntu-latest
@@ -37,7 +37,6 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          python-version: 3.12
       - name: Install the project
         run: uv sync
       - name: Build and publish
@@ -51,11 +50,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Get version
-        run: echo "PACKAGE_VERSION=$(grep '__version__' qqmusic_api/__init__.py | awk -F'\"' '{print $2}')" >> $GITHUB_ENV
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           body: ${{ needs.generate-release-body.outputs.release_body }}
-          tag_name: v${{ env.PACKAGE_VERSION }}
-          token: ${{ secrets.GH_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}

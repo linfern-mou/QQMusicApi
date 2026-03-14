@@ -4,32 +4,36 @@ on:
   push:
     branches:
       - "main"
-  release:
-    types: [published]
-
-permissions:
-  contents: write
 
 jobs:
-  generate-changelog:
-    if: "!startsWith(github.event.head_commit.message, 'chore(release-notes)')"
+  changelog:
+    name: Generate changelog
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
+
       - name: Generate release-notes
-        id: git-cliff
         uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --verbose
         env:
           OUTPUT: docs/release-notes.md
+          GITHUB_REPO: ${{ github.repository }}
+
       - name: Commit
         run: |
           git checkout main
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          set +e docs/release-notes.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          set +e
           git add docs/release-notes.md
-          git commit -m "🧹 chore(release-notes): Update release notes"
+          git commit -m "🧹 chore(release-notes): 更新 release notes"
           git push https://${{ secrets.GH_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
