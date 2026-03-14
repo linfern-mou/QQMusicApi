@@ -1,14 +1,16 @@
-"""
-pytest配置文件 - 用于设置测试间隔和其他全局配置
-"""
-
-import asyncio
-import random
+"""pytest 共享配置入口."""
 
 import pytest
 
+from tests.support.fixtures import make_request, mock_client
 
-@pytest.fixture(scope="function", autouse=True)
-async def add_delay_between_tests():
-    yield  # 测试函数执行
-    await asyncio.sleep(random.uniform(0.5, 1.5))
+__all__ = [
+    "make_request",
+    "mock_client",
+]
+
+
+@pytest.fixture(scope="session")
+def anyio_backend() -> str:
+    """Return anyio backend."""
+    return "asyncio"

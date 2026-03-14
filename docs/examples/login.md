@@ -1,13 +1,23 @@
 # 登录
 
-## 示例：手机号登录
-
 ```python
---8<-- "examples/phone_login.py"
-```
+import asyncio
 
-## 示例：二维码登录
+from qqmusic_api import Client
+from qqmusic_api.modules.login import QRCodeLoginEvents, QRLoginType
 
-```python
---8<-- "examples/qrcode_login.py"
+
+async def main() -> None:
+    async with Client() as client:
+        qr = await client.login.get_qrcode(QRLoginType.QQ)
+        qr.save("./qrcode")
+
+        async for event, credential in client.login.iter_qrcode_login(qr, timeout_seconds=180):
+            print(event)
+            if event == QRCodeLoginEvents.DONE and credential is not None:
+                print(credential)
+                break
+
+
+asyncio.run(main())
 ```

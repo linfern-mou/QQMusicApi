@@ -27,8 +27,8 @@
 
 ## 📚 快速链接
 
-- **[📖 完整文档](https://l-1124.github.io/QQMusicApi)**
-- **[💻 源代码仓库](https://github.com/l-1124/QQMusicApi)**
+* **[📖 完整文档](https://l-1124.github.io/QQMusicApi)**
+* **[💻 源代码仓库](https://github.com/l-1124/QQMusicApi)**
 
 ## 📖 介绍
 
@@ -36,16 +36,16 @@
 
 ## ✨ 项目特色
 
-- 🎵 涵盖常见 API
-- 🚀 调用简便，函数命名易懂，代码注释详细
-- ⚡ 完全异步操作
+* 🎵 涵盖常见 API
+* 🚀 调用简便，函数命名易懂，代码注释详细
+* ⚡ 完全异步操作
 
 ## 📦 依赖
 
-- Cryptography
-- Httpx
-- Httpx-ws
-- Orjson
+* Cryptography
+* Httpx
+* Httpx-ws
+* Orjson
 
 ## 🚀 快速上手
 
@@ -60,20 +60,17 @@ pip install qqmusic-api-python
 ```python
 import asyncio
 
-from qqmusic_api import search
+from qqmusic_api import Client
 
 async def main():
-    # 搜索歌曲
-    result = await search.search_by_type(keyword="周杰伦", num=20)
-    # 打印结果
-    print(result)
+    async with Client() as client:
+        # 搜索歌曲
+        result = await client.search.search_by_type(keyword="周杰伦", num=20)
+        # 打印结果
+        print(result)
 
 asyncio.run(main())
 ```
-
-## 🌐 Web API
-
-详见 [Web API 说明](./web/README.md)
 
 ## 📄 许可证
 

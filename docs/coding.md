@@ -1,139 +1,211 @@
 # API 编写指南
 
+当前版本的 `qqmusic_api` 采用 `Client + ApiModule + Request` 的结构:
 
-## 1. 使用 `@api_request` 装饰器
+* `Client` 负责网络发送、平台信息、凭证和批量调度。
+* `ApiModule` 负责声明接口参数，并返回可 `await` 的 `Request`。
+* `RequestGroup` 用于批量执行多个 `Request`。
 
-使用 `@api_request` 装饰器是编写新接口的标准方式。它能将一个普通的 Python 函数转换为一个具备自动参数构建、请求发送和响应处理功能的 API 对象。
+## 0. 调用流程图
 
-### 1.1 基础定义
+### 单请求
 
-一个标准的 API 定义包含三个部分：装饰器配置、业务参数定义和返回值处理。
-
-```python
-from typing import Any
-from qqmusic_api.utils.network import api_request, NO_PROCESSOR
-
-# 1. 装饰器配置: 指定调用的模块和方法
-@api_request("music.musichallAlbum.AlbumInfoServer", "GetAlbumDetail")
-async def get_album_detail(album_id: int):
-    """获取专辑详情"""
-    
-    # 2. 业务逻辑: 构建请求参数字典
-    # 3. 返回值: (请求参数, 数据处理器)
-    return {"albumId": album_id}, NO_PROCESSOR
-
+```text
+模块方法
+  -> self.build_request(...)
+  -> Request
+  -> await request
+  -> Client.execute(request)
+  -> 根据 request.is_jce 分发:
+     -> Client.request_jce(...)
+     -> 或 Client.request_musicu(...)
+  -> Client._build_result(...)
+  -> 返回原始 dict / TarsDict 或 Pydantic 模型
 ```
 
-### 1.2 动态凭证控制 (`credential`)
+### 批量请求
 
-默认情况下，API 请求会自动使用全局 `Session` 中的凭证。**仅当您需要从外部传入特定凭证（以覆盖默认 Session 凭证）时**，才需要在函数定义中显式包含 `credential` 参数。
-
-```python
-from qqmusic_api.utils.network import api_request, NO_PROCESSOR
-from qqmusic_api import Credential
-
-@api_request("music.trackInfo.UniformRuleCtrl", "CgiGetTrackInfo")
-async def query_song(
-    value: list[int],
-    *,
-    credential: Credential | None = None,
-):
-    return {"ids": value}, NO_PROCESSOR
-
-# 调用示例：
-# await query_song([101])                          # 使用 Session 凭证
-# await query_song([101], credential=my_cred)      # 使用 my_cred
-
+```text
+多个模块方法
+  -> 多个 Request
+  -> Client.request_group()
+  -> RequestGroup.add(...) / extend(...)
+  -> 按 is_jce / platform / comm / credential 分组
+  -> 按 batch_size 分批
+  -> 并发发送批次
+  -> 两种消费方式:
+     -> execute_iter():
+        返回无序流式 RequestGroupResult
+        字段包括 index / success / data / error
+     -> execute():
+        返回按添加顺序回填的 list[Any | Exception]
 ```
 
-### 1.3 返回值类型与处理器 (Processor)
+## 1. 编写新的 API 模块
 
-调用 API 函数时的返回值类型完全由数据处理器（Processor）的返回类型决定。
-
-#### 使用 `NO_PROCESSOR`
-
-如果使用默认的 `NO_PROCESSOR`，处理器不做任何转换，API 将返回原始响应数据的字典结构。此时返回值类型为 `dict[str, Any]`。
+API 按功能拆分在 `qqmusic_api/modules/` 下，每个模块继承 `ApiModule`。
 
 ```python
-@api_request(...)
-async def api_demo() -> tuple[dict, Any]:
-    return {}, NO_PROCESSOR
+from qqmusic_api.modules._base import ApiModule
 
-# result 类型为 dict[str, Any]
-result = await api_demo()
 
+class MyApi(ApiModule):
+    """自定义 API 模块."""
+
+    def get_info(self, item_id: int):
+        """获取信息."""
+        return self.build_request(
+            module="music.myModule",
+            method="GetInfo",
+            param={"id": item_id},
+        )
 ```
 
-#### 使用自定义处理器
-
-如果定义了数据提取函数，API 的返回值类型即为该函数的返回值类型。
+然后在 `Client` 中注册该模块属性:
 
 ```python
-# 定义处理器：输入 dict -> 输出 list[str]
-def _extract_urls(data: dict) -> list[str]:
-    return [item["url"] for item in data["items"]]
+class Client:
+    @property
+    def my_api(self) -> "MyApi":
+        from ..modules.my_api import MyApi
 
-@api_request(...)
-async def get_urls(mid: str):
-    return {"mid": mid}, _extract_urls
-
-# urls 的类型自动推断为 list[str]
-urls = await get_urls("001")
-
+        return MyApi(self)
 ```
 
-## 2. 批量请求 `RequestGroup`
+## 2. 处理凭证、平台和响应模型
 
-`RequestGroup` 用于合并多个 API 请求，能够自动合并公共参数并去除重复的 module/method 调用，显著减少网络开销。
-
-### 2.1 添加请求的方法
-
-`RequestGroup` 支持两种添加请求的方式：
-
-#### 添加装饰器函数
-
-直接将使用 `@api_request` 装饰的函数作为参数传入。
+默认情况下，请求会继承当前 `Client` 的 `credential` 和 `platform`。如需强制要求登录，可使用 `_require_login()`。
 
 ```python
-from qqmusic_api.utils.network import RequestGroup
-from qqmusic_api.song import query_song
+from qqmusic_api.models.request import Credential
 
-async def batch_query(ids_list: list[list[int]]):
-    rg = RequestGroup()
-    for ids in ids_list:
-        # 参数1: 装饰器函数对象
-        # 参数2~N: 传递给该函数的参数
-        rg.add_request(query_song, ids)
-    return await rg.execute()
 
+class MyApi(ApiModule):
+    """需要登录的示例模块."""
+
+    def get_vip_info(self, *, credential: Credential | None = None):
+        """获取登录态信息."""
+        target_credential = self._require_login(credential)
+        return self.build_request(
+            module="VipLogin.VipLoginInter",
+            method="vip_login_base",
+            param={},
+            credential=target_credential,
+        )
 ```
 
-#### 添加 `ApiRequest` 实例
-
-适用于手动构建的请求对象。
+如果接口返回值需要自动转换为 Pydantic 模型，可以传入 `response_model`:
 
 ```python
-from qqmusic_api.utils.network import ApiRequest
-req = ApiRequest(module="...", method="...", params={...})
-rg.add_request(req)
+from pydantic import BaseModel
 
+
+class InfoResponse(BaseModel):
+    """接口响应模型."""
+
+    name: str
+
+
+class MyApi(ApiModule):
+    """带响应模型的示例模块."""
+
+    def get_info(self, item_id: int):
+        """获取信息."""
+        return self.build_request(
+            module="music.myModule",
+            method="GetInfo",
+            param={"id": item_id},
+            response_model=InfoResponse,
+        )
 ```
 
-## 3. 直接使用 `ApiRequest` 类
+如果接口不是标准 `musicu/jce` 请求，而是直接访问 HTTP 地址，可以在模块里编写 `async def` 方法并调用 `_request()`。
+
+## 3. 编写组合型异步接口
+
+当一个公开方法需要发起多次请求、合并分页结果或处理原始响应时，可以直接写成 `async def`。
 
 ```python
-from qqmusic_api.utils.network import ApiRequest
+class MyApi(ApiModule):
+    """组合型接口示例."""
 
-async def dynamic_call(use_encryption: bool):
-    # 动态决定模块名
-    module_name = "music.vkey.GetEVkey" if use_encryption else "music.vkey.GetVkey"
-    
-    req = ApiRequest(
-        module=module_name,
-        method="UrlGetVkey",
-        params={"filename": "test.mp3"},
-        verify=True
-    )
-    return await req()
+    async def get_all_items(self, ids: list[int]) -> dict[int, dict]:
+        """批量获取并聚合结果."""
+        group = self._client.request_group(batch_size=20, max_inflight_batches=4)
+        for item_id in ids:
+            group.add(
+                self.build_request(
+                    module="music.myModule",
+                    method="GetInfo",
+                    param={"id": item_id},
+                )
+            )
 
+        merged: dict[int, dict] = {}
+        for raw in await group.execute():
+            if isinstance(raw, Exception):
+                raise raw
+            merged[int(raw["id"])] = raw
+        return merged
 ```
+
+这种写法适用于:
+
+* 自动翻页取全量数据
+* 批量聚合多个 `Request`
+* 对原始响应做二次整理后再返回
+
+## 4. 批量请求 `RequestGroup`
+
+使用 `Client.request_group()` 可以批量提交请求。`RequestGroup` 会自动按 `platform`、`credential`、`comm` 和 `is_jce` 分组，并按 `batch_size` 分批发送。
+
+`execute()` 会返回与添加顺序一致的完整结果列表:
+
+```python
+from qqmusic_api import Client
+
+
+async def batch_query(song_ids: list[int]):
+    async with Client() as client:
+        group = client.request_group()
+        for song_id in song_ids:
+            group.add(client.song.get_detail(song_id))
+
+        return await group.execute()
+```
+
+`execute_iter()` 会按完成顺序流式返回 `RequestGroupResult`，不保证与添加顺序一致:
+
+```python
+from qqmusic_api import Client
+
+
+async def batch_query_stream(song_ids: list[int]):
+    async with Client() as client:
+        group = client.request_group(batch_size=1, max_inflight_batches=4)
+        for song_id in song_ids:
+            group.add(client.song.get_detail(song_id))
+
+        async for result in group.execute_iter():
+            print(result.index, result.module, result.method, result.success)
+```
+
+`RequestGroupResult` 包含这些字段:
+
+* `index`: 原始添加顺序
+* `module`: 请求模块名
+* `method`: 请求方法名
+* `success`: 是否成功
+* `data`: 成功时的返回数据
+* `error`: 失败时的异常对象
+
+## 5. 编写文档和测试
+
+新增或调整 API 时，请同步更新这些内容:
+
+* public API 的 docstring
+* 对应模块测试
+* 用户可见行为变更涉及的文档页
+* `mkdocs.yml` 的 `nav`（如果新增或移动了文档页面）
+
+测试函数需要包含单行中文 docstring（英文标点），并优先验证可观察行为，而不是内部实现细节。
