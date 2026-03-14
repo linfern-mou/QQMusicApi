@@ -17,6 +17,7 @@
 
 ### 文档更新
 
+* 更新文档 ([6d2b618](https://github.com/L-1124/QQMusicApi/commit/6d2b618f8b3bcfda9b6523aba238e9fc0ed66ecc)) by [@L-1124](https://github.com/L-1124)
 * 更新 README.md.修正图像链接，优化格式和内容，增强可读性 ([7a42d6f](https://github.com/L-1124/QQMusicApi/commit/7a42d6f66ef756ba737dbf6eb672b7293bf06996)) by [@L-1124](https://github.com/L-1124)
 * 添加评论 API 文档并更新用户 API 文档注释 ([618bf5a](https://github.com/L-1124/QQMusicApi/commit/618bf5a482eb81bba49883c39afbbae4ea3b3077)) by [@L-1124](https://github.com/L-1124)
 
