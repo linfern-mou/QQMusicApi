@@ -5,6 +5,10 @@
 
 * resolve TypeError with Generic TypedDict on Python < 3.11 ([f142965](https://github.com/L-1124/QQMusicApi/commit/f14296511ca453bf20e196d44e1eb0a6e14ba12a)) by [@L-1124](https://github.com/L-1124)
 
+### Config
+
+* **(hooks)** 从 pre-commit 迁移到 prek ([2821122](https://github.com/L-1124/QQMusicApi/commit/2821122e668264e9e7f3d879e8cae536ac08d580)) by [@L-1124](https://github.com/L-1124)
+
 ### 功能重构
 
 * **(api)** 统一请求架构并重构模块与批处理模型 ([7099103](https://github.com/L-1124/QQMusicApi/commit/7099103d92587de2c7d7c1a17be48587b1f9b53d)) by [@L-1124](https://github.com/L-1124) in [#226](https://github.com/L-1124/QQMusicApi/pull/226)
