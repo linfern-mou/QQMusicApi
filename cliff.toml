@@ -12,48 +12,39 @@ header = """
 # https://keats.github.io/tera/docs/#introduction
 body = """
 {%- macro remote_url() -%}
-  https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
-{%- endmacro -%}
+https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
+{%- endmacro %}
+{% if version -%}\
+{% if previous.version %}\
+## [[{{ version | trim_start_matches(pat="v") }}]({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }})] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% endif %}\
+{% else -%}\
+## What's Changed
+{% endif %}
+{% for group, commits in commits | group_by(attribute="group") %}\
+### {{ group | striptags | trim | upper_first }}
 
-{% if version -%}
-    {% if previous.version %}\
-        ## [[{{ version | trim_start_matches(pat="v") }}]({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }})] - {{ timestamp | date(format="%Y-%m-%d") }}
-    {% else %}\
-        ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
-    {% endif %}\
-{% else %}
-    ## What's Changed
-{% endif -%}
-
-{% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group | striptags | trim | upper_first }}
-    {% for commit in commits
-    | unique(attribute="message")
-    | filter(attribute="scope")
-    | sort(attribute="scope") %}
-        - **({{commit.scope}})**{% if commit.breaking %} [**breaking**]{% endif %} \
-            {{ commit.message }} - ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }})){% if commit.remote.username %} by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}) {%- endif %} {% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) {%- endif %}
-    {%- endfor -%}
-    {% raw %}\n{% endraw %}\
-    {%- for commit in commits | unique(attribute="message") %}
-        {%- if commit.scope -%}
-        {% else -%}
-            - {% if commit.breaking %} [**breaking**]{% endif %}\
-                {{ commit.message }} - ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }})){% if commit.remote.username %} by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}) {%- endif %} {% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) {%- endif %}
-        {% endif -%}
-    {% endfor -%}
+{% for commit in commits | unique(attribute="message") | filter(attribute="scope") | sort(attribute="scope") %}\
+* **({{ commit.scope }})**{% if commit.breaking %} [**breaking**]{% endif %} {{ commit.message | trim }} ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }})){% if commit.remote.username %} by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}){% endif %}{% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}){% endif %}
+{% endfor %}\
+{% for commit in commits | unique(attribute="message") %}\
+{% if not commit.scope %}\
+* {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message | trim }} ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }})){% if commit.remote.username %} by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}){% endif %}{% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}){% endif %}
+{% endif %}\
+{% endfor %}\
+{% if not loop.last %}
+{% endif %}\
 {% endfor %}
+{% if github.contributors | length != 0 %}\
 
-{%- if github.contributors | length != 0 %}
-  ## 贡献者
-{%- endif -%}
+### 贡献者
 
-{% for contributor in github.contributors %}
-  * @{{ contributor.username }}
-    {%- if contributor.pr_number %} \
-      [#{{ contributor.pr_number }}]({{ self::remote_url() }}/pull/{{ contributor.pr_number }}) \
-    {%- endif %}
-{%- endfor %}\n
+{% for contributor in github.contributors %}\
+* @{{ contributor.username }}{% if contributor.pr_number %} [#{{ contributor.pr_number }}]({{ self::remote_url() }}/pull/{{ contributor.pr_number }}){% endif %}
+{% endfor %}\
+{% endif %}
 """
 # template for the changelog footer
 footer = """

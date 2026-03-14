@@ -8,6 +8,8 @@ on:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]' && !startsWith(github.event.head_commit.message, '🧹 chore(release-notes):') && !startsWith(github.event.head_commit.message, 'chore(release-notes):')
+
     steps:
       - uses: actions/checkout@v6
         with:

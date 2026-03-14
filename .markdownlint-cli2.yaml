@@ -31,7 +31,3 @@ config:
 
   # 锚点通过属性列表定义时无法被检测，交给 mkdocs 处理
   link-fragments: false
-
-ignores:
-  - "docs/release-notes.md"
-  - ".claude/"
