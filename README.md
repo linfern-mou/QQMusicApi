@@ -52,7 +52,13 @@
 ### 📥 安装
 
 ```bash
-pip install qqmusic-api-python
+# pip
+$ pip install qqmusic-api-python
+```
+
+```bash
+# uv
+$ uv add qqmusic-api-python
 ```
 
 ### 💡 使用示例

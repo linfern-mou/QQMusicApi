@@ -1,16 +1,20 @@
-# Exceptions
+# Exceptions API
 
-本页列出了使用时可能引发的异常。
+## Exception Hierarchy
 
-## The Exception Hierarchy
-
-* ApiException
-    * ResponseCodeError
-        * CredentialExpiredError
-        * SignInvalidError
-    * CredentialInvalidError
-    * LoginError
-
-______________________________________________________________________
+```tree
+BaseError
+├─ ApiError
+│  ├─ ApiDataError
+│  ├─ CredentialError
+│  │  ├─ LoginExpiredError
+│  │  └─ NotLoginError
+│  ├─ RequestGroupResultMissingError
+│  ├─ SignInvalidError
+│  └─ RateLimitError
+├─ NetworkError
+├─ HTTPError
+└─ LoginError
+```
 
 ::: core.exceptions

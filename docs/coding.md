@@ -12,7 +12,7 @@
 
 ```text
 模块方法
-  -> self.build_request(...)
+  -> self._build_request(...)
   -> Request
   -> await request
   -> Client.execute(request)
@@ -54,7 +54,7 @@ class MyApi(ApiModule):
 
     def get_info(self, item_id: int):
         """获取信息."""
-        return self.build_request(
+        return self._build_request(
             module="music.myModule",
             method="GetInfo",
             param={"id": item_id},
@@ -86,7 +86,7 @@ class MyApi(ApiModule):
     def get_vip_info(self, *, credential: Credential | None = None):
         """获取登录态信息."""
         target_credential = self._require_login(credential)
-        return self.build_request(
+        return self._build_request(
             module="VipLogin.VipLoginInter",
             method="vip_login_base",
             param={},
@@ -111,7 +111,7 @@ class MyApi(ApiModule):
 
     def get_info(self, item_id: int):
         """获取信息."""
-        return self.build_request(
+        return self._build_request(
             module="music.myModule",
             method="GetInfo",
             param={"id": item_id},
@@ -134,7 +134,7 @@ class MyApi(ApiModule):
         group = self._client.request_group(batch_size=20, max_inflight_batches=4)
         for item_id in ids:
             group.add(
-                self.build_request(
+                self._build_request(
                     module="music.myModule",
                     method="GetInfo",
                     param={"id": item_id},
