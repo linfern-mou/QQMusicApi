@@ -16,7 +16,7 @@ from uuid import uuid4
 import anyio
 import httpx
 
-from ..core import ApiError, LoginError, LoginExpiredError, Platform
+from ..core import ApiError, LoginError, LoginExpiredError
 from ..models.request import Credential
 from ..utils import hash33
 from ..utils.mqtt import Client as MqttClient
@@ -578,7 +578,7 @@ class LoginApi(ApiModule):
                     module="music.login.LoginServer",
                     method="CreateQRCode",
                     param={"tmeAppID": "qqmusic", **self._build_query_common_params()},
-                    platform=Platform.WEB,
+                    comm={"ct": 23, "cv": 0},
                 ),
             )
         except ApiError as exc:

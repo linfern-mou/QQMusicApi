@@ -221,9 +221,8 @@ DEFAULT_VERSION_POLICY = VersionPolicy(
         qimei_sdk_version="1.2.13.6",
     ),
     desktop=VersionProfile(
-        ct=20,
+        ct=19,
         cv=2201,
-        platform="wk_v17",
     ),
     web=VersionProfile(
         ct=24,
