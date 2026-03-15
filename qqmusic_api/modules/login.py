@@ -16,7 +16,7 @@ from uuid import uuid4
 import anyio
 import httpx
 
-from ..core import ApiError, LoginError, LoginExpiredError
+from ..core import ApiError, LoginError, LoginExpiredError, Platform
 from ..models.request import Credential
 from ..utils import hash33
 from ..utils.mqtt import Client as MqttClient
@@ -572,6 +572,8 @@ class LoginApi(ApiModule):
 
     async def _get_mobile_qr(self) -> QR:
         """获取手机客户端登录二维码."""
+        if self._client.platform == Platform.WEB:
+            raise self._raise_login_error("MobileLogin", "Web 端不支持获取手机客户端二维码")
         try:
             data = await self._client.execute(
                 self._build_request(
