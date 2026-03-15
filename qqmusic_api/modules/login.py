@@ -17,6 +17,7 @@ import anyio
 import httpx
 
 from ..core.exceptions import ApiError, LoginError, LoginExpiredError
+from ..core.versioning import Platform
 from ..models.request import Credential
 from ..utils.common import hash33
 from ..utils.mqtt import Client as MqttClient
@@ -273,8 +274,9 @@ class LoginApi(ApiModule):
             session=self._client._session,
         ) as client:
             await self._connect_mobile_mqtt(client, qrcode.identifier)
+            topic = f"management.qrcode_login/{qrcode.identifier}"
             await client.subscribe(
-                f"management.qrcode_login/{qrcode.identifier}",
+                topic,
                 properties={PropertyId.USER_PROPERTY: [("authorization", "tmelogin"), ("pubsub", "unicast")]},
             )
 
@@ -352,7 +354,7 @@ class LoginApi(ApiModule):
             last_event = event
             yield event_item
 
-    async def _iter_web_qrcode_login(  # noqa: C901
+    async def _iter_web_qrcode_login(
         self,
         qrcode: QR,
         *,
@@ -425,7 +427,7 @@ class LoginApi(ApiModule):
                 yield QRCodeLoginEvents.TIMEOUT, None
                 return
 
-    async def _iter_mobile_qrcode_login(  # noqa: C901
+    async def _iter_mobile_qrcode_login(
         self,
         qrcode: QR,
         *,
@@ -444,23 +446,45 @@ class LoginApi(ApiModule):
                 yield QRCodeLoginEvents.TIMEOUT, None
                 return
 
+            send_stream, receive_stream = anyio.create_memory_object_stream[QRLoginItem](0)
+            error: Exception | None = None
+
+            async def _forward_mobile_events(send_stream=send_stream) -> None:
+                nonlocal error
+                async with send_stream:
+                    try:
+                        async for event_item in self.checking_mobile_qrcode(qrcode):
+                            await send_stream.send(event_item)
+                    except Exception as exc:
+                        error = exc
+
             try:
-                # 使用局部作用域包裹整个单次连接生命周期
-                with anyio.fail_after(timeout_left):
-                    async for event_item in self.checking_mobile_qrcode(qrcode):
-                        error_retries = 0  # 成功获取事件则重置退避计数
+                async with receive_stream, anyio.create_task_group() as task_group:
+                    task_group.start_soon(_forward_mobile_events)
+                    while True:
+                        timeout_left = deadline - anyio.current_time()
+                        if timeout_left <= 0:
+                            task_group.cancel_scope.cancel()
+                            yield QRCodeLoginEvents.TIMEOUT, None
+                            return
+                        try:
+                            with anyio.fail_after(timeout_left):
+                                event_item = await receive_stream.receive()
+                        except anyio.EndOfStream:
+                            break
+
+                        error_retries = 0
                         yield event_item
 
-                        # 传递并响应内部发出的终端状态
                         if event_item[0] in {
                             QRCodeLoginEvents.DONE,
                             QRCodeLoginEvents.REFUSE,
                             QRCodeLoginEvents.TIMEOUT,
                             QRCodeLoginEvents.OTHER,
                         }:
+                            task_group.cancel_scope.cancel()
                             return
-
-            except (TimeoutError, anyio.EndOfStream):
+            except TimeoutError:
                 yield QRCodeLoginEvents.TIMEOUT, None
                 return
             except LoginError:
@@ -477,10 +501,25 @@ class LoginApi(ApiModule):
                         return
                 error_retries += 1
             finally:
-                # 防止由于高频异常导致 CPU 密集空转
                 elapsed = anyio.current_time() - loop_start
                 if elapsed < MIN_SAFE_INTERVAL:
                     await anyio.sleep(MIN_SAFE_INTERVAL - elapsed)
+
+            if error is None:
+                return
+            if isinstance(error, LoginError):
+                raise error
+
+            timeout_left = deadline - anyio.current_time()
+            if timeout_left > 0:
+                backoff = min(interval.error_interval, (2**error_retries) * interval.default)
+                try:
+                    with anyio.fail_after(timeout_left):
+                        await anyio.sleep(backoff)
+                except TimeoutError:
+                    yield QRCodeLoginEvents.TIMEOUT, None
+                    return
+            error_retries += 1
 
     async def _get_qq_qr(self) -> QR:
         """获取 QQ 授权二维码."""
@@ -539,7 +578,8 @@ class LoginApi(ApiModule):
                 self._build_request(
                     module="music.login.LoginServer",
                     method="CreateQRCode",
-                    param={"tmeAppID": "qqmusic", "ct": 11, "cv": 13020508},
+                    param={"tmeAppID": "qqmusic", **self._build_query_common_params()},
+                    platform=Platform.WEB,
                 ),
             )
         except ApiError as exc:

@@ -16,6 +16,7 @@ from qqmusic_api.modules.login import (
     QRCodeLoginEvents,
     QRLoginType,
 )
+from qqmusic_api.utils.mqtt import MqttMessage
 
 
 @pytest.mark.anyio
@@ -245,6 +246,27 @@ async def test_check_mobile_qr_success_cookie_flow(mock_client):
     assert events[1][1].musicid == 10001
     fake_client.subscribe.assert_awaited_once()
     fake_client.__aexit__.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_handle_mobile_message_accepts_mqtt_message_properties_dict(mock_client):
+    """测试 mobile 登录可直接消费适配层输出的 MqttMessage."""
+    api = LoginApi(mock_client)
+    mock_client.execute = AsyncMock(return_value={"musicid": 10001, "musickey": "Q_H_L_test"})
+    message = MqttMessage(
+        topic="management.qrcode_login/qid",
+        payload=b'{"cookies":{"qqmusic_uin":{"value":"10001"},"qqmusic_key":{"value":"Q_H_L_test"}}}',
+        qos=0,
+        properties={"type": "cookies"},
+    )
+
+    result = await api._handle_mobile_message("qid", message.properties.get("type"), message.json)
+
+    assert result is not None
+    event, credential = result
+    assert event == QRCodeLoginEvents.DONE
+    assert credential is not None
+    assert credential.musicid == 10001
 
 
 def test_qr_save_returns_none_when_data_empty(tmp_path):

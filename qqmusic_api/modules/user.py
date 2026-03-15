@@ -1,5 +1,6 @@
 """用户相关 API."""
 
+from ..core.versioning import Platform
 from ..models.request import Credential
 from ._base import ApiModule
 
@@ -16,7 +17,7 @@ class UserApi(ApiModule):
         Returns:
             str: 加密后的 UIN (encrypt_uin).
         """
-        params = self._build_query_common_params("desktop")
+        params = self._build_query_common_params(Platform.DESKTOP)
         params.update({"cid": 205360838, "userid": musicid})
         response = await self._request(
             "GET",
