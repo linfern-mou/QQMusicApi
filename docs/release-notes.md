@@ -3,6 +3,7 @@
 
 ### Bug 修复
 
+* 修复版本配置不对 ([9d71428](https://github.com/L-1124/QQMusicApi/commit/9d71428e3637cd19f410cb81c54f5fac57019392)) by [@L-1124](https://github.com/L-1124)
 * resolve TypeError with Generic TypedDict on Python < 3.11 ([f142965](https://github.com/L-1124/QQMusicApi/commit/f14296511ca453bf20e196d44e1eb0a6e14ba12a)) by [@L-1124](https://github.com/L-1124)
 
 ### Config
