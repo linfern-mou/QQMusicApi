@@ -1,7 +1,7 @@
 """versioning 模块测试."""
 
 from qqmusic_api import Credential
-from qqmusic_api.core.versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
+from qqmusic_api.core import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
 from qqmusic_api.utils.device import Device
 
 

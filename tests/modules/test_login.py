@@ -7,7 +7,7 @@ import pytest
 from anyio.lowlevel import checkpoint
 
 from qqmusic_api import Credential
-from qqmusic_api.core.exceptions import ApiError, LoginError, LoginExpiredError
+from qqmusic_api.core import ApiError, LoginError, LoginExpiredError
 from qqmusic_api.modules.login import (
     QR,
     LoginApi,

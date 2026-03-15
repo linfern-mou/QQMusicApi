@@ -16,10 +16,9 @@ from uuid import uuid4
 import anyio
 import httpx
 
-from ..core.exceptions import ApiError, LoginError, LoginExpiredError
-from ..core.versioning import Platform
+from ..core import ApiError, LoginError, LoginExpiredError, Platform
 from ..models.request import Credential
-from ..utils.common import hash33
+from ..utils import hash33
 from ..utils.mqtt import Client as MqttClient
 from ..utils.mqtt import PropertyId
 from ._base import ApiModule

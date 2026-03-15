@@ -5,7 +5,7 @@ from random import choice
 from time import time
 from typing import Any, overload
 
-from ..utils.common import get_guid
+from ..utils import get_guid
 from ._base import ApiModule
 
 

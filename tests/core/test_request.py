@@ -9,8 +9,14 @@ import pytest
 from pydantic import BaseModel
 
 from qqmusic_api import Client, Platform
-from qqmusic_api.core.exceptions import ApiDataError, ApiError, HTTPError, RequestGroupResultMissingError
-from qqmusic_api.core.versioning import DEFAULT_VERSION_POLICY
+from qqmusic_api.core import (
+    DEFAULT_VERSION_POLICY,
+    ApiDataError,
+    ApiError,
+    HTTPError,
+    Request,
+    RequestGroupResultMissingError,
+)
 from qqmusic_api.modules._base import ApiModule
 
 
@@ -58,8 +64,6 @@ async def test_request_musicu_uses_version_policy_comm() -> None:
 
     transport = httpx.MockTransport(handler)
     client = Client(transport=transport, platform=Platform.DESKTOP)
-    from qqmusic_api.core.request import Request
-
     await client.execute(
         Request(
             _client=client,
@@ -113,8 +117,6 @@ async def test_request_musicu_comm_override_takes_priority() -> None:
 
     transport = httpx.MockTransport(handler)
     client = Client(transport=transport, platform=Platform.DESKTOP)
-    from qqmusic_api.core.request import Request
-
     await client.execute(
         Request(
             _client=client,

@@ -3,7 +3,7 @@
 import pytest
 
 from qqmusic_api import Credential
-from qqmusic_api.core.exceptions import NotLoginError
+from qqmusic_api.core import NotLoginError
 from qqmusic_api.modules.songlist import SonglistApi
 
 

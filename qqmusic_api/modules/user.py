@@ -1,6 +1,6 @@
 """用户相关 API."""
 
-from ..core.versioning import Platform
+from ..core import Platform
 from ..models.request import Credential
 from ._base import ApiModule
 

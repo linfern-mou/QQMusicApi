@@ -3,7 +3,7 @@
 from typing import Any
 
 from qqmusic_api import Credential, Platform
-from qqmusic_api.core.client import Client
+from qqmusic_api.core import Client
 
 
 def make_client(*, platform: Platform = Platform.DESKTOP) -> Client:

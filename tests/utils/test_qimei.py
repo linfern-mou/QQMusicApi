@@ -5,7 +5,7 @@ import orjson as json
 import pytest
 
 from qqmusic_api import Client, Platform
-from qqmusic_api.core.versioning import DEFAULT_VERSION_POLICY
+from qqmusic_api.core import DEFAULT_VERSION_POLICY
 from qqmusic_api.utils.device import Device
 from qqmusic_api.utils.qimei import DEFAULT_QIMEI, get_qimei
 

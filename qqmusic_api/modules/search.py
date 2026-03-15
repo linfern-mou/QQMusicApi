@@ -3,8 +3,8 @@
 from enum import Enum
 from typing import Any
 
-from ..core.versioning import Platform
-from ..utils.common import get_searchID
+from ..core import Platform
+from ..utils import get_searchID
 from ._base import ApiModule
 
 

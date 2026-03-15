@@ -1,6 +1,6 @@
 """core.exceptions 模块测试."""
 
-from qqmusic_api.core.exceptions import (
+from qqmusic_api.core import (
     ApiError,
     HTTPError,
     LoginExpiredError,

@@ -5,8 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from qqmusic_api import Credential
-from qqmusic_api.core.exceptions import NotLoginError
-from qqmusic_api.core.versioning import DEFAULT_VERSION_POLICY
+from qqmusic_api.core import DEFAULT_VERSION_POLICY, NotLoginError
 from qqmusic_api.modules.user import UserApi
 
 
