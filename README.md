@@ -61,23 +61,6 @@ $ pip install qqmusic-api-python
 $ uv add qqmusic-api-python
 ```
 
-### 💡 使用示例
-
-```python
-import asyncio
-
-from qqmusic_api import Client
-
-async def main():
-    async with Client() as client:
-        # 搜索歌曲
-        result = await client.search.search_by_type(keyword="周杰伦", num=20)
-        # 打印结果
-        print(result)
-
-asyncio.run(main())
-```
-
 ## 📄 许可证
 
 本项目基于 **[MIT License](https://github.com/l-1124/QQMusicApi?tab=MIT-1-ov-file)** 许可证发行。
