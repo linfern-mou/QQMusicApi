@@ -90,6 +90,7 @@ project-includes = ["qqmusic_api", "tests", "examples"]
 addopts = ["-rxXs"]
 pythonpath = ["."]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 120

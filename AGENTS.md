@@ -19,7 +19,16 @@
 
 * 使用 Conventional Commits：`<type>(<scope>): <subject>`。
 * 提交信息使用中文。
-* commit-msg 钩子会校验 Commitizen / Conventional Gitmoji 格式。
+* commit-msg 钩子会校验 Commitizen / Conventional Gitmoji 格式。：
+
+## Testing rules
+
+* **专注 Modules 层**：测试重心放在 `modules` 层，将其视为黑盒。采用基于数据驱动（`@pytest.mark.parametrize`）的函数式测试方法，将输入参数与期望结果的特征断言解耦。
+* **真实网络请求（No Mock）**：禁止 Mock 底层网络请求或核心组装逻辑。必须直接与真实的 QQ 音乐 API 交互，以验证接口连通性、参数拼装和数据模型（Models）解析的正确性。
+* **优雅处理限流（Rate Limit）**：由于采用真实网络请求，当触发上游 API 的风控或频率限制异常时，必须使用自定义装饰器捕获该异常并调用 `pytest.skip()` 安全跳过，严禁因此导致测试失败。
+* **平铺函数写法**：摒弃测试类（`class TestXXX`），强制采用平铺的独立纯函数（Flat Functions）编写测试用例，通过 fixtures 注入依赖，保证测试的独立性。
+* 测试用例必须包含单行中文 docstring，且 docstring 内部必须使用英文标点符号。
+* 优先在现有的测试文件中添加用例，仅在测试全新模块时才允许创建新的测试文件。
 
 ## Documentation rules
 
@@ -37,12 +46,6 @@
 * 仅面向用户，描述 Usage 与 Behavior。
 * 新增页面必须同步更新 `mkdocs.yml` 的 `nav`。
 * 文档构建工具实际使用 `zensical`，站点配置文件是 `mkdocs.yml`。
-
-## Tooling notes
-
-* 运行时核心依赖包括：`anyio`、`httpx[http2]`、`orjson`、`pydantic v2`、`tarsio`、`httpx-ws`、`cryptography`。
-* prek 的本地 Python 钩子包括：`ruff --fix`、`ruff format`、`pyrefly check`。
-* `docs build` 只在 `pre-push` 阶段运行；`ruff`、`ruff-format`、`pyrefly` 在 `pre-commit` 阶段运行。
 
 ## Agent behavior
 
