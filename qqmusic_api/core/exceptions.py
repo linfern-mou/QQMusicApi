@@ -7,12 +7,12 @@ __all__ = [
     "ApiError",
     "BaseError",
     "CredentialError",
+    "GlobalAuthFailedError",
     "HTTPError",
     "LoginError",
     "LoginExpiredError",
     "NetworkError",
     "NotLoginError",
-    "RateLimitError",
     "RequestGroupResultMissingError",
     "SignInvalidError",
     "build_api_error",
@@ -255,18 +255,14 @@ class SignInvalidError(ApiError):
         super().__init__(message, code=2000, data=data)
 
 
-class RateLimitError(ApiError):
-    """请求被限流或触发风控异常 (code=2001).
+class GlobalAuthFailedError(ApiError):
+    """全局会话过期或触发风控异常 (code=2001).
 
-    当 API 返回 2001 错误码时抛出。通常会包含一个 `feedbackURL`,
-    需要用户在浏览器中打开该 URL 登录或者完成滑块验证码等安全验证。
-
-    Attributes:
-        feedback_url (str | None): 用于解除风控的验证页面 URL (从响应 data 中提取).
+    当 API 返回 2001 错误码时抛出,表示登录凭证过期或触发风控。
     """
 
-    def __init__(self, message: str = "请求过于频繁或触发风控, 需进行登录或者安全验证", data: dict | None = None):
-        """初始化限流异常.
+    def __init__(self, message: str = "全局会话过期或触发风控, 需进行登录或者安全验证", data: dict | None = None):
+        """初始化全局会话过期异常.
 
         Args:
             message: 错误信息.
@@ -279,7 +275,7 @@ class RateLimitError(ApiError):
 _CODE_TO_EXCEPTION: dict[int, type[ApiError]] = {
     1000: LoginExpiredError,
     2000: SignInvalidError,
-    2001: RateLimitError,
+    2001: GlobalAuthFailedError,
 }
 
 _CODE_TO_MESSAGE: dict[int, str] = {
@@ -309,7 +305,6 @@ def build_api_error(
 ) -> ApiError:
     """根据错误码构建对应的异常对象实例.
 
-    根据 `code` 自动映射到 `LoginExpiredError`, `SignInvalidError`, `RateLimitError` 等具体异常类。
     如果未找到特定映射,则返回通用的 `ApiError`。
 
     Args:
@@ -338,10 +333,10 @@ def build_api_error(
         if message is not None:
             return SignInvalidError(message=message, data=data_dict)
         return SignInvalidError(data=data_dict)
-    if exc_cls is RateLimitError:
+    if exc_cls is GlobalAuthFailedError:
         if message is not None:
-            return RateLimitError(message=message, data=data_dict)
-        return RateLimitError(data=data_dict)
+            return GlobalAuthFailedError(message=message, data=data_dict)
+        return GlobalAuthFailedError(data=data_dict)
 
     if message is None:
         if subcode is not None and subcode in _SUBCODE_TO_MESSAGE:
