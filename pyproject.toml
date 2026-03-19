@@ -50,11 +50,11 @@ repository = "https://github.com/l-1124/QQMusicApi"
 
 [dependency-groups]
 dev = [
+  "tarsio[cli]>=0.5.1",
+  "terminal-qrcode>=1.1.0",
   { include-group = "docs" },
   { include-group = "linting" },
   { include-group = "testing" },
-  "tarsio[cli]>=0.5.1",
-  "terminal-qrcode>=1.1.0",
 ]
 docs = [
   "markdown-callouts>=0.4.0",
@@ -64,9 +64,9 @@ docs = [
   "zensical>=0.0.27",
 ]
 linting = [
-    "prek>=0.3.5",
-    "pyrefly>=0.56.0",
-    "ruff>=0.15.6",
+  "prek>=0.3.5",
+  "pyrefly>=0.56.0",
+  "ruff>=0.15.6",
 ]
 testing = ["pytest>=9.0.2", "pytest-sugar>=1.1.1"]
 
@@ -84,7 +84,7 @@ packages = ["qqmusic_api"]
 path = "qqmusic_api/__init__.py"
 
 [tool.pyrefly]
-project-includes = ["qqmusic_api", "tests", "examples"]
+python-version = "3.10"
 
 [tool.pytest]
 addopts = ["-rxXs"]

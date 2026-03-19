@@ -8,9 +8,11 @@ from ..core.exceptions import NotLoginError
 from ..core.versioning import Platform
 
 if TYPE_CHECKING:
+    from tarsio import TarsDict
+
     from ..core.client import Client
     from ..core.request import Request
-    from ..models.request import Credential, ResponseData, ResponseModel
+    from ..models.request import Credential, ResponseModel
 
 
 class ApiModule:
@@ -120,7 +122,21 @@ class ApiModule:
         is_jce: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-    ) -> "Request[ResponseData]": ...
+    ) -> "Request[dict[str, Any]]": ...
+
+    @overload
+    def _build_request(
+        self,
+        module: str,
+        method: str,
+        param: dict[str, Any] | dict[int, Any],
+        response_model: None = None,
+        comm: dict[str, Any] | None = None,
+        *,
+        is_jce: bool = True,
+        credential: "Credential | None" = None,
+        platform: Platform | None = None,
+    ) -> "Request[TarsDict]": ...
 
     @overload
     def _build_request(
