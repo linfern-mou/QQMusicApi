@@ -40,27 +40,6 @@
 * 🚀 调用简便，函数命名易懂，代码注释详细
 * ⚡ 完全异步操作
 
-## 📦 依赖
-
-* Cryptography
-* Httpx
-* Httpx-ws
-* Orjson
-
-## 🚀 快速上手
-
-### 📥 安装
-
-```bash
-# pip
-$ pip install qqmusic-api-python
-```
-
-```bash
-# uv
-$ uv add qqmusic-api-python
-```
-
 ## 📄 许可证
 
 本项目基于 **[MIT License](https://github.com/l-1124/QQMusicApi?tab=MIT-1-ov-file)** 许可证发行。
