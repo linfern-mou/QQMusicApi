@@ -859,6 +859,8 @@ class LoginApi(ApiModule):
         Returns:
             tuple[PhoneLoginEvents, str | None]: 包含发送状态的元组.
         """
+        if self._client.platform != Platform.ANDROID:
+            raise self._raise_login_error("PhoneLogin", "仅手机客户端支持手机验证码登录")
         try:
             await self._client.execute(
                 self._build_request(
