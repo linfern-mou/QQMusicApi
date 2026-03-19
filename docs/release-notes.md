@@ -14,6 +14,7 @@
 ### 功能重构
 
 * **(api)** 统一请求架构并重构模块与批处理模型 ([7099103](https://github.com/L-1124/QQMusicApi/commit/7099103d92587de2c7d7c1a17be48587b1f9b53d)) by [@L-1124](https://github.com/L-1124) in [#226](https://github.com/L-1124/QQMusicApi/pull/226)
+* **(core)** 将 RateLimitError 重命名为 GlobalAuthFailedError ([b6b90c5](https://github.com/L-1124/QQMusicApi/commit/b6b90c561db42ba835f540616544bf9bfc7573e7)) by [@L-1124](https://github.com/L-1124)
 * **(core)** 收敛核心层数据校验与辅助逻辑 ([2b7cc32](https://github.com/L-1124/QQMusicApi/commit/2b7cc32c8c441322a77e8fb96b5237282b98955a)) by [@L-1124](https://github.com/L-1124)
 * **(core)** 收敛核心层异常与平台语义 ([57de232](https://github.com/L-1124/QQMusicApi/commit/57de232b14c03f47c5960db144dd02a2bc1b8271)) by [@L-1124](https://github.com/L-1124)
 * **(mqtt)** 使用 paho-mqtt 重构客户端实现 ([644ecee](https://github.com/L-1124/QQMusicApi/commit/644ecee3c15a05d2b1f6c0a01c49635936bcbc72)) by [@L-1124](https://github.com/L-1124)
