@@ -11,6 +11,10 @@
 
 * **(hooks)** 从 pre-commit 迁移到 prek ([2821122](https://github.com/L-1124/QQMusicApi/commit/2821122e668264e9e7f3d879e8cae536ac08d580)) by [@L-1124](https://github.com/L-1124)
 
+### 功能更新
+
+* **(Song)** 支持 dts:x 音质获取 ([5d8011a](https://github.com/L-1124/QQMusicApi/commit/5d8011a3a354a2f16415a2f322da23b717e26434)) by [@L-1124](https://github.com/L-1124)
+
 ### 功能重构
 
 * **(api)** 统一请求架构并重构模块与批处理模型 ([7099103](https://github.com/L-1124/QQMusicApi/commit/7099103d92587de2c7d7c1a17be48587b1f9b53d)) by [@L-1124](https://github.com/L-1124) in [#226](https://github.com/L-1124/QQMusicApi/pull/226)
