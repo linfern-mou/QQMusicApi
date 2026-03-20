@@ -44,22 +44,23 @@ class BaseSongFileType(Enum):
 class SongFileType(BaseSongFileType):
     """普通歌曲文件类型.
 
-    + MASTER: 臻品母带2.0,24Bit 192kHz,size_new[0]
-    + ATMOS_2: 臻品全景声2.0,16Bit 44.1kHz,size_new[1]
-    + ATMOS_51: 臻品音质2.0,16Bit 44.1kHz,size_new[2]
-    + FLAC: flac 格式,16Bit 44.1kHz~24Bit 48kHz,size_flac
-    + OGG_640: ogg 格式,640kbps,size_new[5]
-    + OGG_320: ogg 格式,320kbps,size_new[3]
-    + OGG_192: ogg 格式,192kbps,size_192ogg
-    + OGG_96: ogg 格式,96kbps,size_96ogg
-    + MP3_320: mp3 格式,320kbps,size_320mp3
-    + MP3_128: mp3 格式,128kbps,size_128mp3
-    + ACC_192: m4a 格式,192kbps,size_192aac
-    + ACC_96: m4a 格式,96kbps,size_96aac
-    + ACC_48: m4a 格式,48kbps,size_48aac
+    + DTS_X: dts:x,size_new[9]
+    + MASTER: 臻品母带2.0,size_new[0]
+    + ATMOS_2: 臻品全景声2.0,size_new[1]
+    + ATMOS_51: 臻品音质2.0,size_new[2]
+    + FLAC: flac 格式,size_flac
+    + OGG_640: ogg 格式,size_new[5]
+    + OGG_320: ogg 格式,size_new[3]
+    + OGG_192: ogg 格式,size_192ogg
+    + OGG_96: ogg 格式,size_96ogg
+    + MP3_320: mp3 格式,size_320mp3
+    + MP3_128: mp3 格式,size_128mp3
+    + ACC_192: m4a 格式,size_192aac
+    + ACC_96: m4a 格式,size_96aac
+    + ACC_48: m4a 格式,size_48aac
     """
 
-    DST_X = ("DT03", ".mp4")
+    DTS_X = ("DT03", ".mp4")
     MASTER = ("AI00", ".flac")
     ATMOS_2 = ("Q000", ".flac")
     ATMOS_51 = ("Q001", ".flac")
@@ -78,17 +79,18 @@ class SongFileType(BaseSongFileType):
 class EncryptedSongFileType(BaseSongFileType):
     """加密歌曲文件类型.
 
-    + MASTER: 臻品母带2.0,24Bit 192kHz,size_new[0]
-    + ATMOS_2: 臻品全景声2.0,16Bit 44.1kHz,size_new[1]
-    + ATMOS_51: 臻品音质2.0,16Bit 44.1kHz,size_new[2]
-    + FLAC: mflac 格式,16Bit 44.1kHz~24Bit 48kHz,size_flac
-    + OGG_640: mgg 格式,640kbps,size_new[5]
-    + OGG_320: mgg 格式,320kbps,size_new[3]
-    + OGG_192: mgg 格式,192kbps,size_192ogg
-    + OGG_96: mgg 格式,96kbps,size_96ogg
+    + DTS_X: dts:x,size_new[9]
+    + MASTER: 臻品母带2.0,size_new[0]
+    + ATMOS_2: 臻品全景声2.0,size_new[1]
+    + ATMOS_51: 臻品音质2.0,size_new[2]
+    + FLAC: mflac 格式,size_flac
+    + OGG_640: mgg 格式,size_new[5]
+    + OGG_320: mgg 格式,size_new[3]
+    + OGG_192: mgg 格式,size_192ogg
+    + OGG_96: mgg 格式,size_96ogg
     """
 
-    DST_X = ("DT03", ".mmp4")
+    DTS_X = ("DTM3", ".mmp4")
     MASTER = ("AIM0", ".mflac")
     ATMOS_2 = ("Q0M0", ".mflac")
     ATMOS_51 = ("Q0M1", ".mflac")
