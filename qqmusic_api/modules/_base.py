@@ -11,8 +11,8 @@ if TYPE_CHECKING:
     from tarsio import TarsDict
 
     from ..core.client import Client
-    from ..core.request import Request
-    from ..models.request import Credential, ResponseModel
+    from ..core.request import Request, ResponseModel
+    from ..models.request import Credential
 
 
 class ApiModule:

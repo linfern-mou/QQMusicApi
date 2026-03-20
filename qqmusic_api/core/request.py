@@ -2,13 +2,14 @@
 
 from collections.abc import AsyncIterator, Generator
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Generic, Literal
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar
 
 import anyio
 from anyio.abc import ObjectSendStream
 from pydantic import BaseModel
+from tarsio import TarsDict
 
-from ..models.request import Credential, RequestItem, RequestResult, RequestValue, ResponseData
+from ..models.request import Credential, RequestItem
 from .exceptions import ApiDataError, ApiError, RequestGroupResultMissingError, build_api_error, extract_api_error_code
 from .versioning import Platform
 
@@ -18,10 +19,14 @@ if TYPE_CHECKING:
 
 FrozenCommKey = tuple[tuple[str, int | str | bool], ...] | None
 BaseGroupKey = tuple[bool, Platform | Literal[""], FrozenCommKey, int, str]
+ResponseData: TypeAlias = dict[str, Any] | TarsDict
+RequestResult: TypeAlias = BaseModel | ResponseData
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+RequestResultT = TypeVar("RequestResultT", bound=RequestResult)
 
 
 @dataclass
-class Request(Generic[RequestResult]):
+class Request(Generic[RequestResultT]):
     """请求描述符."""
 
     _client: "Client"
@@ -39,7 +44,7 @@ class Request(Generic[RequestResult]):
         """标记当前请求已被执行或纳入调度."""
         self._consumed = True
 
-    def __await__(self) -> Generator[Any, Any, RequestResult]:
+    def __await__(self) -> Generator[Any, Any, RequestResultT]:
         """使 Request 对象可被 await 执行."""
         self._mark_consumed()
         return self._client.execute(self).__await__()
@@ -53,7 +58,7 @@ class RequestGroupResult:
     module: str
     method: str
     success: bool
-    data: RequestValue | None = None
+    data: RequestResult | None = None
     error: Exception | None = None
 
 
@@ -127,17 +132,17 @@ class RequestGroup:
             credential_musickey,
         )
 
-    async def execute(self) -> list[RequestValue | Exception]:
+    async def execute(self) -> list[RequestResult | Exception]:
         """执行当前批量请求并返回混合结果列表.
 
         Returns:
-            list[RequestValue | Exception]: 与请求添加顺序一致的结果列表.
+            list[RequestResult | Exception]: 与请求添加顺序一致的结果列表.
             成功项为响应数据, 失败项为异常对象.
         """
         if not self._requests:
             return []
 
-        results: list[RequestValue | Exception | None] = [None] * len(self._requests)
+        results: list[RequestResult | Exception | None] = [None] * len(self._requests)
         async for result in self.execute_iter():
             if result.success:
                 results[result.index] = result.data
@@ -150,7 +155,7 @@ class RequestGroup:
                     )
                 results[result.index] = result.error
 
-        finalized: list[RequestValue | Exception] = []
+        finalized: list[RequestResult | Exception] = []
         for index, item in enumerate(results):
             if item is None:
                 request = self._requests[index]

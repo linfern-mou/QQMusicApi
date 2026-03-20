@@ -26,14 +26,11 @@ from ..models.request import (
     JceRequestItem,
     JceResponse,
     RequestItem,
-    RequestResult,
-    RequestValue,
-    ResponseData,
-    ResponseModel,
 )
 from ..utils.common import bool_to_int
 from ..utils.qimei import QimeiResult, get_qimei
 from .exceptions import ApiDataError, ApiError, HTTPError, NetworkError, build_api_error, extract_api_error_code
+from .request import Request, RequestGroup, RequestResult, RequestResultT, ResponseModel
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
 
 if TYPE_CHECKING:
@@ -50,7 +47,6 @@ if TYPE_CHECKING:
     from ..modules.top import TopApi
     from ..modules.user import UserApi
     from ..utils.device import Device
-    from .request import Request, RequestGroup
 
 
 logger = logging.getLogger("qqmusicapi.client")
@@ -363,12 +359,12 @@ class Client:
         return RequestGroup(self, batch_size=batch_size, max_inflight_batches=max_inflight_batches)
 
     @overload
-    async def execute(self, request: "Request[RequestResult]") -> "RequestResult": ...
+    async def execute(self, request: "Request[RequestResultT]") -> "RequestResultT": ...
 
     @overload
-    async def execute(self, request: "Request") -> ResponseData: ...
+    async def execute(self, request: "Request") -> dict[str, Any] | dict[int, Any]: ...
 
-    async def execute(self, request: "Request") -> RequestValue:
+    async def execute(self, request: "Request") -> Any:
         """执行单个请求描述符并解析返回结果.
 
         调用中间件进行请求预处理, 随后根据请求格式 (JCE/JSON) 分发调用底层发包方法,
@@ -467,15 +463,22 @@ class Client:
     @overload
     @staticmethod
     def _build_result(
-        raw: TarsDict | dict[str, Any],
+        raw: dict[str, Any],
         response_model: None,
-    ) -> TarsDict | dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
+
+    @overload
+    @staticmethod
+    def _build_result(
+        raw: TarsDict,
+        response_model: None,
+    ) -> TarsDict: ...
 
     @staticmethod
     def _build_result(
         raw: TarsDict | dict[str, Any],
         response_model: type[BaseModel] | None,
-    ) -> RequestValue:
+    ) -> RequestResult:
         """构建响应对象.
 
         Args:

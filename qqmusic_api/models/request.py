@@ -1,6 +1,6 @@
 """基础数据模型模块."""
 
-from typing import Any, TypeAlias, TypedDict, TypeVar
+from typing import Any, TypedDict
 
 from pydantic import BaseModel, Field
 from tarsio import Struct, TarsDict, field
@@ -106,12 +106,6 @@ class JceRequest(Struct):
 
     comm: dict[str, Any] = field(tag=0)
     data: dict[str, JceRequestItem] = field(tag=1)
-
-
-ResponseData: TypeAlias = dict[str, Any] | TarsDict
-RequestValue: TypeAlias = BaseModel | ResponseData
-ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
-RequestResult = TypeVar("RequestResult", bound=RequestValue)
 
 
 class JceResponseItem(Struct):
