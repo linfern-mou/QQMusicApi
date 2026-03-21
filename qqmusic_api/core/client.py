@@ -3,8 +3,9 @@
 import logging
 import sys
 import uuid
+from collections.abc import Callable
 from http.cookiejar import CookieJar
-from typing import TYPE_CHECKING, Any, TypedDict, overload
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import override
 
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger("qqmusicapi.client")
+ModuleT = TypeVar("ModuleT")
 
 
 class ClientConfig(TypedDict, total=False):
@@ -84,6 +86,7 @@ class Client:
     """QQMusic API Client.
 
     管理底层 HTTP 请求、全局设备信息、QIMEI 以及鉴权凭证, 并提供对各个业务 API 模块的访问入口.
+    模块属性会在同一个 Client 实例内懒加载并复用, 以共享对应的模块状态.
     支持自动携带签名字段、防并发积压限制及批量请求的打包调度.
     """
 
@@ -147,90 +150,99 @@ class Client:
         self._qimei_lock = anyio.Lock()
         self._qimei_loaded = False
         self._qimei_cache: QimeiResult | None = None
+        self._module_cache: dict[str, Any] = {}
+
+    def _get_module(self, name: str, factory: Callable[[], ModuleT]) -> ModuleT:
+        """获取并缓存模块实例."""
+        module = self._module_cache.get(name)
+        if module is None:
+            module = factory()
+            self._module_cache[name] = module
+        return cast("ModuleT", module)
 
     @property
     def comment(self) -> "CommentApi":
         """评论模块."""
         from ..modules.comment import CommentApi
 
-        return CommentApi(self)
+        return self._get_module("comment", lambda: CommentApi(self))
 
     @property
     def recommend(self) -> "RecommendApi":
         """推荐模块."""
         from ..modules.recommend import RecommendApi
 
-        return RecommendApi(self)
+        return self._get_module("recommend", lambda: RecommendApi(self))
 
     @property
     def top(self) -> "TopApi":
         """排行榜模块."""
         from ..modules.top import TopApi
 
-        return TopApi(self)
+        return self._get_module("top", lambda: TopApi(self))
 
     @property
     def album(self) -> "AlbumApi":
         """专辑模块."""
         from ..modules.album import AlbumApi
 
-        return AlbumApi(self)
+        return self._get_module("album", lambda: AlbumApi(self))
 
     @property
     def mv(self) -> "MvApi":
         """MV 模块."""
         from ..modules.mv import MvApi
 
-        return MvApi(self)
+        return self._get_module("mv", lambda: MvApi(self))
 
     @property
     def login(self) -> "LoginApi":
         """登录模块."""
         from ..modules.login import LoginApi
 
-        return LoginApi(self)
+        return self._get_module("login", lambda: LoginApi(self))
 
     @property
     def search(self) -> "SearchApi":
         """搜索模块."""
         from ..modules.search import SearchApi
 
-        return SearchApi(self)
+        return self._get_module("search", lambda: SearchApi(self))
 
     @property
     def lyric(self) -> "LyricApi":
         """歌词模块."""
         from ..modules.lyric import LyricApi
 
-        return LyricApi(self)
+        return self._get_module("lyric", lambda: LyricApi(self))
 
     @property
     def singer(self) -> "SingerApi":
         """歌手模块."""
         from ..modules.singer import SingerApi
 
-        return SingerApi(self)
+        return self._get_module("singer", lambda: SingerApi(self))
 
     @property
     def song(self) -> "SongApi":
         """歌曲模块."""
         from ..modules.song import SongApi
 
-        return SongApi(self)
+        return self._get_module("song", lambda: SongApi(self))
 
     @property
     def songlist(self) -> "SonglistApi":
         """歌单模块."""
         from ..modules.songlist import SonglistApi
 
-        return SonglistApi(self)
+        return self._get_module("songlist", lambda: SonglistApi(self))
 
     @property
     def user(self) -> "UserApi":
         """用户模块."""
         from ..modules.user import UserApi
 
-        return UserApi(self)
+        return self._get_module("user", lambda: UserApi(self))
 
     async def fetch(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         """发送底层 HTTP 请求.

@@ -50,6 +50,7 @@ client = Client(credential=credential)
 
 `Client` 会维护自己的设备信息、QIMEI 缓存和平台上下文。  
 即使某次请求临时覆盖了 `credential`，这些上下文仍然属于当前 `Client` 实例本身。
+同一个 `Client` 上的模块属性也会复用同一份模块实例。
 
 `device_path` 的行为固定如下：
 
