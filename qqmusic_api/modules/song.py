@@ -44,26 +44,32 @@ class BaseSongFileType(Enum):
 class SongFileType(BaseSongFileType):
     """普通歌曲文件类型.
 
-    + DTS_X: dts:x,size_new[9]
-    + MASTER: 臻品母带2.0,size_new[0]
-    + ATMOS_2: 臻品全景声2.0,size_new[1]
-    + ATMOS_51: 臻品音质2.0,size_new[2]
-    + FLAC: flac 格式,size_flac
-    + OGG_640: ogg 格式,size_new[5]
-    + OGG_320: ogg 格式,size_new[3]
-    + OGG_192: ogg 格式,size_192ogg
-    + OGG_96: ogg 格式,size_96ogg
-    + MP3_320: mp3 格式,size_320mp3
-    + MP3_128: mp3 格式,size_128mp3
-    + ACC_192: m4a 格式,size_192aac
-    + ACC_96: m4a 格式,size_96aac
-    + ACC_48: m4a 格式,size_48aac
+    + DTS_X: DTS:X,size_new[9]
+    + MASTER: 臻品母带,size_new[0]
+    + ATMOS_2: 臻品音质,size_new[1]
+    + ATMOS_51: 臻品全景声 5.1,size_new[2]
+    + ATMOS_71: 臻品全景声 7.1,size_new[6]
+    + ATMOS_DB: 杜比全景声,size_dolby
+    + NAC: 腾讯自研 AICodec
+    + FLAC: SQ 无损音质,size_flac
+    + OGG_640: SQ 无损,size_new[5]
+    + OGG_320: HQ 高品质(OGG),size_new[3]
+    + OGG_192: HQ 高品质(OGG),size_192ogg
+    + OGG_96: 流畅音质(OGG),size_96ogg
+    + MP3_320: HQ 高品质,size_320mp3
+    + MP3_128: 标准音质,size_128mp3
+    + ACC_192: HQ 高品质(AAC),size_192aac
+    + ACC_96: 流畅音质,size_96aac
+    + ACC_48: 低品质,size_48aac
     """
 
     DTS_X = ("DT03", ".mp4")
     MASTER = ("AI00", ".flac")
     ATMOS_2 = ("Q000", ".flac")
     ATMOS_51 = ("Q001", ".flac")
+    ATMOS_71 = ("Q003", ".ogg")
+    ATMOS_DB = ("D004", ".mp4")
+    NAC = ("TL01", ".nac")
     FLAC = ("F000", ".flac")
     OGG_640 = ("O801", ".ogg")
     OGG_320 = ("O800", ".ogg")
@@ -79,24 +85,32 @@ class SongFileType(BaseSongFileType):
 class EncryptedSongFileType(BaseSongFileType):
     """加密歌曲文件类型.
 
-    + DTS_X: dts:x,size_new[9]
-    + MASTER: 臻品母带2.0,size_new[0]
-    + ATMOS_2: 臻品全景声2.0,size_new[1]
-    + ATMOS_51: 臻品音质2.0,size_new[2]
-    + FLAC: mflac 格式,size_flac
-    + OGG_640: mgg 格式,size_new[5]
-    + OGG_320: mgg 格式,size_new[3]
-    + OGG_192: mgg 格式,size_192ogg
-    + OGG_96: mgg 格式,size_96ogg
+    + DTS_X: DTS:X,size_new[9]
+    + VINYL: 黑胶,size_new[4]
+    + MASTER: 臻品母带,size_new[0]
+    + ATMOS_2: 臻品音质,size_new[1]
+    + ATMOS_51: 臻品全景声 5.1,size_new[2]
+    + ATMOS_71: 臻品全景声 7.1,size_new[6]
+    + ATMOS_DB: 杜比全景声,size_dolby
+    + NAC: 腾讯自研 AICodec
+    + FLAC: SQ 无损音质,size_flac
+    + OGG_640: SQ 无损,size_new[5]
+    + OGG_320: HQ 高品质(OGG),size_new[3]
+    + OGG_192: HQ 高品质(OGG),size_192ogg
+    + OGG_96: 流畅音质(OGG),size_96ogg
     """
 
     DTS_X = ("DTM3", ".mmp4")
+    VINYL = ("V0M0", ".mflac")
     MASTER = ("AIM0", ".mflac")
     ATMOS_2 = ("Q0M0", ".mflac")
     ATMOS_51 = ("Q0M1", ".mflac")
+    ATMOS_71 = ("Q0M3", ".mgg")
+    ATMOS_DB = ("D0M4", ".mmp4")
+    NAC = ("TLM1", ".mnac")
     FLAC = ("F0M0", ".mflac")
-    OGG_640 = ("O801", ".mgg")
-    OGG_320 = ("O800", ".mgg")
+    OGG_640 = ("O8M1", ".mgg")
+    OGG_320 = ("O8M0", ".mgg")
     OGG_192 = ("O6M0", ".mgg")
     OGG_96 = ("O4M0", ".mgg")
 
