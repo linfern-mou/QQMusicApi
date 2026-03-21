@@ -1,0 +1,14 @@
+name: Checking
+
+on:
+  pull_request:
+
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run prek pre-commit hooks
+        uses: j178/prek-action@v2
+        with:
+          extra-args: --all-files --hook-stage pre-push
