@@ -1,20 +1,10 @@
 """歌曲相关 API 模块."""
 
 from enum import Enum
-from random import choice
-from time import time
-from typing import Any, overload
+from typing import Any
 
 from ..utils import get_guid
 from ._base import ApiModule
-
-
-def _as_str_dict(value: Any) -> dict[str, Any] | None:
-    if not isinstance(value, dict):
-        return None
-    if any(not isinstance(key, str) for key in value):
-        return None
-    return value
 
 
 class BaseSongFileType(Enum):
@@ -118,6 +108,7 @@ class EncryptedSongFileType(BaseSongFileType):
 class SongApi(ApiModule):
     """歌曲相关 API 模块类."""
 
+    _GET_SONG_URLS_MAX_MID = 100
     _SONG_URL_FALLBACK_DOMAIN = "https://isure.stream.qqmusic.qq.com/"
 
     def __init__(self, client) -> None:
@@ -174,13 +165,12 @@ class SongApi(ApiModule):
             },
         )
 
-    async def _get_cdn_dispatch(
+    def get_cdn_dispatch(
         self,
         *,
-        force_refresh: bool = False,
         use_new_domain: bool = True,
         use_ipv6: bool = True,
-    ) -> None:
+    ):
         """获取并缓存音频 CDN 调度信息.
 
         Args:
@@ -188,76 +178,22 @@ class SongApi(ApiModule):
             use_new_domain: 是否启用新域名.
             use_ipv6: 是否启用 IPv6.
         """
-        now = time()
-        cached_data = self._song_url_dispatch_data
-        refresh_at = self._song_url_dispatch_refresh_at
-
-        if not force_refresh and cached_data is not None and now < refresh_at:
-            return
-
-        data = await self._client.execute(
-            self._build_request(
-                module="music.audioCdnDispatch.cdnDispatch",
-                method="GetCdnDispatch",
-                param={
-                    "guid": get_guid(),
-                    "uid": "0",
-                    "use_new_domain": int(use_new_domain),
-                    "use_ipv6": int(use_ipv6),
-                },
-            ),
+        return self._build_request(
+            module="music.audioCdnDispatch.cdnDispatch",
+            method="GetCdnDispatch",
+            param={
+                "guid": get_guid(),
+                "uid": "0",
+                "use_new_domain": int(use_new_domain),
+                "use_ipv6": int(use_ipv6),
+            },
         )
 
-        payload = _as_str_dict(data)
-        if payload is None:
-            raise TypeError("GetCdnDispatch 返回了非字符串键字典")
-
-        self._song_url_dispatch_data = payload
-        sip = payload.get("sip", [])
-        if isinstance(sip, list):
-            self._SONG_URL_DOMAINS = tuple(item for item in sip if isinstance(item, str))
-        else:
-            self._SONG_URL_DOMAINS = ()
-        self._song_url_domain_infos = {
-            item["cdn"]: item
-            for item in payload.get("sipinfo", [])
-            if isinstance(item, dict) and isinstance(item.get("cdn"), str)
-        }
-        now = time()
-        refresh_time = payload.get("refreshTime", 0)
-        expiration = payload.get("expiration", 0)
-        cache_time = payload.get("cacheTime", 0)
-        self._song_url_dispatch_refresh_at = now + (refresh_time if isinstance(refresh_time, int | float) else 0)
-        if isinstance(expiration, int | float) and isinstance(cache_time, int | float):
-            self._song_url_dispatch_expire_at = now + min(expiration, cache_time)
-        else:
-            self._song_url_dispatch_expire_at = now
-
-    def _choose_song_url_domain(self) -> str:
-        """选择当前使用的歌曲下载域名."""
-        if not self._SONG_URL_DOMAINS:
-            return self._SONG_URL_FALLBACK_DOMAIN
-        return choice(list(self._SONG_URL_DOMAINS))
-
-    @overload
-    async def get_song_urls(
-        self,
-        mid: list[str],
-        file_type: SongFileType = SongFileType.MP3_128,
-    ) -> dict[str, str]: ...
-
-    @overload
-    async def get_song_urls(
-        self,
-        mid: list[str],
-        file_type: EncryptedSongFileType,
-    ) -> dict[str, tuple[str, str]]: ...
-
-    async def get_song_urls(
+    def get_song_urls(
         self,
         mid: list[str],
         file_type: SongFileType | EncryptedSongFileType = SongFileType.MP3_128,
-    ) -> dict[str, str] | dict[str, tuple[str, str]]:
+    ):
         """获取歌曲文件链接.
 
         Args:
@@ -265,108 +201,29 @@ class SongApi(ApiModule):
             file_type: 歌曲文件类型.
 
         Returns:
-            dict[str, str] | dict[str, tuple[str, str]]: 普通类型返回下载链接映射,
-            加密类型返回 `(链接, ekey)` 映射.
-        """
-        if not mid:
-            return {}
+            dict[str, dict[str, Any]]: 以 `songmid` 为键的原始 `midurlinfo` 数据映射.
 
-        await self._get_cdn_dispatch()
+        Raises:
+            ValueError: 当 `mid` 数量超过上限时抛出.
+        """
+        if len(mid) > self._GET_SONG_URLS_MAX_MID:
+            raise ValueError(f"mid 数量不能超过 {self._GET_SONG_URLS_MAX_MID}, 当前为 {len(mid)}")
 
         encrypted = isinstance(file_type, EncryptedSongFileType)
         module, method = (
             ("music.vkey.GetVkey", "UrlGetVkey") if not encrypted else ("music.vkey.GetEVkey", "CgiGetEVkey")
         )
 
-        request_group = self._client.request_group()
-        for mid_chunk_start in range(0, len(mid), 100):
-            chunk = mid[mid_chunk_start : mid_chunk_start + 100]
-            request_group.add(
-                self._build_request(
-                    module=module,
-                    method=method,
-                    param={
-                        "filename": [f"{file_type.s}{item}{item}{file_type.e}" for item in chunk],
-                        "guid": get_guid(),
-                        "songmid": chunk,
-                        "songtype": [0] * len(chunk),
-                    },
-                ),
-            )
-
-        raw_results = await request_group.execute()
-        if encrypted:
-            encrypted_result: dict[str, tuple[str, str]] = {}
-            for raw in raw_results:
-                if isinstance(raw, Exception):
-                    raise raw
-                payload = _as_str_dict(raw)
-                if payload is None:
-                    continue
-                self._merge_encrypted_song_urls(encrypted_result, payload)
-            return encrypted_result
-
-        plain_result: dict[str, str] = {}
-        for raw in raw_results:
-            if isinstance(raw, Exception):
-                raise raw
-            payload = _as_str_dict(raw)
-            if payload is None:
-                continue
-            self._merge_song_urls(plain_result, payload)
-        return plain_result
-
-    def _merge_song_urls(
-        self,
-        result: dict[str, str],
-        raw: dict[str, Any],
-    ) -> None:
-        """合并单批歌曲链接结果.
-
-        Args:
-            result: 待更新的聚合结果.
-            raw: 单批原始响应数据.
-        """
-        midurlinfo = raw.get("midurlinfo", [])
-        if not isinstance(midurlinfo, list):
-            return
-
-        for info in midurlinfo:
-            if not isinstance(info, dict):
-                continue
-            songmid = info.get("songmid")
-            if not isinstance(songmid, str):
-                continue
-
-            path = info.get("purl") or info.get("wifiurl") or ""
-            url = f"{self._choose_song_url_domain()}{path}" if path else ""
-            result[songmid] = url
-
-    def _merge_encrypted_song_urls(
-        self,
-        result: dict[str, tuple[str, str]],
-        raw: dict[str, Any],
-    ) -> None:
-        """合并单批加密歌曲链接结果.
-
-        Args:
-            result: 待更新的聚合结果.
-            raw: 单批原始响应数据.
-        """
-        midurlinfo = raw.get("midurlinfo", [])
-        if not isinstance(midurlinfo, list):
-            return
-
-        for info in midurlinfo:
-            if not isinstance(info, dict):
-                continue
-            songmid = info.get("songmid")
-            if not isinstance(songmid, str):
-                continue
-
-            path = info.get("purl") or info.get("wifiurl") or ""
-            url = f"{self._choose_song_url_domain()}{path}" if path else ""
-            result[songmid] = (url, str(info.get("ekey", "")))
+        return self._build_request(
+            module=module,
+            method=method,
+            param={
+                "filename": [f"{file_type.s}{item}{item}{file_type.e}" for item in mid],
+                "guid": get_guid(),
+                "songmid": mid,
+                "songtype": [0] * len(mid),
+            },
+        )
 
     def get_detail(self, value: str | int):
         """获取歌曲详细信息.

@@ -1,9 +1,7 @@
 """下载歌曲文件示例."""
 
 import asyncio
-
-import anyio
-import httpx
+import random
 
 from qqmusic_api import Client, Credential
 
@@ -15,41 +13,17 @@ credential = Credential(musicid=MUSICID, musickey=MUSICKEY)
 SONG_MIDS = ["003w2xz20QlUZt", "000Zu3Ah1jb4gl"]
 
 
-async def get_song_urls() -> dict[str, str]:
-    """获取待下载歌曲的链接映射."""
-    async with Client(credential=credential) as client:
-        # 会员歌曲需登录
-        return await client.song.get_song_urls(mid=SONG_MIDS)
-
-
-# 可在 https://um-react.netlify.app/ 解密
-# 如需获取加密文件, 可改为 `client.song.get_song_urls(mid=SONG_MIDS, file_type=...)`.
-
-
-urls = asyncio.run(get_song_urls())
-
-
-async def download_file(client, mid, url):
-    """下载单个歌曲文件."""
-    try:
-        async with client.stream("GET", url) as response:
-            response.raise_for_status()
-            # 文件名 {mid}.mp3
-            file_path = f"{mid}.mp3"
-            async with await anyio.open_file(file_path, "wb") as f:
-                async for chunk in response.aiter_bytes(1024 * 5):
-                    if chunk:
-                        await f.write(chunk)
-        print(f"Downloaded {file_path}")
-    except httpx.RequestError as e:
-        print(f"An error occurred: {e}")
-
-
 async def main():
     """并发下载所有可用歌曲文件."""
-    async with httpx.AsyncClient() as client:
-        tasks = [download_file(client, mid, url) for mid, url in urls.items() if url]
-        await asyncio.gather(*tasks)
+    async with Client(credential) as client:
+        cdn: str = random.choice((await client.song.get_cdn_dispatch())["sip"])
+        data = await client.song.get_song_urls(SONG_MIDS)
+        for info in data["midurlinfo"]:
+            if not info["purl"]:
+                print(f"{info['songmid']} 无法下载")
+                continue
+            url = cdn + info["purl"]
+            print(f"{info['songmid']} 可下载链接: {url}")
 
 
 asyncio.run(main())
