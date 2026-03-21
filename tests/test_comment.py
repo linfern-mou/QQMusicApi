@@ -5,49 +5,28 @@ import pytest
 from qqmusic_api import Client
 
 
-@pytest.fixture
-def client() -> Client:
-    """创建 Client 实例."""
-    return Client()
-
-
 async def test_get_comment_count(client: Client) -> None:
     """测试获取歌曲评论数量."""
     result = await client.comment.get_comment_count("100")
     assert result is not None
 
 
-async def test_get_hot_comments(client: Client) -> None:
-    """测试获取业务热评."""
-    result = await client.comment.get_hot_comments("100")
-    assert result is not None
-
-
-async def test_get_hot_comments_with_pagination(client: Client) -> None:
-    """测试分页获取业务热评."""
-    result = await client.comment.get_hot_comments("100", page_num=1, page_size=10)
-    assert result is not None
-
-
-async def test_get_new_comments(client: Client) -> None:
-    """测试获取业务最新评论."""
-    result = await client.comment.get_new_comments("100")
-    assert result is not None
-
-
-async def test_get_new_comments_with_pagination(client: Client) -> None:
-    """测试分页获取业务最新评论."""
-    result = await client.comment.get_new_comments("100", page_num=1, page_size=10)
-    assert result is not None
-
-
-async def test_get_recommend_comments(client: Client) -> None:
-    """测试获取业务推荐评论."""
-    result = await client.comment.get_recommend_comments("100")
-    assert result is not None
-
-
-async def test_get_recommend_comments_with_pagination(client: Client) -> None:
-    """测试分页获取业务推荐评论."""
-    result = await client.comment.get_recommend_comments("100", page_num=1, page_size=10)
+@pytest.mark.parametrize(
+    ("method_name", "page_num", "page_size"),
+    [
+        ("get_hot_comments", 0, 15),
+        ("get_hot_comments", 1, 10),
+        ("get_new_comments", 0, 15),
+        ("get_new_comments", 1, 10),
+        ("get_recommend_comments", 0, 15),
+        ("get_recommend_comments", 1, 10),
+    ],
+)
+async def test_get_comments(client: Client, method_name: str, page_num: int, page_size: int) -> None:
+    """测试获取评论列表接口."""
+    method = getattr(client.comment, method_name)
+    if page_num == 0 and page_size == 15:
+        result = await method("100")
+    else:
+        result = await method("100", page_num=page_num, page_size=page_size)
     assert result is not None

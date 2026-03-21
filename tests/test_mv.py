@@ -1,14 +1,6 @@
 """MV 模块测试."""
 
-import pytest
-
 from qqmusic_api import Client
-
-
-@pytest.fixture
-def client() -> Client:
-    """创建 Client 实例."""
-    return Client()
 
 
 async def test_get_detail(client: Client) -> None:

@@ -1,15 +1,7 @@
 """歌手模块测试."""
 
-import pytest
-
 from qqmusic_api import Client
 from qqmusic_api.modules.singer import AreaType, GenreType, IndexType, SexType, TabType
-
-
-@pytest.fixture
-def client() -> Client:
-    """创建 Client 实例."""
-    return Client()
 
 
 async def test_get_singer_list(client: Client) -> None:

@@ -1,9 +1,10 @@
 """pytest 配置与共享 fixtures."""
 
-from collections.abc import Generator
+from collections.abc import AsyncIterator, Generator
 from typing import Any
 
 import pytest
+import pytest_asyncio
 
 from qqmusic_api import Client
 from qqmusic_api.core.exceptions import GlobalAuthFailedError
@@ -30,13 +31,21 @@ def pytest_runtest_call(item: pytest.Item) -> Generator[Any, Any, None]:
         pytest.skip("触发 API 限流, 跳过测试")
 
 
-@pytest.fixture(scope="session")
-def client() -> Client:
-    """创建共享的 Client 实例."""
-    return Client()
+@pytest_asyncio.fixture
+async def client() -> AsyncIterator[Client]:
+    """创建按测试隔离的 Client 实例."""
+    test_client = Client()
+    try:
+        yield test_client
+    finally:
+        await test_client.close()
 
 
-@pytest.fixture(scope="session")
-def authenticated_client() -> Client:
-    """创建已认证的 Client 实例 (需要环境变量或配置)."""
-    return Client()
+@pytest_asyncio.fixture
+async def authenticated_client() -> AsyncIterator[Client]:
+    """创建按测试隔离的已认证 Client 实例."""
+    test_client = Client()
+    try:
+        yield test_client
+    finally:
+        await test_client.close()

@@ -5,12 +5,6 @@ import pytest
 from qqmusic_api import Client, NotLoginError
 
 
-@pytest.fixture
-def client() -> Client:
-    """创建 Client 实例."""
-    return Client()
-
-
 async def test_get_detail(client: Client) -> None:
     """测试获取歌单详细信息."""
     result = await client.songlist.get_detail(songlist_id=7843129912)
