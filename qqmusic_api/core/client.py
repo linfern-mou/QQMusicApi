@@ -103,7 +103,8 @@ class Client:
 
         Args:
             credential: 用户鉴权凭证, 若不提供则创建空凭证.
-            device_path: 设备信息持久化路径, 默认保存至内存.
+            device_path: 单个设备信息文件路径. 若为 None, 则为当前 Client 在内存生成新设备;
+                若路径存在, 则从文件加载并复用; 若路径不存在, 则生成新设备并立即保存.
             enable_sign: 是否开启全局请求参数签名.
             platform: 默认请求使用的平台标识, 默认为 "android".
             max_concurrency: 单个 Client 实例最大并发请求数.
@@ -265,7 +266,7 @@ class Client:
         Returns:
             Device: 当前活动的设备对象.
         """
-        return await self.device_store.get_device(getattr(self.credential, "musicid", None))
+        return await self.device_store.get_device()
 
     async def _get_qimei_cached(self) -> QimeiResult | None:
         """获取并缓存 QIMEI 信息.
@@ -303,7 +304,6 @@ class Client:
                     await self.device_store.apply_qimei(
                         self._qimei_cache.get("q16") or "",
                         self._qimei_cache.get("q36") or "",
-                        self.credential.musicid,
                     )
 
             except Exception as exc:

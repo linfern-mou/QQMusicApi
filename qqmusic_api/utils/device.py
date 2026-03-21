@@ -2,7 +2,6 @@
 
 import binascii
 import hashlib
-import logging
 import random
 import string
 from dataclasses import asdict, dataclass, field
@@ -12,8 +11,6 @@ from uuid import uuid4
 
 import anyio
 import orjson as json
-
-logger = logging.getLogger("qqmusicapi.device")
 
 
 def random_imei() -> str:
@@ -150,84 +147,42 @@ async def get_cached_device(path: Path | anyio.Path | str | None = None) -> Devi
 
 
 class DeviceManager:
-    """管理多租户设备指纹与状态漂移."""
+    """管理单个 Client 的设备状态."""
 
     def __init__(self, device_path: Path | anyio.Path | str | None = None) -> None:
         """初始化设备管理器.
 
         Args:
-            device_path: 设备信息文件路径.
+            device_path: 单个设备信息文件路径. 若为 None, 则仅在内存中维护设备状态.
         """
-        self._guid = uuid4().hex
         self._device_path = anyio.Path(device_path) if device_path else None
         self.device: Device | None = None
 
-    def _resolve_path(self, uid: int | str | None) -> anyio.Path:
-        """根据 UID 解析设备缓存路径.
-
-        Args:
-            uid: 用户唯一标识.
-
-        Returns:
-            anyio.Path: 解析后的设备文件路径.
-        """
-        if self._device_path is None:
-            raise RuntimeError("未配置 device_path 时不支持解析持久化路径")
-        return self._device_path
-
-    async def get_device(self, uid: int | str | None) -> Device:
+    async def get_device(self) -> Device:
         """获取并加载设备对象.
 
-        Args:
-            uid: 用户唯一标识,用于区分不同租户.
-
         Returns:
-            Device: 目标设备对象.
+            Device: 当前 Client 绑定的设备对象.
         """
         if self.device is not None:
             return self.device
 
-        target_path = self._resolve_path(uid) if self._device_path is not None else None
-        self.device = await get_cached_device(target_path)
+        self.device = await get_cached_device(self._device_path)
         return self.device
 
-    async def save_device(self, uid: int | str | None) -> None:
-        """主动保存目前管控的设备指纹.
-
-        Args:
-            uid: 用户唯一标识.
-        """
+    async def save_device(self) -> None:
+        """主动保存当前缓存的设备指纹."""
         if self.device is not None and self._device_path is not None:
-            await save_device(self.device, self._resolve_path(uid))
+            await save_device(self.device, self._device_path)
 
-    async def apply_qimei(self, q16: str, q36: str, uid: int | str | None) -> None:
+    async def apply_qimei(self, q16: str, q36: str) -> None:
         """应用新申请的 QIMEI 并立即保存.
 
         Args:
             q16: QIMEI 16.
             q36: QIMEI 36.
-            uid: 用户唯一标识.
         """
-        device = await self.get_device(uid)
+        device = await self.get_device()
         device.qimei = q16
         device.qimei36 = q36
-        await self.save_device(uid)
-
-    async def sync_workspace(self, uid: int | str | None) -> None:
-        """转正漂移: 当获取到实质 uid 时调用, 转移临时指纹或加载专属指纹.
-
-        Args:
-            uid: 用户唯一标识.
-        """
-        if not uid or self._device_path is None:
-            return
-
-        target_path = self._resolve_path(uid)
-        if await target_path.exists():
-            self.device = await load_device(target_path)
-            logger.debug("已切换至实名用户设备: %s", target_path)
-            return
-
-        if self.device is not None:
-            await save_device(self.device, target_path)
-            logger.debug("已将内存设备归档至实名用户环境: %s", target_path)
+        await self.save_device()

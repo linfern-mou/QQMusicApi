@@ -26,7 +26,7 @@ asyncio.run(main())
 `Client` 当前常用参数包括：
 
 * `credential`: 全局凭证。
-* `device_path`: 设备信息持久化路径。
+* `device_path`: 单个设备信息文件路径。
 * `enable_sign`: 是否启用签名参数。
 * `platform`: 请求默认平台。
 * `max_concurrency`: 单个 `Client` 的最大并发请求数。
@@ -50,3 +50,9 @@ client = Client(credential=credential)
 
 `Client` 会维护自己的设备信息、QIMEI 缓存和平台上下文。  
 即使某次请求临时覆盖了 `credential`，这些上下文仍然属于当前 `Client` 实例本身。
+
+`device_path` 的行为固定如下：
+
+* 不传 `device_path`：每个 `Client` 启动时在内存中生成一份新设备，仅在当前实例内复用，不会落盘。
+* 传入已存在的 `device_path`：从该文件加载设备并复用。
+* 传入不存在的 `device_path`：生成一份新设备并立即保存到该路径，之后继续复用该文件。
