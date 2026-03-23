@@ -391,7 +391,6 @@ class Client:
         Raises:
             ApiError: 接口返回状态码异常或缺少预期字段.
         """
-        request._mark_consumed()
         data: RequestItem = {
             "module": request.module,
             "method": request.method,
@@ -458,6 +457,10 @@ class Client:
         raw = item.get("data", {})
         if not raw:
             raise ApiDataError("缺少响应数据: req_0.data", data=item)
+
+        # dump_path = anyio.Path(f"responses/{request.module}_{request.method}.json")
+        # await dump_path.parent.mkdir(parents=True, exist_ok=True)
+        # await dump_path.write_text(json.dumps(raw).decode("utf-8"))
         if response_model is None:
             return raw
         try:

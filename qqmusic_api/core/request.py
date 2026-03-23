@@ -38,15 +38,9 @@ class Request(Generic[RequestResultT]):
     is_jce: bool = False
     credential: Credential | None = None
     platform: Platform | None = None
-    _consumed: bool = field(default=False, init=False, repr=False, compare=False)
-
-    def _mark_consumed(self) -> None:
-        """标记当前请求已被执行或纳入调度."""
-        self._consumed = True
 
     def __await__(self) -> Generator[Any, Any, RequestResultT]:
         """使 Request 对象可被 await 执行."""
-        self._mark_consumed()
         return self._client.execute(self).__await__()
 
 
@@ -92,7 +86,6 @@ class RequestGroup:
         Returns:
             当前 RequestGroup, 用于链式调用.
         """
-        request._mark_consumed()
         index = len(self._requests)
         self._requests.append(request)
         group_key = self._group_key(request)
