@@ -641,13 +641,15 @@ class Client:
             if signature := sign_request(payload):
                 params["sign"] = signature
 
-        resp = await self.request(
+        resp = await self.fetch(
             "POST",
             url,
-            credential=credential,
-            platform=platform,
             json=payload,
             params=params,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": await self._get_user_agent(Platform.ANDROID),
+            },
         )
 
         if resp.status_code != 200:

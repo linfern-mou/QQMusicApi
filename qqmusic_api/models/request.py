@@ -2,8 +2,15 @@
 
 from typing import Any, TypedDict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import ConfigDict, Field
 from tarsio import Struct, TarsDict, field
+
+
+class BaseModel(PydanticBaseModel):
+    """基础数据模型."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
 
 class CommonParams(BaseModel, frozen=True):
@@ -17,9 +24,9 @@ class CommonParams(BaseModel, frozen=True):
     # 平台标识
     platform: str | None = Field(default=None)
     # App ID
-    tme_app_id: str = Field(default="qqmusic", alias="tmeAppID")
+    tme_app_id: str | None = Field(default=None, alias="tmeAppID")
     # 渠道 ID
-    chid: str = Field(default="0")
+    chid: str | None = Field(default=None)
     # 通用账号标识
     uin: int | None = Field(default=None)
     # [Web/Desktop] CSRF Token
@@ -43,12 +50,9 @@ class CommonParams(BaseModel, frozen=True):
     devicelevel: str | None = Field(default=None)
     newdevicelevel: str | None = Field(default=None)
     rom: str | None = Field(default=None)
-    nettype: str = Field(default="1030")
-    format: str = "json"
-    in_charset: str = Field(default="utf-8", alias="inCharset")
-    out_charset: str = Field(default="utf-8", alias="outCharset")
-    notice: int = 0
-    need_new_code: int = Field(default=1, alias="needNewCode")
+    format: str | None = Field(default=None)
+    in_charset: str | None = Field(default=None, alias="inCharset")
+    out_charset: str | None = Field(default=None, alias="outCharset")
 
 
 class Credential(BaseModel, frozen=True):

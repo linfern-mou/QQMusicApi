@@ -104,9 +104,10 @@ class VersionPolicy:
                 ct=profile.ct,
                 cv=profile.cv,
                 v=profile.v,
-                chid="2005000982",
+                chid="10003505",
                 qq=str(credential.musicid) if credential.musicid else None,
                 authst=credential.musickey or None,
+                tmeAppID="qqmusic",
                 tmeLoginType=credential.login_type,
                 QIMEI=qimei["q16"] if qimei is not None else "",
                 QIMEI36=qimei["q36"] if qimei is not None else "",
@@ -140,6 +141,11 @@ class VersionPolicy:
                 uin=credential.musicid,
                 g_tk=g_tk,
                 g_tk_new_20200303=g_tk,
+                format="json",
+                in_charset="utf-8",
+                out_charset="utf-8",
+                notice=0,
+                need_new_code=1,
             )
 
         comm = params.model_dump(by_alias=True, exclude_none=True)
