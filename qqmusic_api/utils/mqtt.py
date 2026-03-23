@@ -365,7 +365,7 @@ class Client:
         try:
             self._publish_send_stream.send_nowait(msg)
         except anyio.WouldBlock:
-            logger.exception("Publish queue is full, dropping incoming message to prevent OOM")
+            logger.debug("Publish queue is full, dropping incoming message to prevent OOM", exc_info=True)
         except anyio.ClosedResourceError:
             logger.debug("Publish stream is already closed")
 
@@ -388,15 +388,26 @@ class Client:
         self,
         _client: mqtt.Client,
         _userdata: Any,
-        _flags: Any,
+        flags: Any,
         reason_code: Any,
-        _properties: Any,
+        properties: Any,
     ) -> None:
         """处理非预期断开连接回调."""
         code = self._reason_code_value(reason_code)
-        if self._closing or code == 0:
+        from_server = bool(getattr(flags, "is_disconnect_packet_from_server", False))
+        if self._closing or (code == 0 and from_server):
             return
-        err = ConnectionError(f"MQTT disconnected. Reason Code: {hex(code)}")
+        reason = getattr(properties, "ReasonString", None)
+        message = f"MQTT disconnected unexpectedly. reason_code={hex(code)}, from_server={from_server}"
+        if isinstance(reason, str) and reason:
+            message = f"{message}, reason={reason}"
+        err = ConnectionError(message)
+        logger.debug(
+            "MQTT unexpected disconnect. reason_code=%s, from_server=%s, reason=%s",
+            hex(code),
+            from_server,
+            reason,
+        )
         self._reader_error = err
         self._writer_error = err
         self._fail_pending_subacks(err)
@@ -426,7 +437,7 @@ class Client:
         connect_props = self._build_paho_properties(PacketTypes.CONNECT, properties)
 
         while True:
-            logger.info("Connecting to wss://%s:%s%s...", self.host, self.port, current_path)
+            logger.debug("Connecting to wss://%s:%s%s...", self.host, self.port, current_path)
             connect_outcome = _ConnectOutcome()
             self._current_connect = connect_outcome
             candidate = self._create_paho_client()
@@ -475,7 +486,7 @@ class Client:
                 self._epoch += 1
                 self._new_message_stream()
                 self._current_connect = None
-                logger.info("Connected.")
+                logger.debug("Connected.")
                 return
 
             new_server = connack_properties.get(PropertyId.SERVER_REFERENCE)
@@ -486,7 +497,7 @@ class Client:
                     raise MqttRedirectError(new_server, reason_code=reason_code)
                 redirect_count += 1
                 current_path = self._build_redirect_path(current_path, new_server)
-                logger.info("Received redirect reason code: %s, follow to %s", hex(reason_code), new_server)
+                logger.debug("Received redirect reason code: %s, follow to %s", hex(reason_code), new_server)
                 continue
 
             await self._stop_paho_client(candidate, should_disconnect=True)
@@ -591,7 +602,7 @@ class Client:
     async def disconnect(self) -> None:
         """断开连接并释放所有资源."""
         await self.disconnect_ws_only(notify_messages=True)
-        logger.info("Disconnected.")
+        logger.debug("Disconnected.")
 
     async def messages(self) -> AsyncGenerator[MqttMessage, None]:
         """获取消息监听迭代器.
