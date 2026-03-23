@@ -267,7 +267,7 @@ class Client:
             logger.debug("HTTP 请求完成: %s %s -> %s", method, url, resp.status_code)
             return resp
         except httpx.RequestError as exc:
-            logger.warning("HTTP 请求失败: %s %s, error=%s", method, url, exc)
+            logger.debug("HTTP 请求失败: %s %s, error=%s", method, url, exc)
             raise NetworkError(f"Network error: {exc}", original_exc=exc) from exc
         finally:
             self._limiter.release()
@@ -319,7 +319,7 @@ class Client:
                     )
 
             except Exception as exc:
-                logger.warning("获取 QIMEI 失败: %s", exc)
+                logger.debug("获取 QIMEI 失败: %s", exc)
                 self._qimei_cache = None
             return self._qimei_cache
 
@@ -408,7 +408,7 @@ class Client:
                 raise ApiError("缺少响应字段: req_0", code=-1, data=response)
             if item.code != 0:
                 code, subcode = extract_api_error_code(item)
-                logger.warning(
+                logger.debug(
                     "JCE 请求返回错误: module=%s method=%s code=%s subcode=%s",
                     request.module,
                     request.method,
@@ -441,7 +441,7 @@ class Client:
             raise ApiError("缺少响应字段: req_0", code=-1, data=response)
         code, subcode = extract_api_error_code(item)
         if code is not None and code != 0:
-            logger.warning(
+            logger.debug(
                 "JSON 请求返回错误: module=%s method=%s code=%s subcode=%s",
                 request.module,
                 request.method,

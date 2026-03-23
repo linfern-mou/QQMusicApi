@@ -246,5 +246,5 @@ async def get_qimei(
         return QimeiResult(q16=qimei_data["q16"], q36=qimei_data["q36"])
 
     except (httpx.HTTPError, json.JSONDecodeError, KeyError, ValueError) as e:
-        logger.warning("获取 QIMEI 失败: %s (%s), 使用默认 QIMEI 回退值", e, type(e).__name__)
+        logger.debug("获取 QIMEI 失败: %s (%s), 使用默认 QIMEI 回退值", e, type(e).__name__)
         return QimeiResult(q16=DEFAULT_QIMEI, q36=DEFAULT_QIMEI)
