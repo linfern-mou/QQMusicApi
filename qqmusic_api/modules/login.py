@@ -218,7 +218,7 @@ class LoginApi(ApiModule):
         except LoginExpiredError:
             return True
 
-    async def refresh_cookies(self, credential: Credential | None = None) -> Credential:
+    async def refresh_credential(self, credential: Credential | None = None) -> Credential:
         """尝试刷新登录凭证.
 
         Args:
@@ -244,7 +244,7 @@ class LoginApi(ApiModule):
                 ),
             )
         except ApiError as exc:
-            raise self._raise_login_error("QQLogin", "刷新凭证失败", cause=exc) from exc
+            raise self._raise_login_error("RefreshCredential", "刷新凭证失败", cause=exc) from exc
 
         return Credential.model_validate(data)
 
