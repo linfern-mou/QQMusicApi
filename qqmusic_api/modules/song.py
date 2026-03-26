@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Any
 
+from ..models.request import Credential
 from ..utils import get_guid
 from ._base import ApiModule
 
@@ -40,7 +41,7 @@ class SongFileType(BaseSongFileType):
     + ATMOS_51: 臻品全景声 5.1,size_new[2]
     + ATMOS_71: 臻品全景声 7.1,size_new[6]
     + ATMOS_DB: 杜比全景声,size_dolby
-    + NAC: 腾讯自研 AICodec
+    + NAC: 腾讯自研 AICodec,size_new[7]
     + FLAC: SQ 无损音质,size_flac
     + OGG_640: SQ 无损,size_new[5]
     + OGG_320: HQ 高品质(OGG),size_new[3]
@@ -147,24 +148,6 @@ class SongApi(ApiModule):
             param=params,
         )
 
-    def get_try_url(self, mid: str, vs: str):
-        """获取试听文件链接原始数据.
-
-        Args:
-            mid: 歌曲 MID.
-            vs: 歌曲 vs 标识.
-        """
-        return self._build_request(
-            module="music.vkey.GetVkey",
-            method="UrlGetVkey",
-            param={
-                "filename": [f"RS02{vs}.mp3"],
-                "guid": get_guid(),
-                "songmid": [mid],
-                "songtype": [1],
-            },
-        )
-
     def get_cdn_dispatch(
         self,
         *,
@@ -193,12 +176,17 @@ class SongApi(ApiModule):
         self,
         mid: list[str],
         file_type: SongFileType | EncryptedSongFileType = SongFileType.MP3_128,
+        credential: Credential | None = None,
+        *,
+        media_mid: list[str] | None = None,
     ):
         """获取歌曲文件链接.
 
         Args:
             mid: 歌曲 MID 列表.
             file_type: 歌曲文件类型.
+            credential: 凭据对象.
+            media_mid: 获取媒体文件链接时需要的 media_mid 列表,与 mid 一一对应.
 
         Returns:
             dict[str, dict[str, Any]]: 以 `songmid` 为键的原始 `midurlinfo` 数据映射.
@@ -208,20 +196,28 @@ class SongApi(ApiModule):
         """
         if len(mid) > self._GET_SONG_URLS_MAX_MID:
             raise ValueError(f"mid 数量不能超过 {self._GET_SONG_URLS_MAX_MID}, 当前为 {len(mid)}")
-
+        if media_mid and len(media_mid) != len(mid):
+            raise ValueError("media_mid 必须与 mid 一一对应")
         encrypted = isinstance(file_type, EncryptedSongFileType)
         module, method = (
             ("music.vkey.GetVkey", "UrlGetVkey") if not encrypted else ("music.vkey.GetEVkey", "CgiGetEVkey")
+        )
+        filename = (
+            [f"{file_type.s}{item}{item}{file_type.e}" for item in mid]
+            if not media_mid
+            else [f"{file_type.s}{m}{file_type.e}" for m in media_mid]
         )
 
         return self._build_request(
             module=module,
             method=method,
             param={
-                "filename": [f"{file_type.s}{item}{item}{file_type.e}" for item in mid],
+                "uin": self._client.credential.str_musicid if not credential else credential.str_musicid,
+                "filename": filename,
                 "guid": get_guid(),
                 "songmid": mid,
                 "songtype": [0] * len(mid),
+                "ctx": 0,
             },
         )
 
