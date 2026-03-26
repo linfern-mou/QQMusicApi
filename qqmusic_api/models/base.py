@@ -122,6 +122,24 @@ class Pay(Response):
     time_free: int = -1
 
 
+class MV(Response):
+    """MV 基础模型.
+
+    Attributes:
+        id: MV 数字 ID.
+        vid: MV VID.
+        type: MV 类型.
+        name: MV 名称.
+        title: MV 标题.
+    """
+
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid"))
+    vid: str = ""
+    type: int = Field(default=-1, validation_alias=AliasChoices("vt", "type"))
+    name: str = ""
+    title: str = ""
+
+
 class Song(Response):
     """歌曲基础模型.
 
@@ -136,6 +154,7 @@ class Song(Response):
         subtitle: 副标题, 如"电影《xxx》插曲".
         singer: 歌手列表.
         album: 专辑信息.
+        mv: MV 信息.
         file: 歌曲文件信息.
         pay: 支付属性.
         interval: 时长 (秒).
@@ -187,6 +206,7 @@ class Song(Response):
     subtitle: str = ""
     singer: list[Singer]
     album: Album
+    mv: MV
     file: File
     pay: Pay
     interval: int

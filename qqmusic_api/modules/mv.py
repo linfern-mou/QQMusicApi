@@ -1,5 +1,6 @@
 """MV 相关 API."""
 
+from ..models.mv import GetMvDetailResponse, GetMvUrlsResponse
 from ..utils.common import get_guid
 from ._base import ApiModule
 
@@ -43,6 +44,7 @@ class MvApi(ApiModule):
                     "related_songs",
                 ],
             },
+            response_model=GetMvDetailResponse,
         )
 
     def get_mv_urls(self, vids: list[str]):
@@ -64,4 +66,5 @@ class MvApi(ApiModule):
                 "use_new_domain": 1,
                 "use_ipv6": 1,
             },
+            response_model=GetMvUrlsResponse,
         )
