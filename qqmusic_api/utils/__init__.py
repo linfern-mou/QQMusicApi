@@ -1,6 +1,6 @@
 """工具函数."""
 
-from .common import get_guid, get_searchID, hash33
+from .common import get_guid, get_searchID, hash33, parse_jsonpath
 from .qimei import QimeiResult, get_qimei
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
     "get_qimei",
     "get_searchID",
     "hash33",
+    "parse_jsonpath",
 ]

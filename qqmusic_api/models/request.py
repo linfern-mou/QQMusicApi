@@ -3,17 +3,17 @@
 from typing import Any, TypedDict
 
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 from tarsio import Struct, TarsDict, field
 
 
 class BaseModel(PydanticBaseModel):
     """基础数据模型."""
 
-    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore", frozen=True)
 
 
-class CommonParams(BaseModel, frozen=True):
+class CommonParams(BaseModel):
     """通用请求参数."""
 
     # 客户端类型
@@ -55,7 +55,7 @@ class CommonParams(BaseModel, frozen=True):
     out_charset: str | None = Field(default=None, alias="outCharset")
 
 
-class Credential(BaseModel, frozen=True):
+class Credential(BaseModel):
     """凭据类.
 
     Attributes:
@@ -124,3 +124,35 @@ class JceResponse(Struct):
 
     code: int = field(tag=0, default=0)
     data: dict[str, JceResponseItem] = field(tag=4, default_factory=dict)
+
+
+class Response(BaseModel):
+    """API 响应基类."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _extract_jsonpath_fields(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        processed_data = data.copy()
+
+        for field_name, field_info in cls.model_fields.items():
+            extra = field_info.json_schema_extra
+
+            if isinstance(extra, dict) and "jsonpath" in extra:
+                jsonpath_expr_str = str(extra["jsonpath"])
+                target_key = field_info.alias or field_name
+
+                from ..utils import parse_jsonpath
+
+                jsonpath_expr = parse_jsonpath(jsonpath_expr_str)
+                matches = jsonpath_expr.find(data)
+
+                if matches:
+                    if len(matches) == 1:
+                        processed_data[target_key] = matches[0].value
+                    else:
+                        processed_data[target_key] = [match.value for match in matches]
+
+        return processed_data

@@ -3,7 +3,10 @@
 import hashlib
 import random
 import time
+from functools import lru_cache
 from typing import Any
+
+from jsonpath_ng import parse
 
 
 def calc_md5(*strings: str | bytes) -> str:
@@ -89,3 +92,19 @@ def bool_to_int(data: Any) -> Any:
             return data
         return [bool_to_int(v) for v in data]
     return data
+
+
+@lru_cache(maxsize=256)
+def parse_jsonpath(expression: str):
+    """获取解析后的 JSONPath 对象.
+
+    Args:
+        expression: JSONPath 字符串表达式。
+
+    Returns:
+        编译后的 jsonpath_ng 表达式对象。
+
+    Raises:
+        JSONPathError: 当表达式存在语法错误时抛出。
+    """
+    return parse(expression)
