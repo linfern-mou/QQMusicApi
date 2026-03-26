@@ -3,7 +3,22 @@
 from enum import Enum
 from typing import Any
 
+from qqmusic_api import Platform
+
 from ..models.request import Credential
+from ..models.song import (
+    GetFavNumResponse,
+    GetOtherVersionResponse,
+    GetProducerResponse,
+    GetRelatedMvResponse,
+    GetRelatedSonglistResponse,
+    GetSheetResponse,
+    GetSimilarSongResponse,
+    GetSongDetailResponse,
+    GetSongLabelsResponse,
+    GetSongUrlsResponse,
+    QuerySongResponse,
+)
 from ..utils import get_guid
 from ._base import ApiModule
 
@@ -146,6 +161,7 @@ class SongApi(ApiModule):
             module="music.trackInfo.UniformRuleCtrl",
             method="CgiGetTrackInfo",
             param=params,
+            response_model=QuerySongResponse,
         )
 
     def get_cdn_dispatch(
@@ -219,6 +235,7 @@ class SongApi(ApiModule):
                 "songtype": [0] * len(mid),
                 "ctx": 0,
             },
+            response_model=GetSongUrlsResponse,
         )
 
     def get_detail(self, value: str | int):
@@ -232,6 +249,8 @@ class SongApi(ApiModule):
             module="music.pf_song_detail_svr",
             method="get_song_detail_yqq",
             param=param,
+            platform=Platform.WEB,
+            response_model=GetSongDetailResponse,
         )
 
     def get_similar_song(self, songid: int):
@@ -244,6 +263,7 @@ class SongApi(ApiModule):
             module="music.recommend.TrackRelationServer",
             method="GetSimilarSongs",
             param={"songid": songid},
+            response_model=GetSimilarSongResponse,
         )
 
     def get_lables(self, songid: int):
@@ -256,6 +276,7 @@ class SongApi(ApiModule):
             module="music.recommend.TrackRelationServer",
             method="GetSongLabels",
             param={"songid": songid},
+            response_model=GetSongLabelsResponse,
         )
 
     def get_related_songlist(self, songid: int):
@@ -268,6 +289,7 @@ class SongApi(ApiModule):
             module="music.recommend.TrackRelationServer",
             method="GetRelatedPlaylist",
             param={"songid": songid},
+            response_model=GetRelatedSonglistResponse,
         )
 
     def get_related_mv(self, songid: int, last_mvid: str | None = None):
@@ -277,13 +299,11 @@ class SongApi(ApiModule):
             songid: 歌曲 ID.
             last_mvid: 上一个 MV 的 VID (可选).
         """
-        params: dict[str, Any] = {"songid": songid, "songtype": 1}
-        if last_mvid:
-            params["lastmvid"] = last_mvid
         return self._build_request(
             module="MvService.MvInfoProServer",
             method="GetSongRelatedMv",
-            param=params,
+            param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
+            response_model=GetRelatedMvResponse,
         )
 
     def get_other_version(self, value: str | int):
@@ -297,6 +317,7 @@ class SongApi(ApiModule):
             module="music.musichallSong.OtherVersionServer",
             method="GetOtherVersionSongs",
             param=param,
+            response_model=GetOtherVersionResponse,
         )
 
     def get_producer(self, value: str | int):
@@ -310,6 +331,7 @@ class SongApi(ApiModule):
             module="music.sociality.KolWorksTag",
             method="SongProducer",
             param=param,
+            response_model=GetProducerResponse,
         )
 
     def get_sheet(self, mid: str):
@@ -322,6 +344,7 @@ class SongApi(ApiModule):
             module="music.mir.SheetMusicSvr",
             method="GetMoreSheetMusic",
             param={"songmid": mid, "scoreType": -1},
+            response_model=GetSheetResponse,
         )
 
     def get_fav_num(self, songid: list[int]):
@@ -334,4 +357,5 @@ class SongApi(ApiModule):
             module="music.musicasset.SongFavRead",
             method="GetSongFansNumberById",
             param={"v_songId": songid},
+            response_model=GetFavNumResponse,
         )
