@@ -1,0 +1,228 @@
+"""搜索业务模型."""
+
+from typing import Any, Generic, TypeVar
+
+from pydantic import Field
+
+from .base import Album, Singer, Song
+from .request import Response
+
+
+class SongSearch(Song):
+    """搜索场景下的歌曲详尽模型.
+
+    Attributes:
+        search_title: 搜索命中的标题 (可能包含高亮标签).
+        title_main: 歌曲主标题.
+        title_extra: 歌曲附加标题.
+        fav_show: 收藏数展示文案 (如 "5500w+").
+        tag: 标签 ID.
+        desc: 歌曲描述文案.
+        desc_icon: 描述文案前的图标链接.
+        content: 搜索结果内容摘要,当搜索命中歌词或特定评论时,该字段存放命中的文本片段.
+        hotness: 热度数据对象.
+        hotness_desc: 热度描述 (如榜单名).
+        vec_hotness: 热度榜单详情列表.
+        new_status: 新版状态位 (2: 正常).
+        protect: 是否受到版权保护.
+        relatedword_group: 相关搜索词推荐组.
+    """
+
+    search_title: str | None = None
+    title_main: str | None = None
+    title_extra: str | None = None
+    fav_show: str | None = None
+    desc: str | None = None
+    desc_icon: str | None = None
+    hotness: dict[str, Any] | None = None
+    hotness_desc: str | None = None
+    vec_hotness: list[dict[str, Any]] | None = None
+    content: str | None = None
+    new_status: int | None = Field(default=None, alias="newStatus")
+    protect: int | None = None
+    relatedword_group: dict[str, Any] | None = None
+
+
+class AlbumSearch(Album):
+    """搜索场景下的专辑详尽模型.
+
+    Attributes:
+       album_type: 专辑类型标识 (来自 $.core_album_config.album_type)。通常 1 代表正规专辑。
+       singer: 搜索命中的高亮歌手名称。通常包含 `<em>` 标签。
+       singer_list: 结构化的歌手对象列表。包含歌手的数字 ID 和标准名称。
+       pic: 专辑封面图片 URL (通常为 180x180 或 300x300 规格)。
+       pic_icon: 封面配套显示的勋章或类型图标链接。
+       publish_date: 专辑发行日期 (YYYY-MM-DD)。
+       description: 简短描述文案。在搜索结果中常存放发行日期或厂牌。
+       description2: 备用描述文案。
+       desc_detail: 详尽描述对象。包含长篇专辑介绍及背景信息。
+       hotness: 热度数据对象。包含收藏量、趋势等原始数值。
+       hotness_desc: 热度简述文案。如“全网热搜”、“飙升榜前十”。
+       audio_play: 播放排行信息。包含榜单名称及具体排名。
+       label_new: 专辑关联的特性标签对象。
+       tag_list: 专辑标签列表。用于 UI 显示“数字专辑”、“独家”等勋章。
+       url: 静态元数据下载链接。
+    """
+
+    class RankingInfo(Response):
+        """歌曲排行信息.
+
+        Attributes:
+            rank: 歌曲或专辑在对应榜单中的具体排名。
+            toplist: 所属的榜单名称(如“热歌榜”、“流行指数榜”)。
+        """
+
+        rank: str
+        toplist: str
+
+    desc_detail: dict[str, Any]
+    description: str
+    description2: str
+    type: int | None = Field(None, json_schema_extra={"jsonpath": "$.core_album_config.album_type"})
+    award_label: str | None = Field(None, json_schema_extra={"jsonpath": "$.core_album_config.award_label"})
+    hotness: dict[str, Any]
+    hotness_desc: str
+    label_new: dict[str, Any]
+    audio_play: RankingInfo
+    pic: str
+    pic_icon: str
+    singer: str
+    singer_list: list[Singer]
+    tag_list: list[str]
+    url: str
+
+
+T = TypeVar("T")
+
+
+class GeneralSearchRequestBody(Response, Generic[T]):
+    """通用搜索分类结果容器模型.
+
+    Attributes:
+    estimate_sum: 搜索命中的预估总记录数.
+    total_num: 搜索命中的确切总记录数.
+    items: 具体的业务实体列表 (泛型支持 SongSearch, Singer, Album 等).
+    more_info: 分类翻页上下文对象.在执行该分类下的“加载更多”请求时,需将其作为参数回传.
+    """
+
+    estimate_sum: int | None = None
+    total_num: int | None = None
+    items: list[T] | None = None
+    more_info: dict[str, Any] | None = None
+
+
+class RelatedSearchWord(Response):
+    """相关搜索词推荐.
+
+    Attributes:
+        display: 相关搜索词展示文案.
+        search: 相关搜索词实际搜索关键词.
+    """
+
+    display: str = Field(alias="display_word")
+    search: str = Field(alias="search_word")
+
+
+class SearchByTypeResponse(Response):
+    """分类搜索响应模型.
+
+    Attributes:
+        searchid: 搜索会话 ID, 用于后续相关请求.
+        perpage: 每页结果数量.
+        nextpage: 下一页页码, -1 表示已加载全部结果.
+        estimate_sum: 搜索命中的预估总记录数.
+        total_num: 搜索命中的确切总记录数.
+        song: 单曲,歌词搜索,节目结果列表.
+        singer: 歌手结果列表.
+        album: 专辑结果列表.
+        songlist: 歌单结果列表.
+        user: 用户结果列表.
+        audio: 节目结果列表.
+        audio_alum: 节目专辑列表.
+        mv: MV 结果列表.
+        lyric: 歌词搜索结果列表.
+    """
+
+    searchid: str = Field(json_schema_extra={"jsonpath": "$.meta.searchid"})
+    perpage: int = Field(json_schema_extra={"jsonpath": "$.meta.perpage"})
+    nextpage: int = Field(json_schema_extra={"jsonpath": "$.meta.nextpage"})
+    estimate_sum: int | None = Field(json_schema_extra={"jsonpath": "$.meta.estimate_sum"})
+    total_num: int | None = Field(json_schema_extra={"jsonpath": "$.meta.sum"})
+    song: list[SongSearch] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.item_song"},
+    )
+    singer: list[dict[str, Any]] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.singer"},
+    )
+    album: list[AlbumSearch] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.item_album"},
+    )
+    songlist: list[dict[str, Any]] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.item_songlist"},
+    )
+    user: list[dict[str, Any]] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.item_user"},
+    )
+    audio_alum: list[dict[str, Any]] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.item_audio"},
+    )
+    mv: list[dict[str, Any]] | None = Field(
+        default=None,
+        json_schema_extra={"jsonpath": "$.body.item_mv"},
+    )
+
+
+class GeneralSearchResponse(Response):
+    """综合搜索响应模型.
+
+    Attributes:
+        searchid: 搜索会话 ID, 用于后续相关请求.
+        perpage: 每页结果数量.
+        nextpage: 下一页页码, -1 表示已加载全部结果.
+        nextpage_start: 翻页关键参数.
+        song: 单曲结果.
+        singer: 歌手结果.
+        album: 专辑结果.
+        mv: sid结果.
+        songlist: 歌单结果.
+        audio: 节目结果.
+        direct: 直接搜索结果.
+        related: 相关搜索词推荐列表.
+    """
+
+    searchid: str = Field(json_schema_extra={"jsonpath": "$.meta.sid"})
+    perpage: int = Field(json_schema_extra={"jsonpath": "$.meta.perpage"})
+    nextpage: int = Field(json_schema_extra={"jsonpath": "$.meta.nextpage"})
+    nextpage_start: dict[str, Any] = Field(
+        json_schema_extra={"jsonpath": "$.meta.nextpage_start"},
+    )
+    song: GeneralSearchRequestBody[SongSearch] = Field(
+        json_schema_extra={"jsonpath": "$.body.item_song"},
+    )
+    singer: GeneralSearchRequestBody[dict[str, Any]] = Field(
+        json_schema_extra={"jsonpath": "$.body.singer"},
+    )
+    mv: GeneralSearchRequestBody[dict[str, Any]] = Field(
+        json_schema_extra={"jsonpath": "$.body.item_mv"},
+    )
+    album: GeneralSearchRequestBody[AlbumSearch] = Field(
+        json_schema_extra={"jsonpath": "$.body.item_album"},
+    )
+    songlist: GeneralSearchRequestBody[dict[str, Any]] = Field(
+        json_schema_extra={"jsonpath": "$.body.item_songlist"},
+    )
+    audio: GeneralSearchRequestBody[dict[str, Any]] = Field(
+        json_schema_extra={"jsonpath": "$.body.item_audio"},
+    )
+    direct: list[dict[str, Any]] = Field(
+        json_schema_extra={"jsonpath": "$.body.direct_result.direct_group"},
+    )
+    related: GeneralSearchRequestBody[RelatedSearchWord] = Field(
+        json_schema_extra={"jsonpath": "$.body.item_related"},
+    )

@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any
 
 from ..core import Platform
+from ..models.search import GeneralSearchResponse, SearchByTypeResponse
 from ..utils import get_searchID
 from ._base import ApiModule
 
@@ -104,6 +105,7 @@ class SearchApi(ApiModule):
                 "highlight": highlight,
                 "grp": True,
             },
+            response_model=GeneralSearchResponse,
         )
 
     def search_by_type(
@@ -137,4 +139,5 @@ class SearchApi(ApiModule):
                 "grp": True,
             },
             platform=Platform.ANDROID,
+            response_model=SearchByTypeResponse,
         )
