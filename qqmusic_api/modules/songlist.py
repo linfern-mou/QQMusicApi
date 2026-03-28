@@ -1,6 +1,7 @@
 """歌单相关 API."""
 
 from ..models.request import Credential
+from ..models.songlist import GetSonglistDetailResponse
 from ._base import ApiModule
 
 
@@ -42,6 +43,7 @@ class SonglistApi(ApiModule):
                 "orderlist": True,
                 "onlysonglist": onlysong,
             },
+            response_model=GetSonglistDetailResponse,
         )
 
     def create(self, dirname: str, *, credential: Credential | None = None):
