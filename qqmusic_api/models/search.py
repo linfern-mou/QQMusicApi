@@ -4,7 +4,7 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import Field
 
-from .base import Album, Singer, Song
+from .base import MV, Album, Singer, Song, SongList
 from .request import Response
 
 
@@ -92,6 +92,58 @@ class AlbumSearch(Album):
     url: str
 
 
+class SongListSearch(SongList):
+    """搜索场景下的歌单模型.
+
+    Attributes:
+        nickname: 歌单创建者昵称.
+        dirtype: 目录类型.
+    """
+
+    nickname: str = ""
+    dirtype: int = 0
+
+
+class SingerSearch(Singer):
+    """搜索场景下的歌手模型.
+
+    Attributes:
+        pic: 歌手头像地址.
+        song_num: 歌曲数量.
+        album_num: 专辑数量.
+        mv_num: MV 数量.
+        subtitle: 补充描述文案.
+    """
+
+    pic: str = Field(default="", alias="singerPic")
+    song_num: int = Field(default=0, alias="songNum")
+    album_num: int = Field(default=0, alias="albumNum")
+    mv_num: int = Field(default=0, alias="mvNum")
+    subtitle: str = ""
+
+
+class MvSearch(MV):
+    """搜索场景下的 MV 模型.
+
+    Attributes:
+        pic: MV 封面地址.
+        play_count: MV 播放量.
+        duration: MV 时长.
+        publish_date: 发布时间.
+        singer_id: 歌手 ID.
+        singer_mid: 歌手 MID.
+        singer_name: 歌手名称.
+    """
+
+    pic: str = Field(default="", alias="pic")
+    play_count: int = Field(default=0, alias="play_count")
+    duration: int = 0
+    publish_date: str = Field(default="", alias="publish_date")
+    singer_id: int = Field(default=0, alias="singerid")
+    singer_mid: str = Field(default="", alias="singermid")
+    singer_name: str = Field(default="", alias="singername")
+
+
 T = TypeVar("T")
 
 
@@ -152,7 +204,7 @@ class SearchByTypeResponse(Response):
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_song"},
     )
-    singer: list[dict[str, Any]] | None = Field(
+    singer: list[SingerSearch] | None = Field(
         default=None,
         json_schema_extra={"jsonpath": "$.body.singer"},
     )
@@ -160,7 +212,7 @@ class SearchByTypeResponse(Response):
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_album"},
     )
-    songlist: list[dict[str, Any]] | None = Field(
+    songlist: list[SongListSearch] | None = Field(
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_songlist"},
     )
@@ -168,11 +220,11 @@ class SearchByTypeResponse(Response):
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_user"},
     )
-    audio_alum: list[dict[str, Any]] | None = Field(
+    audio_alum: list[SongSearch] | None = Field(
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_audio"},
     )
-    mv: list[dict[str, Any]] | None = Field(
+    mv: list[MvSearch] | None = Field(
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_mv"},
     )
@@ -205,19 +257,19 @@ class GeneralSearchResponse(Response):
     song: GeneralSearchRequestBody[SongSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_song"},
     )
-    singer: GeneralSearchRequestBody[dict[str, Any]] = Field(
+    singer: GeneralSearchRequestBody[SingerSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.singer"},
     )
-    mv: GeneralSearchRequestBody[dict[str, Any]] = Field(
+    mv: GeneralSearchRequestBody[MvSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_mv"},
     )
     album: GeneralSearchRequestBody[AlbumSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_album"},
     )
-    songlist: GeneralSearchRequestBody[dict[str, Any]] = Field(
+    songlist: GeneralSearchRequestBody[SongListSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_songlist"},
     )
-    audio: GeneralSearchRequestBody[dict[str, Any]] = Field(
+    audio: GeneralSearchRequestBody[SongSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_audio"},
     )
     direct: list[dict[str, Any]] = Field(

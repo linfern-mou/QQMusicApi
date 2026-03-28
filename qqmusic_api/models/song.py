@@ -2,7 +2,7 @@
 
 from pydantic import Field
 
-from .base import Singer, Song
+from .base import MV, Singer, Song, SongList
 from .request import Response
 
 
@@ -143,24 +143,14 @@ class GetSongLabelsResponse(Response):
     labels: list[SongLabel]
 
 
-class RelatedPlaylist(Response):
+class RelatedPlaylist(SongList):
     """相关歌单项.
 
     Attributes:
-        id: 歌单 ID.
-        song_num: 歌单歌曲数.
-        cover: 歌单封面.
-        title: 歌单标题.
         creator: 歌单创建者.
-        play_cnt: 歌单播放量.
     """
 
-    id: int = Field(alias="tid")
-    song_num: int = Field(alias="songNum")
-    cover: str
-    title: str
-    creator: str
-    play_cnt: str = Field(alias="playCnt")
+    creator: str = ""
 
 
 class GetRelatedSonglistResponse(Response):
@@ -175,16 +165,13 @@ class GetRelatedSonglistResponse(Response):
     songlist: list[RelatedPlaylist] = Field(json_schema_extra={"jsonpath": "$.vecPlaylistNew[*].playlists[*]"})
 
 
-class RelatedMv(Response):
+class RelatedMv(MV):
     """相关 MV 项.
 
     Attributes:
-        mvid: MV ID.
         picurl: MV 封面.
         playcnt: MV 播放量.
         singers: MV 歌手名称列表.
-        title: MV 标题.
-        vid: MV VID.
     """
 
     class MVSinger(Singer):
@@ -196,12 +183,9 @@ class RelatedMv(Response):
 
         picurl: str
 
-    mvid: int
     picurl: str
     playcnt: int
     singers: list[MVSinger] = Field(json_schema_extra={"jsonpath": "$.singers"})
-    title: str
-    vid: str
 
 
 class GetRelatedMvResponse(Response):

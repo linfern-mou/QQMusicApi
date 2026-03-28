@@ -18,10 +18,10 @@ class Singer(Response):
         pmid: 图片 Media ID, 用于拼接歌手头像 URL.
     """
 
-    id: int = -1
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "singerID"))
     mid: str = Field(default="", validation_alias=AliasChoices("mid", "singerMid", "singerMID"))
-    name: str = ""
-    title: str = ""
+    name: str = Field(default="", validation_alias=AliasChoices("name", "singerName"))
+    title: str = Field(default="", validation_alias=AliasChoices("title", "singerName"))
     type: int = -1
     uin: int = -1
     pmid: str = ""
@@ -133,11 +133,33 @@ class MV(Response):
         title: MV 标题.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid"))
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid", "mvid"))
     vid: str = ""
     type: int = Field(default=-1, validation_alias=AliasChoices("vt", "type"))
-    name: str = ""
-    title: str = ""
+    name: str = Field(default="", validation_alias=AliasChoices("name", "mvname"))
+    title: str = Field(default="", validation_alias=AliasChoices("title", "title_main"))
+
+
+class SongList(Response):
+    """歌单基础模型.
+
+    Attributes:
+        id: 歌单数字 ID.
+        dirid: 目录 ID.
+        title: 歌单标题.
+        picurl: 歌单封面地址.
+        desc: 歌单简介.
+        songnum: 歌曲数量.
+        listennum: 播放量.
+    """
+
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "tid", "dissid"))
+    dirid: int = 0
+    title: str = Field(default="", validation_alias=AliasChoices("title", "dissname"))
+    picurl: str = Field(default="", validation_alias=AliasChoices("picurl", "cover", "logo"))
+    desc: str = Field(default="", validation_alias=AliasChoices("desc", "description"))
+    songnum: int = Field(default=0, validation_alias=AliasChoices("songnum", "songNum"))
+    listennum: int | str = Field(default=0, validation_alias=AliasChoices("listennum", "playCnt"))
 
 
 class Song(Response):

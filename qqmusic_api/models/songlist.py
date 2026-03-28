@@ -2,7 +2,7 @@
 
 from pydantic import Field
 
-from .base import Song
+from .base import Song, SongList
 from .request import Response
 
 
@@ -22,27 +22,13 @@ class SonglistCreator(Response):
     encrypt_uin: str = Field(default="")
 
 
-class SonglistInfo(Response):
+class SonglistInfo(SongList):
     """歌单基础信息.
 
     Attributes:
-        id: 歌单 ID.
-        dirid: 目录 ID.
-        title: 歌单标题.
-        picurl: 歌单封面.
-        desc: 歌单简介.
-        songnum: 歌曲数量.
-        listennum: 播放量.
         creator: 创建者信息.
     """
 
-    id: int
-    dirid: int
-    title: str
-    picurl: str = ""
-    desc: str = ""
-    songnum: int = 0
-    listennum: int = 0
     creator: SonglistCreator
 
 
