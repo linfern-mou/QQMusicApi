@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from ..models.lyric import GetLyricResponse
 from ._base import ApiModule
 
 
@@ -45,4 +46,5 @@ class LyricApi(ApiModule):
             module="music.musichallSong.PlayLyricInfo",
             method="GetPlayLyricInfo",
             param=params,
+            response_model=GetLyricResponse,
         )
