@@ -2,6 +2,7 @@
 
 from typing import Any, Literal
 
+from ..models.album import GetAlbumDetailResponse, GetAlbumSongResponse
 from ._base import ApiModule
 
 
@@ -38,6 +39,7 @@ class AlbumApi(ApiModule):
             module="music.musichallAlbum.AlbumInfoServer",
             method="GetAlbumDetail",
             param=param,
+            response_model=GetAlbumDetailResponse,
         )
 
     def get_song(self, value: str | int, num: int = 10, page: int = 1):
@@ -61,4 +63,5 @@ class AlbumApi(ApiModule):
             module="music.musichallAlbum.AlbumSongList",
             method="GetAlbumSongList",
             param=param,
+            response_model=GetAlbumSongResponse,
         )

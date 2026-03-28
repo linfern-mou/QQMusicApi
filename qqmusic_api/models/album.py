@@ -1,16 +1,72 @@
-"""专辑模型."""
+"""AlbumAPI 返回模型定义."""
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-
-class AlbumSongItem(BaseModel):
-    """专辑歌曲条目."""
-
-    song_info: dict = Field(alias="songInfo")
+from .base import Album, Singer, Song
+from .request import Response
 
 
-class AlbumSongResponse(BaseModel):
-    """专辑歌曲响应."""
+class AlbumDetail(Album):
+    """专辑详情基础信息.
 
-    song_list: list[AlbumSongItem] = Field(alias="songList")
+    Attributes:
+        subtitle: 专辑副标题.
+        time_public: 发行日期.
+        desc: 专辑简介.
+        language: 专辑语种.
+        album_type: 专辑类型描述.
+        genre: 专辑流派文本.
+        wikiurl: 百科链接.
+    """
+
+    subtitle: str = ""
+    time_public: str = Field(default="", alias="publishDate")
+    desc: str = ""
+    language: str = ""
+    album_type: str = Field(default="", alias="albumType")
+    genre: str = ""
+    wikiurl: str = ""
+
+
+class AlbumCompany(Response):
+    """专辑发行公司信息.
+
+    Attributes:
+        id: 公司 ID.
+        name: 公司名称.
+        is_show: 是否展示.
+        brief: 公司简介.
+    """
+
+    id: int = Field(alias="ID")
+    name: str
+    is_show: int = Field(alias="isShow")
+    brief: str = ""
+
+
+class GetAlbumDetailResponse(Response):
+    """获取专辑详情结果.
+
+    Attributes:
+        album: 专辑基础信息.
+        company: 发行公司信息.
+        singers: 专辑歌手列表.
+    """
+
+    album: AlbumDetail = Field(alias="basicInfo")
+    company: AlbumCompany
+    singers: list[Singer] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.singer.singerList"})
+
+
+class GetAlbumSongResponse(Response):
+    """获取专辑歌曲列表结果.
+
+    Attributes:
+        album_mid: 专辑 MID.
+        total_num: 歌曲总数.
+        song_list: 专辑歌曲列表.
+    """
+
+    album_mid: str = Field(alias="albumMid")
     total_num: int = Field(alias="totalNum")
+    song_list: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.songList[*].songInfo"})
