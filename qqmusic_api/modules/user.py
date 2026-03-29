@@ -3,6 +3,18 @@
 from typing import ClassVar
 
 from ..models.request import Credential
+from ..models.user import (
+    UserCreatedSonglistResponse,
+    UserFavAlbumResponse,
+    UserFavMvResponse,
+    UserFavSonglistResponse,
+    UserFriendListResponse,
+    UserHomepageResponse,
+    UserMusicGeneResponse,
+    UserRelationListResponse,
+    UserSonglistDetailResponse,
+    UserVipInfoResponse,
+)
 from ._base import ApiModule
 
 
@@ -41,6 +53,7 @@ class UserApi(ApiModule):
             method="GetHomepageHeader",
             param={"uin": euin, "IsQueryTabDetail": 1},
             credential=target_credential,
+            response_model=UserHomepageResponse,
         )
 
     def get_vip_info(self, *, credential: Credential | None = None):
@@ -55,6 +68,7 @@ class UserApi(ApiModule):
             method="vip_login_base",
             param={},
             credential=target_credential,
+            response_model=UserVipInfoResponse,
         )
 
     def get_follow_singers(
@@ -79,6 +93,7 @@ class UserApi(ApiModule):
             method="GetFollowSingerList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
             credential=target_credential,
+            response_model=UserRelationListResponse,
         )
 
     def get_fans(
@@ -103,6 +118,7 @@ class UserApi(ApiModule):
             method="GetFansList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
             credential=target_credential,
+            response_model=UserRelationListResponse,
         )
 
     def get_friend(
@@ -125,6 +141,7 @@ class UserApi(ApiModule):
             method="GetFriendList",
             param={"PageSize": num, "Page": page - 1},
             credential=target_credential,
+            response_model=UserFriendListResponse,
         )
 
     def get_follow_user(
@@ -149,9 +166,10 @@ class UserApi(ApiModule):
             method="GetFollowUserList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
             credential=target_credential,
+            response_model=UserRelationListResponse,
         )
 
-    def get_created_songlist(self, uin: str, *, credential: Credential | None = None):
+    def get_created_songlist(self, uin: int, *, credential: Credential | None = None):
         """获取用户创建的歌单列表.
 
         Args:
@@ -161,8 +179,9 @@ class UserApi(ApiModule):
         return self._build_request(
             module="music.musicasset.PlaylistBaseRead",
             method="GetPlaylistByUin",
-            param={"uin": uin},
+            param={"uin": str(uin)},
             credential=credential,
+            response_model=UserCreatedSonglistResponse,
         )
 
     def get_fav_song(
@@ -195,6 +214,7 @@ class UserApi(ApiModule):
                 "enc_host_uin": euin,
             },
             credential=credential,
+            response_model=UserSonglistDetailResponse,
         )
 
     def get_fav_songlist(
@@ -218,6 +238,7 @@ class UserApi(ApiModule):
             method="CgiGetPlaylistFavInfo",
             param={"uin": euin, "offset": (page - 1) * num, "size": num},
             credential=credential,
+            response_model=UserFavSonglistResponse,
         )
 
     def get_fav_album(
@@ -241,6 +262,7 @@ class UserApi(ApiModule):
             method="CgiGetAlbumFavInfo",
             param={"euin": euin, "offset": (page - 1) * num, "size": num},
             credential=credential,
+            response_model=UserFavAlbumResponse,
         )
 
     def get_fav_mv(
@@ -265,6 +287,7 @@ class UserApi(ApiModule):
             method="getMyFavMV_v2",
             param={"encuin": euin, "pagesize": num, "num": page - 1},
             credential=target_credential,
+            response_model=UserFavMvResponse,
         )
 
     def get_music_gene(self, euin: str, *, credential: Credential | None = None):
@@ -279,4 +302,5 @@ class UserApi(ApiModule):
             method="GetProfileReport",
             param={"VisitAccount": euin},
             credential=credential,
+            response_model=UserMusicGeneResponse,
         )
