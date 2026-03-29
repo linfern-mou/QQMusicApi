@@ -1,11 +1,32 @@
 """用户相关 API."""
 
+from typing import ClassVar
+
 from ..models.request import Credential
 from ._base import ApiModule
 
 
 class UserApi(ApiModule):
     """用户相关 API."""
+
+    PLACEHOLDER_CREDENTIAL: ClassVar[Credential] = Credential.model_validate(
+        {
+            "musicid": 1,
+            "str_musicid": "1",
+            "musickey": "placeholder-musickey",
+            "encryptUin": "00000000000000000000000000000000",
+            "loginType": 1,
+        },
+    )
+
+    def _resolve_placeholder_credential(self, credential: Credential | None = None) -> Credential:
+        """在缺省凭证时自动补一个占位凭证."""
+        if credential is not None:
+            return credential
+        current = self._client.credential
+        if current.musicid and current.musickey:
+            return current
+        return self.PLACEHOLDER_CREDENTIAL
 
     def get_homepage(self, euin: str, *, credential: Credential | None = None):
         """获取用户主页头部及统计信息.
@@ -14,11 +35,12 @@ class UserApi(ApiModule):
             euin: 加密后的 UIN.
             credential: 登录凭证 (可选).
         """
+        target_credential = self._resolve_placeholder_credential(credential)
         return self._build_request(
             module="music.UnifiedHomepage.UnifiedHomepageSrv",
             method="GetHomepageHeader",
             param={"uin": euin, "IsQueryTabDetail": 1},
-            credential=credential,
+            credential=target_credential,
         )
 
     def get_vip_info(self, *, credential: Credential | None = None):
