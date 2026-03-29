@@ -1,6 +1,6 @@
 """排行榜相关 API."""
 
-from ..models.top import TopCategoryResponse
+from ..models.top import TopCategoryResponse, TopDetailResponse
 from ._base import ApiModule
 
 
@@ -45,4 +45,5 @@ class TopApi(ApiModule):
             method="GetDetail",
             param=param,
             preserve_bool=tag,
+            response_model=TopDetailResponse,
         )
