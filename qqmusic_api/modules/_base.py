@@ -120,6 +120,7 @@ class ApiModule:
         comm: dict[str, Any] | None = None,
         *,
         is_jce: bool = False,
+        preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
     ) -> "Request[dict[str, Any]]": ...
@@ -134,6 +135,7 @@ class ApiModule:
         comm: dict[str, Any] | None = None,
         *,
         is_jce: bool = True,
+        preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
     ) -> "Request[TarsDict]": ...
@@ -148,6 +150,7 @@ class ApiModule:
         comm: dict[str, Any] | None = None,
         *,
         is_jce: bool = False,
+        preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
     ) -> "Request[ResponseModel]": ...
@@ -161,6 +164,7 @@ class ApiModule:
         comm: dict[str, Any] | None = None,
         *,
         is_jce: bool = False,
+        preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
     ) -> "Request[Any]":
@@ -173,6 +177,7 @@ class ApiModule:
             response_model: 响应数据模型类, 用于自动解析结果.
             comm: 公共参数字典.
             is_jce: 是否使用 JCE 协议.
+            preserve_bool: 是否保留 JSON 参数中的布尔字面量.
             credential: 指定请求凭证.
             platform: 指定请求平台.
 
@@ -187,6 +192,7 @@ class ApiModule:
             response_model=response_model,
             comm=comm,
             is_jce=is_jce,
+            preserve_bool=preserve_bool,
             credential=credential,
             platform=platform,
         )

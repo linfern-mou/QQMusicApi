@@ -434,6 +434,7 @@ class Client:
             comm=request.comm,
             platform=request.platform,
             credential=request.credential,
+            preserve_bool=request.preserve_bool,
         )
         item = response.get("req_0")
         if item is None:
@@ -603,6 +604,8 @@ class Client:
         credential: Credential | None = None,
         url: str = "https://u.y.qq.com/cgi-bin/musicu.fcg",
         platform: Platform | None = None,
+        *,
+        preserve_bool: bool = False,
     ) -> dict[str, Any]:
         """发送标准 QQ 音乐请求 (Musicu/JSON) 并解析响应.
 
@@ -612,6 +615,7 @@ class Client:
             credential: 请求凭证 (该方法底层未直接使用凭证参数, 供扩展).
             url: 请求的网关 URL, 默认为 musicu.fcg.
             platform: 请求发起的平台名称.
+            preserve_bool: 是否保留 JSON 参数中的布尔字面量.
 
         Returns:
             dict[str, Any]: 解析后的 JSON 响应字典.
@@ -621,7 +625,12 @@ class Client:
             ApiError: JSON 解析错误或缺少关键字段.
         """
         requests = data if isinstance(data, list) else [data]
-        logger.debug("构建 JSON 批量请求: count=%s platform=%s", len(requests), platform or self.platform)
+        logger.debug(
+            "构建 JSON 批量请求: count=%s platform=%s preserve_bool=%s",
+            len(requests),
+            platform or self.platform,
+            preserve_bool,
+        )
 
         payload: dict[str, Any] = {
             "comm": await self._build_common_params(platform, credential or self.credential, comm),
@@ -630,7 +639,7 @@ class Client:
             payload[f"req_{idx}"] = {
                 "module": req["module"],
                 "method": req["method"],
-                "param": bool_to_int(req["param"]),
+                "param": req["param"] if preserve_bool else bool_to_int(req["param"]),
             }
 
         params: dict[str, Any] = {}

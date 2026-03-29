@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 FrozenCommKey = tuple[tuple[str, int | str | bool], ...] | None
-BaseGroupKey = tuple[bool, Platform | Literal[""], FrozenCommKey, int, str]
+BaseGroupKey = tuple[bool, bool, Platform | Literal[""], FrozenCommKey, int, str]
 ResponseData: TypeAlias = dict[str, Any] | TarsDict
 RequestResult: TypeAlias = BaseModel | ResponseData
 ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
@@ -36,6 +36,7 @@ class Request(Generic[RequestResultT]):
     response_model: type[BaseModel] | None = None
     comm: dict[str, int | str | bool] | None = None
     is_jce: bool = False
+    preserve_bool: bool = False
     credential: Credential | None = None
     platform: Platform | None = None
 
@@ -119,6 +120,7 @@ class RequestGroup:
         credential_musickey = request.credential.musickey if request.credential is not None else ""
         return (
             request.is_jce,
+            request.preserve_bool,
             platform_key,
             tuple(sorted(request.comm.items(), key=lambda kv: kv[0])) if request.comm is not None else None,
             credential_musicid,
@@ -250,6 +252,7 @@ class RequestGroup:
                 comm=first.comm,
                 platform=first.platform,
                 credential=first.credential,
+                preserve_bool=first.preserve_bool,
             )
             items_map = json_response
 

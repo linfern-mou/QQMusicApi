@@ -32,13 +32,17 @@ class TopApi(ApiModule):
             page: 页码.
             tag: 是否返回歌曲标签信息.
         """
+        param = {
+            "topId": top_id,
+            "offset": num * (page - 1),
+            "num": num,
+        }
+        if tag:
+            param["withTags"] = True
+
         return self._build_request(
             module="music.musicToplist.Toplist",
             method="GetDetail",
-            param={
-                "topId": top_id,
-                "offset": num * (page - 1),
-                "num": num,
-                "withTags": tag,
-            },
+            param=param,
+            preserve_bool=tag,
         )

@@ -29,5 +29,12 @@ async def test_get_detail_page2(client: Client) -> None:
 
 async def test_get_detail_without_tag(client: Client) -> None:
     """测试获取排行榜详情时不返回标签信息."""
-    result = await client.top.get_detail(top_id=26, tag=False)
+    result = await client.top.get_detail(top_id=62, tag=False)
     assert result is not None
+
+
+async def test_get_detail_with_tag(client: Client) -> None:
+    """测试获取排行榜详情时返回标签信息."""
+    result = await client.top.get_detail(top_id=62, tag=True)
+    assert result is not None
+    assert result["songTagInfoList"]
