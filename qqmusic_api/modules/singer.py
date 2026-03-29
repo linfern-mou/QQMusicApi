@@ -1,12 +1,22 @@
 """歌手相关 API."""
 
-from enum import Enum
-from typing import cast
+from enum import Enum, IntEnum
 
+from ..models.singer import (
+    HomepageHeaderResponse,
+    HomepageTabDetailResponse,
+    SimilarSingerResponse,
+    SingerAlbumListResponse,
+    SingerDetailResponse,
+    SingerIndexPageResponse,
+    SingerMvListResponse,
+    SingerSongListResponse,
+    SingerTypeListResponse,
+)
 from ._base import ApiModule
 
 
-class AreaType(Enum):
+class AreaType(IntEnum):
     """地区类型枚举."""
 
     ALL = -100
@@ -17,7 +27,7 @@ class AreaType(Enum):
     KOREA = 3
 
 
-class GenreType(Enum):
+class GenreType(IntEnum):
     """风格类型枚举."""
 
     ALL = -100
@@ -36,7 +46,7 @@ class GenreType(Enum):
     BLUES = 10
 
 
-class SexType(Enum):
+class SexType(IntEnum):
     """性别类型枚举."""
 
     ALL = -100
@@ -69,7 +79,7 @@ class TabType(Enum):
         self.tab_name = tab_name
 
 
-class IndexType(Enum):
+class IndexType(IntEnum):
     """首字母索引枚举."""
 
     A = 1
@@ -102,26 +112,6 @@ class IndexType(Enum):
     HASH = 27
 
 
-def validate_int_enum(value: int | Enum, enum_type: type[Enum]) -> int:
-    """确保输入值符合枚举定义.
-
-    Args:
-        value: 待校验的值或枚举成员.
-        enum_type: 目标枚举类.
-
-    Returns:
-        int: 对应的整型数值.
-
-    Raises:
-        ValueError: 如果值不在枚举定义中.
-    """
-    if isinstance(value, enum_type):
-        return cast("int", value.value)
-    if value in {item.value for item in enum_type}:
-        return cast("int", value)
-    raise ValueError(f"Invalid value: {value} for {enum_type.__name__}")
-
-
 class SingerApi(ApiModule):
     """歌手相关 API."""
 
@@ -143,10 +133,11 @@ class SingerApi(ApiModule):
             method="GetSingerList",
             param={
                 "hastag": 0,
-                "area": validate_int_enum(area, AreaType),
-                "sex": validate_int_enum(sex, SexType),
-                "genre": validate_int_enum(genre, GenreType),
+                "area": int(AreaType(area)),
+                "sex": int(SexType(sex)),
+                "genre": int(GenreType(genre)),
             },
+            response_model=SingerTypeListResponse,
         )
 
     def get_singer_list_index(
@@ -172,13 +163,14 @@ class SingerApi(ApiModule):
             module="music.musichallSinger.SingerList",
             method="GetSingerListIndex",
             param={
-                "area": validate_int_enum(area, AreaType),
-                "sex": validate_int_enum(sex, SexType),
-                "genre": validate_int_enum(genre, GenreType),
-                "index": validate_int_enum(index, IndexType),
+                "area": int(AreaType(area)),
+                "sex": int(SexType(sex)),
+                "genre": int(GenreType(genre)),
+                "index": int(IndexType(index)),
                 "sin": sin,
                 "cur_page": cur_page,
             },
+            response_model=SingerIndexPageResponse,
         )
 
     def get_info(self, mid: str):
@@ -191,6 +183,7 @@ class SingerApi(ApiModule):
             module="music.UnifiedHomepage.UnifiedHomepageSrv",
             method="GetHomepageHeader",
             param={"SingerMid": mid},
+            response_model=HomepageHeaderResponse,
         )
 
     def get_tab_detail(
@@ -219,6 +212,7 @@ class SingerApi(ApiModule):
                 "PageSize": num,
                 "Order": 0,
             },
+            response_model=HomepageTabDetailResponse,
         )
 
     def get_desc(self, mids: list[str]):
@@ -231,6 +225,7 @@ class SingerApi(ApiModule):
             module="music.musichallSinger.SingerInfoInter",
             method="GetSingerDetail",
             param={"singer_mids": mids, "groups": 1, "wikis": 1},
+            response_model=SingerDetailResponse,
         )
 
     def get_similar(self, mid: str, number: int = 10):
@@ -244,6 +239,7 @@ class SingerApi(ApiModule):
             module="music.SimilarSingerSvr",
             method="GetSimilarSingerList",
             param={"singerMid": mid, "number": number},
+            response_model=SimilarSingerResponse,
         )
 
     def get_songs_list(self, mid: str, number: int = 10, begin: int = 0):
@@ -258,6 +254,7 @@ class SingerApi(ApiModule):
             module="musichall.song_list_server",
             method="GetSingerSongList",
             param={"singerMid": mid, "order": 1, "number": number, "begin": begin},
+            response_model=SingerSongListResponse,
         )
 
     def get_album_list(self, mid: str, number: int = 10, begin: int = 0):
@@ -272,6 +269,7 @@ class SingerApi(ApiModule):
             module="music.musichallAlbum.AlbumListServer",
             method="GetAlbumList",
             param={"singerMid": mid, "order": 1, "number": number, "begin": begin},
+            response_model=SingerAlbumListResponse,
         )
 
     def get_mv_list(self, mid: str, number: int = 10, begin: int = 0):
@@ -286,4 +284,5 @@ class SingerApi(ApiModule):
             module="MvService.MvInfoProServer",
             method="GetSingerMvList",
             param={"singermid": mid, "order": 1, "count": number, "start": begin},
+            response_model=SingerMvListResponse,
         )
