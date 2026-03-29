@@ -1,43 +1,11 @@
 """用户相关 API."""
 
-from ..core import Platform
 from ..models.request import Credential
 from ._base import ApiModule
 
 
 class UserApi(ApiModule):
     """用户相关 API."""
-
-    async def get_euin(self, musicid: int) -> str:
-        """通过 musicid 获取 encrypt_uin (直接发起 HTTP 请求).
-
-        Args:
-            musicid: 用户数字 ID.
-
-        Returns:
-            str: 加密后的 UIN (encrypt_uin).
-        """
-        params = self._build_query_common_params(Platform.DESKTOP)
-        params.update({"cid": 205360838, "userid": musicid})
-        response = await self._request(
-            "GET",
-            "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
-            params=params,
-        )
-        data = response.json().get("data", {})
-        return data.get("creator", {}).get("encrypt_uin", "")
-
-    def get_musicid(self, euin: str):
-        """通过 encrypt_uin 反查 musicid.
-
-        Args:
-            euin: 加密后的 UIN.
-        """
-        return self._build_request(
-            module="music.srfDissInfo.DissInfo",
-            method="CgiGetDiss",
-            param={"disstid": 0, "dirid": 201, "song_num": 1, "enc_host_uin": euin, "onlysonglist": 1},
-        )
 
     def get_homepage(self, euin: str, *, credential: Credential | None = None):
         """获取用户主页头部及统计信息.
