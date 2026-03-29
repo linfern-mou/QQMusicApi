@@ -220,7 +220,7 @@ class SearchByTypeResponse(Response):
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_user"},
     )
-    audio_alum: list[SongSearch] | None = Field(
+    audio_alum: list[AlbumSearch] | None = Field(
         default=None,
         json_schema_extra={"jsonpath": "$.body.item_audio"},
     )
@@ -269,7 +269,7 @@ class GeneralSearchResponse(Response):
     songlist: GeneralSearchRequestBody[SongListSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_songlist"},
     )
-    audio: GeneralSearchRequestBody[SongSearch] = Field(
+    audio: GeneralSearchRequestBody[AlbumSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_audio"},
     )
     direct: list[dict[str, Any]] = Field(

@@ -1,6 +1,6 @@
 """搜索相关 API."""
 
-from enum import Enum
+from enum import IntEnum
 from typing import Any
 
 from ..core import Platform
@@ -9,7 +9,7 @@ from ..utils import get_searchID
 from ._base import ApiModule
 
 
-class SearchType(Enum):
+class SearchType(IntEnum):
     """搜索类型.
 
     + SONG: 歌曲
@@ -111,7 +111,7 @@ class SearchApi(ApiModule):
     def search_by_type(
         self,
         keyword: str,
-        search_type: SearchType = SearchType.SONG,
+        search_type: int | SearchType = SearchType.SONG,
         num: int = 10,
         page: int = 1,
         *,
@@ -126,13 +126,14 @@ class SearchApi(ApiModule):
             page: 页码.
             highlight: 是否高亮关键词.
         """
+        normalized_search_type = int(SearchType(search_type))
         return self._build_request(
             "music.search.SearchCgiService",
             "DoSearchForQQMusicMobile",
             {
                 "searchid": get_searchID(),
                 "query": keyword,
-                "search_type": search_type.value,
+                "search_type": normalized_search_type,
                 "num_per_page": num,
                 "page_num": page,
                 "highlight": highlight,

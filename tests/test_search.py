@@ -3,6 +3,7 @@
 import pytest
 
 from qqmusic_api import Client
+from qqmusic_api.models.search import SearchByTypeResponse
 from qqmusic_api.modules.search import SearchType
 
 
@@ -55,3 +56,10 @@ async def test_search_by_type(client: Client, search_type: SearchType, page: int
     result = await client.search.search_by_type("周杰伦", search_type=search_type, page=page, num=num)
     assert result is not None
     assert isinstance(result, dict)
+
+
+async def test_search_by_type_with_int(client: Client) -> None:
+    """测试按类型搜索支持整型枚举值."""
+    result = await client.search.search_by_type("周杰伦", search_type=SearchType.SONG.value, page=1, num=5)
+    assert isinstance(result, SearchByTypeResponse)
+    assert result.song is not None
