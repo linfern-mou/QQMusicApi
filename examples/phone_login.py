@@ -2,9 +2,8 @@
 
 import asyncio
 
-from qqmusic_api import Client
-from qqmusic_api.core.exceptions import LoginError
-from qqmusic_api.modules.login import PhoneLoginEvents
+from qqmusic_api import Client, LoginError
+from qqmusic_api.models.login import PhoneLoginEvents
 
 
 async def phone_login_example() -> None:
@@ -14,12 +13,12 @@ async def phone_login_example() -> None:
 
     try:
         async with Client() as client:
-            event, info = await client.login.send_authcode(phone, country_code)
+            result = await client.login.send_authcode(phone, country_code)
 
-            if event == PhoneLoginEvents.CAPTCHA:
-                print(f"需要验证,访问链接: {info}")
+            if result.event == PhoneLoginEvents.CAPTCHA:
+                print(f"需要验证,访问链接: {result.info}")
                 return
-            if event == PhoneLoginEvents.FREQUENCY:
+            if result.event == PhoneLoginEvents.FREQUENCY:
                 print("操作过于频繁,请稍后再试")
                 return
 

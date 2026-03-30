@@ -3,9 +3,9 @@
 import asyncio
 from pathlib import Path
 
-from qqmusic_api import Client
-from qqmusic_api.core.exceptions import LoginError
-from qqmusic_api.modules.login import QR, QRCodeLoginEvents, QRLoginType
+from qqmusic_api import Client, LoginError
+from qqmusic_api.models.login import QR, QRCodeLoginEvents, QRLoginType
+from qqmusic_api.modules.login_utils import iter_qrcode_login
 
 
 def show_qrcode(qr: QR) -> None:
@@ -34,22 +34,23 @@ async def qrcode_login_example(login_type: QRLoginType) -> None:
             from contextlib import aclosing
 
             async with aclosing(
-                client.login.iter_qrcode_login(
+                iter_qrcode_login(
+                    client.login,
                     qr,
                     interval=1.5,
                     timeout_seconds=180.0,
                 ),
             ) as qrcode_stream:
-                async for event, credential in qrcode_stream:
-                    print(f"当前状态: {event.name}")
+                async for result in qrcode_stream:
+                    print(f"当前状态: {result.event.name}")
 
-                    if event == QRCodeLoginEvents.DONE and credential is not None:
-                        print(f"登录成功! MusicID: {credential.musicid}")
+                    if result.done and result.credential is not None:
+                        print(f"登录成功! MusicID: {result.credential.musicid}")
                         return
-                    if event == QRCodeLoginEvents.TIMEOUT:
+                    if result.event == QRCodeLoginEvents.TIMEOUT:
                         print("二维码已过期,请重新获取")
                         return
-                    if event == QRCodeLoginEvents.REFUSE:
+                    if result.event == QRCodeLoginEvents.REFUSE:
                         print("用户拒绝了登录请求")
                         return
 
