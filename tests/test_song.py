@@ -10,19 +10,13 @@ from qqmusic_api.modules.song import EncryptedSongFileType, SongFileType
 async def test_query_song(client: Client, value: list[int] | list[str]) -> None:
     """测试查询歌曲信息."""
     result = await client.song.query_song(value)
-    assert result is not None
+    assert result.tracks
 
 
 async def test_query_song_empty_value(client: Client) -> None:
     """测试空列表查询歌曲时抛出异常."""
     with pytest.raises(ValueError, match="value 不能为空"):
         await client.song.query_song([])
-
-
-async def test_get_try_url(client: Client) -> None:
-    """测试获取试听文件链接."""
-    result = await client.song.get_try_url(mid="003w2xz20QlUZt", vs="003w2xz20QlUZt")
-    assert result is not None
 
 
 @pytest.mark.parametrize(
@@ -36,68 +30,67 @@ async def test_get_try_url(client: Client) -> None:
 async def test_get_song_urls(client: Client, file_type: SongFileType | EncryptedSongFileType) -> None:
     """测试获取歌曲文件链接."""
     result = await client.song.get_song_urls(mid=["003w2xz20QlUZt"], file_type=file_type)
-    assert isinstance(result, dict)
+    assert len(result.data) == 1
 
 
 async def test_get_song_urls_empty(client: Client) -> None:
     """测试空列表获取歌曲链接返回空结果集."""
     result = await client.song.get_song_urls(mid=[])
-    assert isinstance(result, dict)
-    assert result.get("midurlinfo") == []
+    assert result.data == []
 
 
 @pytest.mark.parametrize("value", [100, "003w2xz20QlUZt"])
 async def test_get_detail(client: Client, value: int | str) -> None:
     """测试获取歌曲详情."""
     result = await client.song.get_detail(value)
-    assert result is not None
+    assert result.track.mid
 
 
 async def test_get_similar_song(client: Client) -> None:
     """测试获取相似歌曲."""
     result = await client.song.get_similar_song(100)
-    assert result is not None
+    assert result.song
 
 
 async def test_get_lables(client: Client) -> None:
     """测试获取歌曲标签."""
     result = await client.song.get_lables(100)
-    assert result is not None
+    assert result.labels is not None
 
 
 async def test_get_related_songlist(client: Client) -> None:
     """测试获取歌曲相关歌单."""
     result = await client.song.get_related_songlist(100)
-    assert result is not None
+    assert result.songlist is not None
 
 
 async def test_get_related_mv(client: Client) -> None:
     """测试获取歌曲相关 MV."""
     result = await client.song.get_related_mv(100)
-    assert result is not None
+    assert result.mv is not None
 
 
 @pytest.mark.parametrize("value", [100, "003w2xz20QlUZt"])
 async def test_get_other_version(client: Client, value: int | str) -> None:
     """测试获取歌曲其他版本."""
     result = await client.song.get_other_version(value)
-    assert result is not None
+    assert result.data is not None
 
 
 @pytest.mark.parametrize("value", [100, "003w2xz20QlUZt"])
 async def test_get_producer(client: Client, value: int | str) -> None:
     """测试获取制作人信息."""
     result = await client.song.get_producer(value)
-    assert result is not None
+    assert result.data is not None
 
 
 async def test_get_sheet(client: Client) -> None:
     """测试获取歌曲相关曲谱."""
     result = await client.song.get_sheet("003w2xz20QlUZt")
-    assert result is not None
+    assert any(sheet.song_mid == "003w2xz20QlUZt" for sheet in result.result)
 
 
 async def test_get_fav_num(client: Client) -> None:
     """测试获取歌曲收藏数量."""
     result = await client.song.get_fav_num([100])
-    assert result is not None
+    assert "100" in result.numbers

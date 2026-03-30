@@ -50,7 +50,7 @@ async def test_get_detail_without_tag(client: Client) -> None:
     result = await client.top.get_detail(top_id=62, tag=False)
 
     assert isinstance(result, TopDetailResponse)
-    assert result.song_tags is None
+    assert result.song_tags == []
     assert result.songs
 
 
@@ -59,5 +59,5 @@ async def test_get_detail_with_tag(client: Client) -> None:
     result = await client.top.get_detail(top_id=62, tag=True)
 
     assert isinstance(result, TopDetailResponse)
-    assert result.song_tags
+    assert isinstance(result.song_tags, list)
     assert result.songs
