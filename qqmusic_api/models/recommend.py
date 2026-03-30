@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from pydantic import Field
+from pydantic import AliasChoices, Field, model_validator
 
 from .base import Song, SongList
 from .request import Response
@@ -18,10 +18,10 @@ class RecommendNiche(Response):
         cards: 原始卡片列表.
     """
 
-    id: int = 0
-    title_template: str = ""
-    title_content: str = ""
-    cards: list[dict[str, Any]] | None = Field(default=None, alias="v_card")
+    id: int
+    title_template: str
+    title_content: str
+    cards: list[dict[str, Any]] = Field(alias="v_card")
 
 
 class RecommendShelf(Response):
@@ -35,11 +35,11 @@ class RecommendShelf(Response):
         niches: 楼层下属的细分分组列表.
     """
 
-    id: int = 0
-    title_template: str = ""
-    title_content: str = ""
-    more: dict[str, Any] | None = None
-    niches: list[RecommendNiche] = Field(default_factory=list, alias="v_niche")
+    id: int
+    title_template: str
+    title_content: str
+    more: dict[str, Any] = Field()
+    niches: list[RecommendNiche] = Field(alias="v_niche")
 
 
 class RecommendFeedCardResponse(Response):
@@ -54,12 +54,12 @@ class RecommendFeedCardResponse(Response):
         shelves: 首页推荐楼层列表.
     """
 
-    retcode: int = 0
-    msg: str = ""
-    prompt: str = ""
-    d_num: int = 0
-    load_mark: int = 0
-    shelves: list[RecommendShelf] = Field(default_factory=list, alias="v_shelf")
+    retcode: int
+    msg: str
+    prompt: str
+    d_num: int
+    load_mark: int
+    shelves: list[RecommendShelf] = Field(alias="v_shelf")
 
 
 class GuessRecommendResponse(Response):
@@ -69,7 +69,15 @@ class GuessRecommendResponse(Response):
         songs: 推荐歌曲列表.
     """
 
-    songs: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.Tracks[*]"})
+    songs: list[Song] = Field(default_factory=list, alias="Tracks")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_tracks(cls, data: Any) -> Any:
+        """将猜你喜欢响应规整为稳定的歌曲列表载荷."""
+        if isinstance(data, dict) and "Tracks" not in data:
+            return {"Tracks": []}
+        return data
 
 
 class RadarRecommendResponse(Response):
@@ -85,13 +93,13 @@ class RadarRecommendResponse(Response):
         video_cards: 关联视频卡片数据.
     """
 
-    songs: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.VecSongs[*].Track"})
-    recommend_song_ids: list[int] = Field(default_factory=list, alias="RecommendSongIds")
-    base_song_ids: list[int] = Field(default_factory=list, alias="BaseSongIds")
-    has_more: bool = Field(default=False, alias="HasMore")
-    toast: dict[str, Any] | str | None = Field(default=None, alias="Toast")
-    timestamp: int = Field(default=0, alias="TimeStamp")
-    video_cards: dict[str, Any] | list[dict[str, Any]] | None = Field(default=None, alias="VideoCards")
+    songs: list[Song] = Field(json_schema_extra={"jsonpath": "$.VecSongs[*].Track"})
+    recommend_song_ids: list[int] = Field(alias="RecommendSongIds")
+    base_song_ids: list[int] = Field(alias="BaseSongIds")
+    has_more: bool = Field(alias="HasMore")
+    toast: str = ""
+    timestamp: int = Field(alias="TimeStamp")
+    video_cards: dict[str, Any] = Field(alias="VideoCards")
 
 
 class RecommendSonglistItem(SongList):
@@ -104,10 +112,10 @@ class RecommendSonglistItem(SongList):
         creator_nick: 创建者昵称.
     """
 
-    picurl: str = Field(default="", json_schema_extra={"jsonpath": "$.cover.default_url"})
-    songnum: int = Field(default=0, alias="song_cnt")
-    listennum: int | str = Field(default=0, alias="play_cnt")
-    creator_nick: str = Field(default="", json_schema_extra={"jsonpath": "$.creator.nick"})
+    picurl: str = Field(json_schema_extra={"jsonpath": "$.cover.default_url"})
+    songnum: int = Field(validation_alias=AliasChoices("song_cnt", "songnum", "songNum"))
+    listennum: int = Field(validation_alias=AliasChoices("play_cnt", "listennum", "playCnt"))
+    creator_nick: str = Field(json_schema_extra={"jsonpath": "$.creator.nick"})
 
 
 class RecommendSonglistResponse(Response):
@@ -121,12 +129,11 @@ class RecommendSonglistResponse(Response):
     """
 
     songlists: list[RecommendSonglistItem] = Field(
-        default_factory=list,
         json_schema_extra={"jsonpath": "$.List[*].Playlist.basic"},
     )
-    has_more: bool = Field(default=False, alias="HasMore")
-    from_limit: int = Field(default=0, alias="FromLimit")
-    msg: str = Field(default="", alias="Msg")
+    has_more: bool = Field(alias="HasMore")
+    from_limit: int = Field(alias="FromLimit")
+    msg: str = Field(alias="Msg")
 
 
 class RecommendNewSongTag(Response):
@@ -140,11 +147,11 @@ class RecommendNewSongTag(Response):
         from_type: 标签来源类型.
     """
 
-    id: int = 0
-    tagid: int = 0
-    tag: str = ""
-    link: str = ""
-    from_type: int = 0
+    id: int
+    tagid: int
+    tag: str
+    link: str
+    from_type: int
 
 
 class RecommendNewSongResponse(Response):
@@ -159,9 +166,9 @@ class RecommendNewSongResponse(Response):
         song_tags: 新歌标签列表.
     """
 
-    lanlist: list[dict[str, Any]] = Field(default_factory=list)
-    lan: str | int = ""
-    songs: list[Song] = Field(default_factory=list, alias="songlist")
-    ret_msg: str = ""
-    type: int = 0
-    song_tags: list[RecommendNewSongTag] = Field(default_factory=list, alias="songTagInfoList")
+    lanlist: list[dict[str, Any]] = Field()
+    lan: str
+    songs: list[Song] = Field(alias="songlist")
+    ret_msg: str
+    type: int
+    song_tags: list[RecommendNewSongTag] = Field(alias="songTagInfoList")

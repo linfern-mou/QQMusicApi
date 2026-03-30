@@ -18,11 +18,11 @@ class IconTextInfo(Response):
         is_dynamic: 是否为动态角标.
     """
 
-    txt: str = ""
-    unique_id: str = ""
-    type: int = 0
-    cmid: str | None = None
-    is_dynamic: bool = False
+    txt: str
+    unique_id: str
+    type: int
+    cmid: str
+    is_dynamic: bool
 
 
 class CommentCountResponse(Response):
@@ -41,19 +41,19 @@ class CommentCountResponse(Response):
         cm_tab_type: 评论标签页类型.
     """
 
-    biz_type: int = Field(default=0, json_schema_extra={"jsonpath": "$.response.biz_type"})
-    biz_id: str = Field(default="", json_schema_extra={"jsonpath": "$.response.biz_id"})
-    biz_sub_type: int = Field(default=0, json_schema_extra={"jsonpath": "$.response.biz_sub_type"})
-    count: int = Field(default=0, json_schema_extra={"jsonpath": "$.response.count"})
-    count_ver: str = Field(default="", json_schema_extra={"jsonpath": "$.response.count_ver"})
-    count_view: str = Field(default="", json_schema_extra={"jsonpath": "$.response.count_view"})
-    related_id: str = Field(default="", json_schema_extra={"jsonpath": "$.response.related_id"})
-    tip: str = Field(default="", json_schema_extra={"jsonpath": "$.response.tip"})
-    icon_list: list[IconTextInfo] | None = Field(
-        default=None,
+    biz_type: int = Field(json_schema_extra={"jsonpath": "$.response.biz_type"})
+    biz_id: str = Field(json_schema_extra={"jsonpath": "$.response.biz_id"})
+    biz_sub_type: int = Field(json_schema_extra={"jsonpath": "$.response.biz_sub_type"})
+    count: int = Field(json_schema_extra={"jsonpath": "$.response.count"})
+    count_ver: str = Field(json_schema_extra={"jsonpath": "$.response.count_ver"})
+    count_view: str = Field(json_schema_extra={"jsonpath": "$.response.count_view"})
+    related_id: str = Field(json_schema_extra={"jsonpath": "$.response.related_id"})
+    tip: str = Field(json_schema_extra={"jsonpath": "$.response.tip"})
+    icon_list: list[IconTextInfo] = Field(
+        default_factory=list,
         json_schema_extra={"jsonpath": "$.response.icon_list[*]"},
     )
-    cm_tab_type: int = Field(default=0, json_schema_extra={"jsonpath": "$.cmTabType"})
+    cm_tab_type: int = Field(json_schema_extra={"jsonpath": "$.cmTabType"})
 
 
 class CommentItem(Response):
@@ -85,29 +85,29 @@ class CommentItem(Response):
         sub_comments: 子评论列表.
     """
 
-    cmid: str = Field(default="", alias="CmId")
-    seq_no: str = Field(default="", alias="SeqNo")
-    nick: str = Field(default="", alias="Nick")
-    avatar: str = Field(default="", alias="Avatar")
-    encrypt_uin: str = Field(default="", alias="EncryptUin")
-    content: str = Field(default="", alias="Content")
-    pub_time: int = Field(default=0, alias="PubTime")
-    praise_num: int = Field(default=0, alias="PraiseNum")
-    reply_cnt: int = Field(default=0, alias="ReplyCnt")
-    is_praised: int = Field(default=0, alias="IsPraised")
-    is_self: int = Field(default=0, alias="IsSelf")
-    state: int = Field(default=0, alias="State")
-    hot_score: str = Field(default="", alias="HotScore")
-    rec_score: str = Field(default="", alias="RecScore")
-    song_id: int = Field(default=0, alias="SongId")
-    song_name: str = Field(default="", alias="SongName")
-    singer_names: str = Field(default="", alias="SingerNames")
-    song_ts_elems: list[dict[str, Any]] | None = Field(default=None, alias="SongTsElems")
-    hash_tag_list: list[dict[str, Any]] | None = Field(default=None, alias="HashTagList")
-    little_tails: list[dict[str, Any]] | None = Field(default=None, alias="LittleTails")
-    icon_list: list[dict[str, Any]] | None = Field(default=None, alias="IconList")
-    vip_ui: dict[str, Any] | None = Field(default=None, alias="VipUI")
-    sub_comments: list[dict[str, Any]] | None = Field(default=None, alias="SubComments")
+    cmid: str = Field(alias="CmId")
+    seq_no: str = Field(alias="SeqNo")
+    nick: str = Field(alias="Nick")
+    avatar: str = Field(alias="Avatar")
+    encrypt_uin: str = Field(alias="EncryptUin")
+    content: str = Field(alias="Content")
+    pub_time: int = Field(alias="PubTime")
+    praise_num: int = Field(alias="PraiseNum")
+    reply_cnt: int = Field(alias="ReplyCnt")
+    is_praised: int = Field(alias="IsPraised")
+    is_self: int = Field(alias="IsSelf")
+    state: int = Field(alias="State")
+    hot_score: str = Field(alias="HotScore")
+    rec_score: str = Field(alias="RecScore")
+    song_id: int = Field(alias="SongId")
+    song_name: str = Field(alias="SongName")
+    singer_names: str = Field(alias="SingerNames")
+    song_ts_elems: list[dict[str, Any]] = Field(default_factory=list, alias="SongTsElems")
+    hash_tag_list: list[dict[str, Any]] = Field(default_factory=list, alias="HashTagList")
+    little_tails: list[dict[str, Any]] = Field(default_factory=list, alias="LittleTails")
+    icon_list: list[dict[str, Any]] = Field(default_factory=list, alias="IconList")
+    vip_ui: dict[str, Any] = Field(default_factory=dict, alias="VipUI")
+    sub_comments: list[dict[str, Any]] = Field(default_factory=list, alias="SubComments")
 
 
 class CommentListResponse(Response):
@@ -128,21 +128,21 @@ class CommentListResponse(Response):
         sub_code: 子返回码.
     """
 
-    comments: list[CommentItem] | None = Field(
-        default=None,
+    comments: list[CommentItem] = Field(
+        default_factory=list,
         json_schema_extra={"jsonpath": "$.CommentList.Comments[*]"},
     )
-    comment_ids: list[str] | None = Field(default=None, json_schema_extra={"jsonpath": "$.CommentList.CommentIds[*]"})
-    has_more: int = Field(default=0, json_schema_extra={"jsonpath": "$.CommentList.HasMore"})
-    next_offset: int = Field(default=0, json_schema_extra={"jsonpath": "$.CommentList.NextOffset"})
-    total: int = Field(default=0, json_schema_extra={"jsonpath": "$.CommentList.Total"})
-    total_cm_num: int = Field(default=0, alias="TotalCmNum")
-    comment_tip: str = Field(default="", alias="CommentTip")
-    comment_h5_page: str = Field(default="", alias="CommentH5Page")
-    has_ts_cm: int = Field(default=0, alias="HasTsCm")
-    share_cnt: int = Field(default=0, alias="ShareCnt")
-    msg: str = Field(default="", alias="Msg")
-    sub_code: int = Field(default=0, alias="SubCode")
+    comment_ids: list[str] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.CommentList.CommentIds[*]"})
+    has_more: int = Field(json_schema_extra={"jsonpath": "$.CommentList.HasMore"})
+    next_offset: int = Field(json_schema_extra={"jsonpath": "$.CommentList.NextOffset"})
+    total: int = Field(json_schema_extra={"jsonpath": "$.CommentList.Total"})
+    total_cm_num: int = Field(alias="TotalCmNum")
+    comment_tip: str = Field(alias="CommentTip")
+    comment_h5_page: str = Field(alias="CommentH5Page")
+    has_ts_cm: int = Field(alias="HasTsCm")
+    share_cnt: int = Field(alias="ShareCnt")
+    msg: str = Field(alias="Msg")
+    sub_code: int = Field(alias="SubCode")
 
 
 class MomentCommentItem(Response):
@@ -167,22 +167,22 @@ class MomentCommentItem(Response):
         little_tails: 尾巴挂件列表.
     """
 
-    cmid: str = Field(default="", alias="CmId")
-    seq_no: str = Field(default="", alias="SeqNo")
-    content: str = Field(default="", alias="Content")
-    encrypt_uin: str = Field(default="", alias="EncryptUin")
-    pub_time: int = Field(default=0, alias="PubTime")
-    praise_num: int = Field(default=0, alias="PraiseNum")
-    reply_cnt: int = Field(default=0, alias="ReplyCnt")
-    state: int = Field(default=0, alias="State")
-    is_self: int = Field(default=0, alias="IsSelf")
-    location: str = Field(default="", alias="Location")
-    phone_type: str = Field(default="", alias="PhoneType")
-    pic: str = Field(default="", alias="Pic")
-    pic_size: str = Field(default="", alias="PicSize")
-    song_ts_elems: list[dict[str, Any]] | None = Field(default=None, alias="SongTsElems")
-    hash_tag_list: list[dict[str, Any]] | None = Field(default=None, alias="HashTagList")
-    little_tails: list[dict[str, Any]] | None = Field(default=None, alias="LittleTails")
+    cmid: str = Field(alias="CmId")
+    seq_no: str = Field(alias="SeqNo")
+    content: str = Field(alias="Content")
+    encrypt_uin: str = Field(alias="EncryptUin")
+    pub_time: int = Field(alias="PubTime")
+    praise_num: int = Field(alias="PraiseNum")
+    reply_cnt: int = Field(alias="ReplyCnt")
+    state: int = Field(alias="State")
+    is_self: int = Field(alias="IsSelf")
+    location: str = Field(alias="Location")
+    phone_type: str = Field(alias="PhoneType")
+    pic: str = Field(alias="Pic")
+    pic_size: str = Field(alias="PicSize")
+    song_ts_elems: list[dict[str, Any]] = Field(default_factory=list, alias="SongTsElems")
+    hash_tag_list: list[dict[str, Any]] = Field(default_factory=list, alias="HashTagList")
+    little_tails: list[dict[str, Any]] = Field(default_factory=list, alias="LittleTails")
 
 
 class MomentCommentResponse(Response):
@@ -197,9 +197,9 @@ class MomentCommentResponse(Response):
         map_cm_ext: 评论扩展信息映射.
     """
 
-    comments: list[MomentCommentItem] | None = Field(default=None, json_schema_extra={"jsonpath": "$.CmList[*]"})
-    has_more: int = Field(default=0, alias="HasMore")
-    next_pos: str | None = Field(default=None, alias="NextPos")
-    hint: str = Field(default="", alias="Hint")
-    prev_list_loaded: int = Field(default=0, alias="PrevListLoaded")
-    map_cm_ext: dict[str, dict[str, Any]] | None = Field(default=None, alias="MapCmExt")
+    comments: list[MomentCommentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.CmList[*]"})
+    has_more: int = Field(alias="HasMore")
+    next_pos: str = Field(default="", alias="NextPos")
+    hint: str = Field(alias="Hint")
+    prev_list_loaded: int = Field(alias="PrevListLoaded")
+    map_cm_ext: dict[str, dict[str, Any]] = Field(default_factory=dict, alias="MapCmExt")

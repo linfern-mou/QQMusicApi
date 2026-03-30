@@ -1,6 +1,6 @@
 """Top API 返回模型定义."""
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from .base import Song
 from .request import Response
@@ -105,8 +105,14 @@ class TopDetailResponse(Response):
         index_info_list: 榜单索引信息列表.
     """
 
+    @field_validator("song_tags", "ext_info_list", "index_info_list", mode="before")
+    @classmethod
+    def _coerce_none_list(cls, value: list[dict] | None) -> list[dict]:
+        """将上游返回的空列表占位统一规整为列表."""
+        return [] if value is None else value
+
     info: TopSummary = Field(alias="data")
     songs: list[Song] = Field(alias="songInfoList")
-    song_tags: list[dict] | None = Field(default=None, alias="songTagInfoList")
+    song_tags: list[dict] = Field(default_factory=list, alias="songTagInfoList")
     ext_info_list: list[dict] = Field(default_factory=list, alias="extInfoList")
-    index_info_list: list[dict] | None = Field(default=None, alias="indexInfoList")
+    index_info_list: list[dict] = Field(default_factory=list, alias="indexInfoList")

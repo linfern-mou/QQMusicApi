@@ -1,8 +1,8 @@
 """User API 返回模型定义."""
 
-from typing import Any
+from typing import Any, cast
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, field_validator
 
 from .base import MV, Album, Singer, SongList
 from .request import Response
@@ -36,28 +36,22 @@ class UserPlaylistSummary(SongList):
         sort_weight: 排序权重.
     """
 
-    id: int = Field(default=-1, alias="tid")
-    dirid: int = Field(default=0, alias="dirId")
-    title: str = Field(default="", validation_alias=AliasChoices("dirName", "name", "title"))
-    picurl: str = Field(default="", validation_alias=AliasChoices("picUrl", "logo", "picurl"))
-    songnum: int = Field(default=0, validation_alias=AliasChoices("songNum", "songnum"))
-    create_time: int = Field(default=0, alias="createTime")
-    update_time: int = Field(default=0, alias="updateTime")
-    uin: str = ""
-    nick: str = ""
-    desc: str = ""
-    bigpic_url: str = Field(default="", alias="bigpicUrl")
-    album_pic_url: str = Field(default="", alias="albumPicUrl")
-    avatar: str = ""
-    ident_icon: str = Field(default="", alias="identIcon")
-    layer_url: str = Field(default="", alias="layerUrl")
-    invalid: bool = False
-    dir_show: int = Field(default=0, alias="dirShow")
-    create_fav_cnt: int = Field(default=0, alias="fav_cnt")
-    play_cnt: int = 0
-    comment_cnt: int = 0
-    op_type: int = Field(default=0, alias="opType")
-    sort_weight: int = Field(default=0, alias="sortWeight")
+    create_time: int = Field(alias="createTime")
+    update_time: int = Field(alias="updateTime")
+    uin: str
+    nick: str
+    bigpic_url: str = Field(alias="bigpicUrl")
+    album_pic_url: str = Field(alias="albumPicUrl")
+    avatar: str
+    ident_icon: str = Field(alias="identIcon")
+    layer_url: str = Field(alias="layerUrl")
+    invalid: bool
+    dir_show: int = Field(alias="dirShow")
+    create_fav_cnt: int = Field(alias="fav_cnt")
+    play_cnt: int
+    comment_cnt: int
+    op_type: int = Field(alias="opType")
+    sort_weight: int = Field(alias="sortWeight")
 
 
 class UserCreatedSonglistResponse(Response):
@@ -70,10 +64,10 @@ class UserCreatedSonglistResponse(Response):
         finished: 是否已经拉取完成.
     """
 
-    total: int = 0
-    playlists: list[UserPlaylistSummary] | None = Field(default=None, json_schema_extra={"jsonpath": "$.v_playlist[*]"})
-    deleted_ids: list[int] | int | None = Field(default=None, alias="v_delTid")
-    finished: bool = Field(default=False, alias="bFinish")
+    total: int
+    playlists: list[UserPlaylistSummary] = Field(json_schema_extra={"jsonpath": "$.v_playlist[*]"})
+    deleted_ids: list[int] = Field(alias="v_delTid")
+    finished: bool = Field(alias="bFinish")
 
 
 class UserFavSonglistItem(SongList):
@@ -100,24 +94,19 @@ class UserFavSonglistItem(SongList):
         readtime: 最近读取时间戳.
     """
 
-    id: int = Field(default=-1, alias="tid")
-    dirid: int = Field(default=0, alias="dirId")
-    title: str = Field(default="", alias="name")
-    picurl: str = Field(default="", alias="logo")
-    songnum: int = 0
-    uin: str = ""
-    nickname: str = ""
-    create_time: int = Field(default=0, alias="createtime")
-    update_time: int = Field(default=0, alias="updateTime")
-    order_time: int = Field(default=0, alias="orderTime")
-    dir_show: int = Field(default=0, alias="dirShow")
-    dir_type: int = Field(default=0, alias="dirType")
-    edge_mark: str = Field(default="", alias="edgeMark")
-    layer_url: str = Field(default="", alias="layerUrl")
-    album_pic_url: str = Field(default="", alias="albumPicUrl")
-    op_type: int = Field(default=0, alias="opType")
-    sort_weight: int = Field(default=0, alias="sortWeight")
-    readtime: int = 0
+    uin: str
+    nickname: str
+    create_time: int = Field(alias="createtime")
+    update_time: int = Field(alias="updateTime")
+    order_time: int = Field(alias="orderTime")
+    dir_show: int = Field(alias="dirShow")
+    dir_type: int = Field(alias="dirType")
+    edge_mark: str = Field(alias="edgeMark")
+    layer_url: str = Field(alias="layerUrl")
+    album_pic_url: str = Field(alias="albumPicUrl")
+    op_type: int = Field(alias="opType")
+    sort_weight: int = Field(alias="sortWeight")
+    readtime: int
 
 
 class UserFavSonglistResponse(Response):
@@ -133,13 +122,13 @@ class UserFavSonglistResponse(Response):
         failed_ids: 拉取失败的歌单 ID 列表.
     """
 
-    number: int = 0
-    total: int = 0
-    hasmore: int = 0
-    hide: bool = False
-    playlists: list[UserFavSonglistItem] | None = Field(default=None, json_schema_extra={"jsonpath": "$.v_list[*]"})
-    deleted_ids: list[int] | None = Field(default=None, alias="v_delTids")
-    failed_ids: list[int] | None = Field(default=None, alias="v_failTids")
+    number: int
+    total: int
+    hasmore: int
+    hide: bool
+    playlists: list[UserFavSonglistItem] = Field(json_schema_extra={"jsonpath": "$.v_list[*]"})
+    deleted_ids: list[int] = Field(alias="v_delTids")
+    failed_ids: list[int] = Field(alias="v_failTids")
 
 
 class UserFavAlbumItem(Album):
@@ -158,16 +147,12 @@ class UserFavAlbumItem(Album):
         singers: 专辑歌手列表.
     """
 
-    id: int = -1
-    mid: str = ""
-    name: str = ""
-    pmid: str = Field(default="", alias="logo")
-    songnum: int = 0
-    pubtime: int = 0
-    ordertime: int = 0
-    status: int = 0
-    loc: int = 0
-    singers: list[Singer] | None = Field(default=None, alias="v_singer")
+    songnum: int
+    pubtime: int
+    ordertime: int
+    status: int
+    loc: int
+    singers: list[Singer] = Field(alias="v_singer")
 
 
 class UserFavAlbumResponse(Response):
@@ -182,12 +167,12 @@ class UserFavAlbumResponse(Response):
         failed_album_ids: 拉取失败的专辑 ID 列表.
     """
 
-    number: int = 0
-    total: int = 0
-    hasmore: int = 0
-    hide: bool = False
-    albums: list[UserFavAlbumItem] | None = Field(default=None, json_schema_extra={"jsonpath": "$.v_list[*]"})
-    failed_album_ids: list[int] | None = Field(default=None, alias="v_failAlbumId")
+    number: int
+    total: int
+    hasmore: int
+    hide: bool
+    albums: list[UserFavAlbumItem] = Field(json_schema_extra={"jsonpath": "$.v_list[*]"})
+    failed_album_ids: list[int] = Field(alias="v_failAlbumId")
 
 
 class UserInfoCard(Response):
@@ -201,11 +186,11 @@ class UserInfoCard(Response):
         preferences: 偏好信息块.
     """
 
-    head_url: str = Field(default="", alias="HeadUrl")
-    nick_name: str = Field(default="", alias="NickName")
-    signature: str = Field(default="", alias="Signature")
-    encryption_account: str = Field(default="", alias="EncryptionAccount")
-    preferences: dict[str, Any] | None = Field(default=None, alias="Preferences")
+    head_url: str = Field(alias="HeadUrl")
+    nick_name: str = Field(alias="NickName")
+    signature: str = Field(alias="Signature")
+    encryption_account: str = Field(alias="EncryptionAccount")
+    preferences: dict[str, Any] = Field(alias="Preferences")
 
 
 class ListeningReport(Response):
@@ -215,7 +200,7 @@ class ListeningReport(Response):
         report: 听歌报告分块列表.
     """
 
-    report: list[dict[str, Any]] | None = Field(default=None, alias="Report")
+    report: list[dict[str, Any]] = Field(alias="Report")
 
 
 class UserMusicGeneResponse(Response):
@@ -229,9 +214,9 @@ class UserMusicGeneResponse(Response):
     """
 
     user_info_card: UserInfoCard = Field(alias="UserInfoCard")
-    listening_report: ListeningReport | None = Field(default=None, alias="ListeningReport")
-    sort_array: list[int] = Field(default_factory=list, alias="SortArray")
-    is_visit_account: bool = Field(default=False, alias="IsVisitAccount")
+    listening_report: ListeningReport = Field(alias="ListeningReport")
+    sort_array: list[int] = Field(alias="SortArray")
+    is_visit_account: bool = Field(alias="IsVisitAccount")
 
 
 class UserHomepageBaseInfo(Response):
@@ -245,11 +230,11 @@ class UserHomepageBaseInfo(Response):
         user_type: 用户类型标记.
     """
 
-    encrypted_uin: str = Field(default="", alias="EncryptedUin")
-    name: str = Field(default="", alias="Name")
-    avatar: str = Field(default="", alias="Avatar")
-    background_image: str = Field(default="", alias="BackgroundImage")
-    user_type: int = Field(default=0, alias="UserType")
+    encrypted_uin: str = Field(alias="EncryptedUin")
+    name: str = Field(alias="Name")
+    avatar: str = Field(alias="Avatar")
+    background_image: str = Field(alias="BackgroundImage")
+    user_type: int = Field(alias="UserType")
 
 
 class UserHomepageResponse(Response):
@@ -263,9 +248,9 @@ class UserHomepageResponse(Response):
     """
 
     base_info: UserHomepageBaseInfo = Field(json_schema_extra={"jsonpath": "$.Info.BaseInfo"})
-    singer: dict[str, Any] | None = Field(default=None, json_schema_extra={"jsonpath": "$.Info.Singer"})
-    is_followed: int = Field(default=0, json_schema_extra={"jsonpath": "$.Info.IsFollowed"})
-    tab_detail: dict[str, Any] | None = Field(default=None, alias="TabDetail")
+    singer: dict[str, Any] = Field(json_schema_extra={"jsonpath": "$.Info.Singer"})
+    is_followed: int = Field(json_schema_extra={"jsonpath": "$.Info.IsFollowed"})
+    tab_detail: dict[str, Any] = Field(alias="TabDetail")
 
 
 class VipUserInfo(Response):
@@ -279,8 +264,8 @@ class VipUserInfo(Response):
         music_level: 音乐等级.
     """
 
-    buy_url: str = Field(default="", alias="buy_url")
-    my_vip_url: str = Field(default="", alias="my_vip_url")
+    buy_url: str = Field(default="", validation_alias=AliasChoices("buy_url", "buyurl"))
+    my_vip_url: str = Field(default="", validation_alias=AliasChoices("my_vip_url", "myvipurl"))
     score: int = 0
     expire: int = 0
     music_level: int = Field(default=0, alias="music_level")
@@ -303,7 +288,7 @@ class UserVipInfoResponse(Response):
     max_dir_num: int = Field(default=0, alias="maxDirNum")
     max_song_num: int = Field(default=0, alias="maxSongNum")
     song_limit_msg: str = Field(default="", alias="songLimitMsg")
-    userinfo: VipUserInfo | None = None
+    userinfo: VipUserInfo = Field(default_factory=VipUserInfo)
 
 
 class RelationUser(Response):
@@ -319,13 +304,13 @@ class RelationUser(Response):
         is_follow: 当前账号是否已关注.
     """
 
-    mid: str = Field(default="", alias="MID")
-    enc_uin: str = Field(default="", alias="EncUin")
-    name: str = Field(default="", alias="Name")
-    desc: str = Field(default="", alias="Desc")
-    avatar_url: str = Field(default="", alias="AvatarUrl")
-    fan_num: int = Field(default=0, alias="FanNum")
-    is_follow: bool = Field(default=False, alias="IsFollow")
+    mid: str = Field(alias="MID")
+    enc_uin: str = Field(alias="EncUin")
+    name: str = Field(alias="Name")
+    desc: str = Field(alias="Desc")
+    avatar_url: str = Field(alias="AvatarUrl")
+    fan_num: int = Field(alias="FanNum")
+    is_follow: bool = Field(alias="IsFollow")
 
 
 class UserRelationListResponse(Response):
@@ -341,10 +326,23 @@ class UserRelationListResponse(Response):
         lock_msg: 锁定提示文案.
     """
 
+    @field_validator("users", mode="before")
+    @classmethod
+    def _coerce_users(
+        cls,
+        value: RelationUser | dict[str, Any] | list[RelationUser] | list[dict[str, Any]] | None,
+    ) -> list[RelationUser | dict[str, Any]]:
+        """将单条关系用户结果规整为列表."""
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return cast("list[RelationUser | dict[str, Any]]", value)
+        return [value]
+
     total: int = Field(default=0, alias="Total")
-    users: list[RelationUser] | None = Field(default=None, json_schema_extra={"jsonpath": "$.List[*]"})
+    users: list[RelationUser] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.List[*]"})
     has_more: bool = Field(default=False, alias="HasMore")
-    last_pos: str | None = Field(default=None, alias="LastPos")
+    last_pos: str = Field(default="", alias="LastPos")
     msg: str = Field(default="", alias="Msg")
     lock_flag: int = Field(default=0, alias="LockFlag")
     lock_msg: str = Field(default="", alias="LockMsg")
@@ -360,10 +358,10 @@ class FriendEntry(Response):
         is_follow: 当前账号是否已关注.
     """
 
-    encrypt_uin: str = Field(default="", alias="EncryptUin")
-    user_name: str = Field(default="", alias="UserName")
-    avatar_url: str = Field(default="", alias="AvatarUrl")
-    is_follow: bool = Field(default=False, alias="IsFollow")
+    encrypt_uin: str = Field(alias="EncryptUin")
+    user_name: str = Field(alias="UserName")
+    avatar_url: str = Field(alias="AvatarUrl")
+    is_follow: bool = Field(alias="IsFollow")
 
 
 class UserFriendListResponse(Response):
@@ -374,8 +372,8 @@ class UserFriendListResponse(Response):
         has_more: 是否还有更多结果.
     """
 
-    friends: list[FriendEntry] | None = Field(default=None, alias="Friends")
-    has_more: bool = Field(default=False, alias="HasMore")
+    friends: list[FriendEntry] = Field(alias="Friends")
+    has_more: bool = Field(alias="HasMore")
 
 
 class UserFavMvItem(MV):
@@ -395,17 +393,13 @@ class UserFavMvItem(MV):
         status: 状态标记.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "mvid"))
-    vid: str = ""
-    name: str = Field(default="", validation_alias=AliasChoices("name", "title"))
-    title: str = ""
-    picurl: str = Field(default="", alias="picUrl")
-    playcount: int = 0
-    publish_date: int = 0
-    singer_id: int = Field(default=0, alias="singerId")
-    singer_mid: str = Field(default="", alias="singerMid")
-    singer_name: str = Field(default="", alias="singerName")
-    status: int = 0
+    picurl: str = Field(alias="picUrl")
+    playcount: int
+    publish_date: int
+    singer_id: int = Field(alias="singerId")
+    singer_mid: str = Field(alias="singerMid")
+    singer_name: str = Field(alias="singerName")
+    status: int
 
 
 class UserFavMvResponse(Response):
@@ -418,7 +412,7 @@ class UserFavMvResponse(Response):
         mv_list: 当前页收藏 MV 列表.
     """
 
-    code: int = 0
-    sub_code: int = Field(default=0, alias="subCode")
-    msg: str = ""
-    mv_list: list[UserFavMvItem] | None = Field(default=None, alias="mvlist")
+    code: int
+    sub_code: int = Field(alias="subCode")
+    msg: str
+    mv_list: list[UserFavMvItem] = Field(alias="mvlist")

@@ -13,7 +13,7 @@ class QuerySongResponse(Response):
         tracks: 按请求条件返回的歌曲对象列表.
     """
 
-    tracks: list[Song]
+    tracks: list[Song] = Field(default_factory=list)
 
 
 class UrlinfoItem(Response):
@@ -47,8 +47,8 @@ class GetSongUrlsResponse(Response):
         data: 每个目标文件对应的授权与路径信息.
     """
 
-    expiration: int
-    data: list[UrlinfoItem] = Field(alias="midurlinfo")
+    expiration: int = 0
+    data: list[UrlinfoItem] = Field(default_factory=list, alias="midurlinfo")
 
 
 class ContentItem(Response):
@@ -82,12 +82,12 @@ class GetSongDetailResponse(Response):
         track: 歌曲基本信息.
     """
 
-    company: list[ContentItem] = Field(json_schema_extra={"jsonpath": "$.info.company.content"})
-    genre: list[ContentItem] = Field(json_schema_extra={"jsonpath": "$.info.genre.content"})
-    intro: list[ContentItem] = Field(json_schema_extra={"jsonpath": "$.info.intro.content"})
-    lan: list[ContentItem] = Field(json_schema_extra={"jsonpath": "$.info.lan.content"})
-    pub_time: list[ContentItem] = Field(json_schema_extra={"jsonpath": "$.info.pub_time.content"})
-    extras: dict[str, str]
+    company: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.company.content"})
+    genre: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.genre.content"})
+    intro: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.intro.content"})
+    lan: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.lan.content"})
+    pub_time: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.pub_time.content"})
+    extras: dict[str, str] = Field(default_factory=dict)
     track: Song = Field(alias="track_info")
 
 
@@ -104,7 +104,7 @@ class SimilarSongGroup(Response):
 
     title_template: str
     title_content: str
-    song: list[Song] = Field(json_schema_extra={"jsonpath": "$.songs[*].track"})
+    song: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.songs[*].track"})
 
 
 class GetSimilarSongResponse(Response):
@@ -115,8 +115,8 @@ class GetSimilarSongResponse(Response):
         song: 按卡片分组组织的相似歌曲结果.
     """
 
-    tag: list[dict] = Field(alias="songTagInfoList")
-    song: list[SimilarSongGroup] = Field(json_schema_extra={"jsonpath": "$.vecSongNew"})
+    tag: list[dict] = Field(default_factory=list, alias="songTagInfoList")
+    song: list[SimilarSongGroup] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.vecSongNew"})
 
 
 class SongLabel(Response):
@@ -146,7 +146,7 @@ class GetSongLabelsResponse(Response):
         labels: 歌曲标签列表.
     """
 
-    labels: list[SongLabel]
+    labels: list[SongLabel] = Field(default_factory=list)
 
 
 class RelatedPlaylist(SongList):
@@ -168,7 +168,10 @@ class GetRelatedSonglistResponse(Response):
     """
 
     has_more: int = Field(alias="hasMore")
-    songlist: list[RelatedPlaylist] = Field(json_schema_extra={"jsonpath": "$.vecPlaylistNew[*].playlists[*]"})
+    songlist: list[RelatedPlaylist] = Field(
+        default_factory=list,
+        json_schema_extra={"jsonpath": "$.vecPlaylistNew[*].playlists[*]"},
+    )
 
 
 class RelatedMv(MV):
@@ -191,7 +194,7 @@ class RelatedMv(MV):
 
     picurl: str
     playcnt: int
-    singers: list[MVSinger] = Field(json_schema_extra={"jsonpath": "$.singers"})
+    singers: list[MVSinger] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.singers"})
 
 
 class GetRelatedMvResponse(Response):
@@ -203,7 +206,7 @@ class GetRelatedMvResponse(Response):
     """
 
     has_more: int = Field(alias="hasmore")
-    mv: list[RelatedMv] = Field(alias="list")
+    mv: list[RelatedMv] = Field(default_factory=list, alias="list")
 
 
 class GetOtherVersionResponse(Response):
@@ -213,7 +216,7 @@ class GetOtherVersionResponse(Response):
         data: 其他版本歌曲列表.
     """
 
-    data: list[Song] = Field(alias="versionList")
+    data: list[Song] = Field(default_factory=list, alias="versionList")
 
 
 class SongProducer(Response):
@@ -258,8 +261,8 @@ class GetProducerResponse(Response):
         reinforce_msg: 附带的摘要说明文案.
     """
 
-    data: list[SongProducerGroup] = Field(alias="Lst")
-    reinforce_msg: str = Field(alias="ReinforceMsg")
+    data: list[SongProducerGroup] = Field(default_factory=list, alias="Lst")
+    reinforce_msg: str = Field(default="", alias="ReinforceMsg")
 
 
 class SheetMusic(Response):

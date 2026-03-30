@@ -18,13 +18,16 @@ class Singer(Response):
         pmid: 图片 Media ID, 用于拼接歌手头像 URL.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "singerID"))
-    mid: str = Field(default="", validation_alias=AliasChoices("mid", "singerMid", "singerMID"))
-    name: str = Field(default="", validation_alias=AliasChoices("name", "singerName"))
-    title: str = Field(default="", validation_alias=AliasChoices("title", "singerName"))
-    type: int = -1
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "singerID", "singerId", "SingerID", "singer_id"))
+    mid: str = Field(
+        default="",
+        validation_alias=AliasChoices("mid", "singerMid", "singerMID", "SingerMid", "singer_mid"),
+    )
+    name: str = Field(default="", validation_alias=AliasChoices("name", "singerName", "singer_name"))
+    title: str = Field(default="", validation_alias=AliasChoices("title", "singerName", "name"))
+    type: int = Field(default=-1, validation_alias=AliasChoices("type", "SingerType", "vt"))
     uin: int = -1
-    pmid: str = ""
+    pmid: str = Field(default="", validation_alias=AliasChoices("pmid", "singerPmid", "singer_pmid", "pic_mid"))
 
 
 class Album(Response):
@@ -40,13 +43,13 @@ class Album(Response):
         pmid: 图片 Media ID, 用于拼接封面 URL.
     """
 
-    id: int = -1
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "albumID"))
     mid: str = Field(default="", validation_alias=AliasChoices("mid", "albumMid", "albumMID", "albummid"))
-    name: str = ""
-    title: str = ""
-    subtitle: str = ""
-    time_public: str = Field(default="", validation_alias=AliasChoices("time_public", "publish_date"))
-    pmid: str = ""
+    name: str = Field(default="", validation_alias=AliasChoices("name", "albumName"))
+    title: str = Field(default="", validation_alias=AliasChoices("title", "albumName", "name"))
+    subtitle: str = Field(default="", validation_alias=AliasChoices("subtitle", "albumTranName"))
+    time_public: str = Field(default="", validation_alias=AliasChoices("time_public", "publish_date", "publishDate"))
+    pmid: str = Field(default="", validation_alias=AliasChoices("pmid", "logo"))
 
 
 class File(Response):
@@ -133,11 +136,11 @@ class MV(Response):
         title: MV 展示标题.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid", "mvid"))
+    id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid", "mvid", "singerId"))
     vid: str = ""
     type: int = Field(default=-1, validation_alias=AliasChoices("vt", "type"))
-    name: str = Field(default="", validation_alias=AliasChoices("name", "mvname"))
-    title: str = Field(default="", validation_alias=AliasChoices("title", "title_main"))
+    name: str = Field(default="", validation_alias=AliasChoices("name", "mvname", "title"))
+    title: str = Field(default="", validation_alias=AliasChoices("title", "title_main", "name"))
 
 
 class SongList(Response):
@@ -154,12 +157,12 @@ class SongList(Response):
     """
 
     id: int = Field(default=-1, validation_alias=AliasChoices("id", "tid", "dissid"))
-    dirid: int = 0
-    title: str = Field(default="", validation_alias=AliasChoices("title", "dissname"))
-    picurl: str = Field(default="", validation_alias=AliasChoices("picurl", "cover", "logo"))
+    dirid: int = Field(default=0, validation_alias=AliasChoices("dirid", "dirId"))
+    title: str = Field(default="", validation_alias=AliasChoices("title", "dissname", "name", "dirName"))
+    picurl: str = Field(default="", validation_alias=AliasChoices("picurl", "cover", "logo", "picUrl"))
     desc: str = Field(default="", validation_alias=AliasChoices("desc", "description"))
-    songnum: int = Field(default=0, validation_alias=AliasChoices("songnum", "songNum"))
-    listennum: int | str = Field(default=0, validation_alias=AliasChoices("listennum", "playCnt"))
+    songnum: int = Field(default=0, validation_alias=AliasChoices("songnum", "songNum", "song_cnt"))
+    listennum: int | str = Field(default=0, validation_alias=AliasChoices("listennum", "playCnt", "play_cnt"))
 
 
 class Song(Response):

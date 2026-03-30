@@ -28,19 +28,19 @@ class SongSearch(Song):
         relatedword_group: 相关搜索词推荐组.
     """
 
-    search_title: str | None = None
-    title_main: str | None = None
-    title_extra: str | None = None
-    fav_show: str | None = None
-    desc: str | None = None
-    desc_icon: str | None = None
-    hotness: dict[str, Any] | None = None
-    hotness_desc: str | None = None
-    vec_hotness: list[dict[str, Any]] | None = None
-    content: str | None = None
-    new_status: int | None = Field(default=None, alias="newStatus")
-    protect: int | None = None
-    relatedword_group: dict[str, Any] | None = None
+    search_title: str
+    title_main: str
+    title_extra: str
+    fav_show: str
+    desc: str
+    desc_icon: str
+    hotness: dict[str, Any] = Field()
+    hotness_desc: str
+    vec_hotness: list[dict[str, Any]] = Field()
+    content: str
+    new_status: int = Field(alias="newStatus")
+    protect: int
+    relatedword_group: dict[str, Any] = Field()
 
 
 class AlbumSearch(Album):
@@ -77,9 +77,9 @@ class AlbumSearch(Album):
 
     desc_detail: dict[str, Any]
     description: str
-    description2: str
-    type: int | None = Field(None, json_schema_extra={"jsonpath": "$.core_album_config.album_type"})
-    award_label: str | None = Field(None, json_schema_extra={"jsonpath": "$.core_album_config.award_label"})
+    description2: str = ""
+    type: int = Field(0, json_schema_extra={"jsonpath": "$.core_album_config.album_type"})
+    award_label: str = Field("", json_schema_extra={"jsonpath": "$.core_album_config.award_label"})
     hotness: dict[str, Any]
     hotness_desc: str
     label_new: dict[str, Any]
@@ -100,7 +100,7 @@ class SongListSearch(SongList):
         dirtype: 歌单目录类型标识.
     """
 
-    nickname: str = ""
+    nickname: str
     dirtype: int = 0
 
 
@@ -115,11 +115,11 @@ class SingerSearch(Singer):
         subtitle: 补充描述文案.
     """
 
-    pic: str = Field(default="", alias="singerPic")
-    song_num: int = Field(default=0, alias="songNum")
-    album_num: int = Field(default=0, alias="albumNum")
-    mv_num: int = Field(default=0, alias="mvNum")
-    subtitle: str = ""
+    pic: str = Field(alias="singerPic")
+    song_num: int = Field(alias="songNum")
+    album_num: int = Field(alias="albumNum")
+    mv_num: int = Field(alias="mvNum")
+    subtitle: str
 
 
 class MvSearch(MV):
@@ -135,13 +135,13 @@ class MvSearch(MV):
         singer_name: 歌手名称.
     """
 
-    pic: str = Field(default="", alias="pic")
-    play_count: int = Field(default=0, alias="play_count")
-    duration: int = 0
-    publish_date: str = Field(default="", alias="publish_date")
-    singer_id: int = Field(default=0, alias="singerid")
-    singer_mid: str = Field(default="", alias="singermid")
-    singer_name: str = Field(default="", alias="singername")
+    pic: str = Field(alias="pic")
+    play_count: int = Field(alias="play_count")
+    duration: int
+    publish_date: str = Field(alias="publish_date")
+    singer_id: int = Field(alias="singerid")
+    singer_mid: str = Field(alias="singermid")
+    singer_name: str = Field(alias="singername")
 
 
 T = TypeVar("T")
@@ -157,10 +157,10 @@ class GeneralSearchRequestBody(Response, Generic[T]):
         more_info: 继续加载该分类结果时需要回传的翻页上下文.
     """
 
-    estimate_sum: int | None = None
-    total_num: int | None = None
-    items: list[T] | None = None
-    more_info: dict[str, Any] | None = None
+    estimate_sum: int = 0
+    total_num: int = 0
+    items: list[T] = Field(default_factory=list)
+    more_info: dict[str, Any] = Field(default_factory=dict)
 
 
 class RelatedSearchWord(Response):
@@ -198,34 +198,27 @@ class SearchByTypeResponse(Response):
     searchid: str = Field(json_schema_extra={"jsonpath": "$.meta.searchid"})
     perpage: int = Field(json_schema_extra={"jsonpath": "$.meta.perpage"})
     nextpage: int = Field(json_schema_extra={"jsonpath": "$.meta.nextpage"})
-    estimate_sum: int | None = Field(json_schema_extra={"jsonpath": "$.meta.estimate_sum"})
-    total_num: int | None = Field(json_schema_extra={"jsonpath": "$.meta.sum"})
-    song: list[SongSearch] | None = Field(
-        default=None,
+    estimate_sum: int = Field(json_schema_extra={"jsonpath": "$.meta.estimate_sum"})
+    total_num: int = Field(json_schema_extra={"jsonpath": "$.meta.sum"})
+    song: list[SongSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_song"},
     )
-    singer: list[SingerSearch] | None = Field(
-        default=None,
+    singer: list[SingerSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.singer"},
     )
-    album: list[AlbumSearch] | None = Field(
-        default=None,
+    album: list[AlbumSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_album"},
     )
-    songlist: list[SongListSearch] | None = Field(
-        default=None,
+    songlist: list[SongListSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_songlist"},
     )
-    user: list[dict[str, Any]] | None = Field(
-        default=None,
+    user: list[dict[str, Any]] = Field(
         json_schema_extra={"jsonpath": "$.body.item_user"},
     )
-    audio_alum: list[AlbumSearch] | None = Field(
-        default=None,
+    audio_alum: list[AlbumSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_audio"},
     )
-    mv: list[MvSearch] | None = Field(
-        default=None,
+    mv: list[MvSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_mv"},
     )
 
@@ -275,6 +268,7 @@ class GeneralSearchResponse(Response):
         json_schema_extra={"jsonpath": "$.body.item_audio"},
     )
     direct: list[dict[str, Any]] = Field(
+        default_factory=list,
         json_schema_extra={"jsonpath": "$.body.direct_result.direct_group"},
     )
     related: GeneralSearchRequestBody[RelatedSearchWord] = Field(
