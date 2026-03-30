@@ -18,12 +18,12 @@ async def main():
     async with Client(credential) as client:
         cdn: str = random.choice((await client.song.get_cdn_dispatch())["sip"])
         data = await client.song.get_song_urls(SONG_MIDS)
-        for info in data["midurlinfo"]:
-            if not info["purl"]:
-                print(f"{info['songmid']} 无法下载")
+        for info in data.data:
+            if not info.purl:
+                print(f"{info.mid} 无法下载")
                 continue
-            url = cdn + info["purl"]
-            print(f"{info['songmid']} 可下载链接: {url}")
+            url = cdn + info.purl
+            print(f"{info.mid} 可下载链接: {url}")
 
 
 asyncio.run(main())
