@@ -56,10 +56,10 @@ async def test_delete_without_login(client: Client) -> None:
 async def test_add_songs_without_login(client: Client) -> None:
     """测试未登录时添加歌曲到歌单抛出 NotLoginError."""
     with pytest.raises(NotLoginError):
-        await client.songlist.add_songs(dirid=1, song_ids=[100])
+        await client.songlist.add_songs(dirid=1, song_info=[(100, 0)])
 
 
 async def test_del_songs_without_login(client: Client) -> None:
     """测试未登录时删除歌单歌曲抛出 NotLoginError."""
     with pytest.raises(NotLoginError):
-        await client.songlist.del_songs(dirid=1, song_ids=[100])
+        await client.songlist.del_songs(dirid=1, song_info=[(100, 0)])
