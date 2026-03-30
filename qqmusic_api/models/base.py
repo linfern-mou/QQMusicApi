@@ -1,4 +1,4 @@
-"""基础业务数据模型."""
+"""定义多个接口共享的基础业务实体模型."""
 
 from pydantic import AliasChoices, Field
 
@@ -6,15 +6,15 @@ from .request import Response
 
 
 class Singer(Response):
-    """歌手基础模型.
+    """表示接口响应中常见的歌手摘要信息.
 
     Attributes:
         id: 歌手数字 ID.
         mid: 歌手 Media MID, 用于请求歌手详情的核心参数.
         name: 歌手名称.
-        title: 歌手标题 (通常与名称一致).
-        type: 歌手类型 (如 0: 艺人; 1: 组合).
-        uin: 关联的用户 ID.
+        title: 歌手展示标题, 通常与名称一致.
+        type: 歌手类型, 如 0 表示艺人, 1 表示组合.
+        uin: 与歌手关联的用户 ID.
         pmid: 图片 Media ID, 用于拼接歌手头像 URL.
     """
 
@@ -28,16 +28,16 @@ class Singer(Response):
 
 
 class Album(Response):
-    """专辑基础模型.
+    """表示接口响应中的专辑摘要信息.
 
     Attributes:
         id: 专辑数字 ID.
         mid: 专辑 Media MID, 用于请求专辑详情的核心参数.
         name: 专辑名称.
-        title: 专辑标题.
+        title: 专辑展示标题.
         subtitle: 专辑副标题.
         time_public: 发行日期, 格式通常为 YYYY-MM-DD.
-        pmid: 图片 Media ID, 用于拼接封面 URL: https://y.gtimg.cn/music/photo_new/T002R300x300M000{pmid}.jpg.
+        pmid: 图片 Media ID, 用于拼接封面 URL.
     """
 
     id: int = -1
@@ -101,16 +101,16 @@ class File(Response):
 
 
 class Pay(Response):
-    """支付属性模型.
+    """表示歌曲在播放、下载与付费上的权限信息.
 
     Attributes:
-        pay_month: 绿钻/付费包权限标识 (1: 需要).
-        price_track: 单曲售价 (分).
-        price_album: 专辑售价 (分).
+        pay_month: 绿钻或付费包权限标识, 1 表示需要.
+        price_track: 单曲售价, 单位为分.
+        price_album: 专辑售价, 单位为分.
         pay_play: 播放付费标识.
         pay_down: 下载付费标识.
         pay_status: 支付状态.
-        time_free: 免费时间.
+        time_free: 免费试听或限免时长信息.
     """
 
     pay_month: int = -1
@@ -123,14 +123,14 @@ class Pay(Response):
 
 
 class MV(Response):
-    """MV 基础模型.
+    """表示歌曲关联的 MV 摘要信息.
 
     Attributes:
         id: MV 数字 ID.
-        vid: MV VID.
+        vid: MV VID, 常用于请求 MV 详情或播放地址.
         type: MV 类型.
         name: MV 名称.
-        title: MV 标题.
+        title: MV 展示标题.
     """
 
     id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid", "mvid"))
@@ -141,7 +141,7 @@ class MV(Response):
 
 
 class SongList(Response):
-    """歌单基础模型.
+    """表示歌单或曲库目录的摘要信息.
 
     Attributes:
         id: 歌单数字 ID.

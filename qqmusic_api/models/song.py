@@ -1,4 +1,4 @@
-"""SongAPI 返回定义."""
+"""Song API 返回模型定义."""
 
 from pydantic import Field
 
@@ -7,10 +7,10 @@ from .request import Response
 
 
 class QuerySongResponse(Response):
-    """查询歌曲结果.
+    """批量歌曲查询响应.
 
     Attributes:
-        tracks: 歌曲列表.
+        tracks: 按请求条件返回的歌曲对象列表.
     """
 
     tracks: list[Song]
@@ -23,10 +23,10 @@ class UrlinfoItem(Response):
         mid: 歌曲 mid.
         filename: 请求的目标文件名.
         purl: 相对下载路径,需要与 CDN 域名拼接后才能访问.
-        vkey: 资源访问令牌,歌曲文件通常依赖该字段完成鉴权。
+        vkey: 资源访问令牌,歌曲文件通常依赖该字段完成鉴权.
         ekey: 加密资源解密密钥.
-        result: 单个文件的业务结果码。常见值为 `0`(成功)、`104003`(无权限)、
-                `104004`(VKey 获取失败)、`104013`(播放设备受限)。
+        result: 单个文件的业务结果码.常见值为 `0`(成功)、`104003`(无权限)、
+                `104004`(VKey 获取失败)、`104013`(播放设备受限).
     """
 
     mid: str = Field(alias="songmid")
@@ -38,11 +38,13 @@ class UrlinfoItem(Response):
 
 
 class GetSongUrlsResponse(Response):
-    """获取歌曲链接结果.
+    """歌曲播放地址响应.
+
+    同一次请求可能返回多个码率或文件名对应的授权结果,调用方需逐项判断是否可播放.
 
     Attributes:
         expiration: 链接过期时间 (秒).
-        data: 链接信息列表.
+        data: 每个目标文件对应的授权与路径信息.
     """
 
     expiration: int
@@ -66,7 +68,9 @@ class ContentItem(Response):
 
 
 class GetSongDetailResponse(Response):
-    """获取歌曲详情结果.
+    """歌曲详情响应.
+
+    除歌曲基础信息外,还按内容分组返回发行公司、流派、语言、发布时间等补充资料.
 
     Attributes:
         company: 发行公司信息.
@@ -74,7 +78,7 @@ class GetSongDetailResponse(Response):
         intro: 歌曲简介信息.
         lan: 语言信息.
         pub_time: 发布时间信息.
-        extra: 额外信息.
+        extras: 额外信息.
         track: 歌曲基本信息.
     """
 
@@ -90,6 +94,8 @@ class GetSongDetailResponse(Response):
 class SimilarSongGroup(Response):
     """一组相似歌曲推荐卡片.
 
+    一个分组对应一个推荐标题及其下挂载的歌曲列表.
+
     Attributes:
         title_template: 推荐分组的标题模板.
         title_content: 标题模板中的实际内容.
@@ -102,11 +108,11 @@ class SimilarSongGroup(Response):
 
 
 class GetSimilarSongResponse(Response):
-    """表示获取相似歌曲接口的响应结果.
+    """相似歌曲推荐响应.
 
     Attributes:
-        tag: 相似歌曲结果附带的歌曲标签列表.
-        song: 相似歌曲推荐分组列表.
+        tag: 本次推荐附带的歌曲标签列表.
+        song: 按卡片分组组织的相似歌曲结果.
     """
 
     tag: list[dict] = Field(alias="songTagInfoList")
@@ -144,21 +150,21 @@ class GetSongLabelsResponse(Response):
 
 
 class RelatedPlaylist(SongList):
-    """相关歌单项.
+    """歌曲详情页关联歌单中的单个歌单摘要.
 
     Attributes:
-        creator: 歌单创建者.
+        creator: 歌单创建者名称.
     """
 
     creator: str = ""
 
 
 class GetRelatedSonglistResponse(Response):
-    """获取歌曲相关歌单结果.
+    """歌曲关联歌单响应.
 
     Attributes:
         has_more: 是否还有更多结果.
-        songlist: 相关歌单列表.
+        songlist: 按推荐分组展开后的相关歌单列表.
     """
 
     has_more: int = Field(alias="hasMore")
@@ -166,16 +172,16 @@ class GetRelatedSonglistResponse(Response):
 
 
 class RelatedMv(MV):
-    """相关 MV 项.
+    """歌曲详情页关联 MV 的摘要信息.
 
     Attributes:
         picurl: MV 封面.
         playcnt: MV 播放量.
-        singers: MV 歌手名称列表.
+        singers: MV 关联歌手列表.
     """
 
     class MVSinger(Singer):
-        """歌手信息.
+        """关联 MV 中的歌手摘要信息.
 
         Attributes:
             picurl: 歌手头像地址.
@@ -189,11 +195,11 @@ class RelatedMv(MV):
 
 
 class GetRelatedMvResponse(Response):
-    """获取歌曲相关 MV 结果.
+    """歌曲关联 MV 响应.
 
     Attributes:
         has_more: 是否还有更多结果.
-        mv: 相关 MV 列表.
+        mv: 当前返回的相关 MV 列表.
     """
 
     has_more: int = Field(alias="hasmore")
@@ -231,11 +237,11 @@ class SongProducer(Response):
 
 
 class SongProducerGroup(Response):
-    """歌曲制作人分组.
+    """歌曲制作人信息分组.
 
     Attributes:
         title: 分组标题.
-        producers: 制作人列表.
+        producers: 该分组下的制作人列表.
         type: 分组类型.
     """
 
@@ -245,11 +251,11 @@ class SongProducerGroup(Response):
 
 
 class GetProducerResponse(Response):
-    """获取歌曲制作人信息结果.
+    """歌曲制作人响应.
 
     Attributes:
-        data: 制作人分组列表.
-        reinforce_msg: 摘要文案.
+        data: 按职责分组的制作人列表.
+        reinforce_msg: 附带的摘要说明文案.
     """
 
     data: list[SongProducerGroup] = Field(alias="Lst")
@@ -313,11 +319,11 @@ class SheetMusic(Response):
 
 
 class GetSheetResponse(Response):
-    """获取歌曲相关曲谱结果.
+    """歌曲相关曲谱响应.
 
     Attributes:
-        result: 曲谱列表.
-        total_map: 按类型聚合的曲谱数量.
+        result: 当前返回的曲谱列表.
+        total_map: 各曲谱类型对应的数量聚合.
     """
 
     result: list[SheetMusic]
@@ -325,11 +331,11 @@ class GetSheetResponse(Response):
 
 
 class GetFavNumResponse(Response):
-    """获取歌曲收藏人数结果.
+    """歌曲收藏人数响应.
 
     Attributes:
-        numbers: 歌曲收藏人数原始值映射.
-        show: 歌曲收藏人数展示值映射.
+        numbers: 以歌曲标识为键的收藏人数原始值映射.
+        show: 对应的收藏人数展示文案映射.
     """
 
     numbers: dict[str, int] = Field(alias="m_numbers")

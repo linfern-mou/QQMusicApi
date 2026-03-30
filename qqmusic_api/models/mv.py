@@ -1,4 +1,4 @@
-"""MVAPI 返回模型定义."""
+"""MV API 返回模型定义."""
 
 from typing import Any
 
@@ -9,7 +9,7 @@ from .request import Response
 
 
 class MvDetail(MV):
-    """MV 详情项.
+    """MV 详情接口返回的单个视频条目.
 
     Attributes:
         cover_pic: MV 封面地址.
@@ -51,7 +51,7 @@ class MvDetail(MV):
 
 
 class GetMvDetailResponse(Response):
-    """获取 MV 详情结果模型.
+    """MV 详情接口的响应体.
 
     Attributes:
         data: 以 VID 为键的 MV 详情映射.
@@ -61,7 +61,7 @@ class GetMvDetailResponse(Response):
 
 
 class MvUrlItem(Response):
-    """MV 单路播放地址项.
+    """单一路径规格下的 MV 播放地址信息.
 
     Attributes:
         url: 直连地址列表.
@@ -93,7 +93,7 @@ class MvUrlItem(Response):
 
 
 class MvUrlSet(Response):
-    """MV 播放地址集合.
+    """同一 MV 在不同协议下的播放地址集合.
 
     Attributes:
         mp4: MP4 地址列表.
@@ -109,10 +109,10 @@ class MvUrlSet(Response):
 
 
 class GetMvUrlsResponse(Response):
-    """获取 MV 播放链接结果模型.
+    """MV 播放地址接口的响应体.
 
     Attributes:
-        data: MV 播放地址集合列表.
+        data: 以 MV 标识分组的播放地址集合.
     """
 
     data: dict[str, MvUrlSet] = Field(json_schema_extra={"jsonpath": "$"})

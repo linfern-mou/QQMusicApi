@@ -1,4 +1,4 @@
-"""排行榜模型."""
+"""Top API 返回模型定义."""
 
 from pydantic import Field
 

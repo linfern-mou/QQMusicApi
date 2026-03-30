@@ -1,4 +1,4 @@
-"""AlbumAPI 返回模型定义."""
+"""Album API 返回模型定义."""
 
 from pydantic import Field
 
@@ -7,7 +7,7 @@ from .request import Response
 
 
 class AlbumDetail(Album):
-    """专辑详情基础信息.
+    """专辑详情页返回的核心专辑信息.
 
     Attributes:
         subtitle: 专辑副标题.
@@ -29,7 +29,7 @@ class AlbumDetail(Album):
 
 
 class AlbumCompany(Response):
-    """专辑发行公司信息.
+    """专辑详情接口中的发行公司信息.
 
     Attributes:
         id: 公司 ID.
@@ -45,12 +45,12 @@ class AlbumCompany(Response):
 
 
 class GetAlbumDetailResponse(Response):
-    """获取专辑详情结果.
+    """专辑详情接口聚合后的响应体.
 
     Attributes:
-        album: 专辑基础信息.
+        album: 专辑基础信息与补充描述.
         company: 发行公司信息.
-        singers: 专辑歌手列表.
+        singers: 专辑署名歌手列表.
     """
 
     album: AlbumDetail = Field(alias="basicInfo")
@@ -59,12 +59,12 @@ class GetAlbumDetailResponse(Response):
 
 
 class GetAlbumSongResponse(Response):
-    """获取专辑歌曲列表结果.
+    """专辑歌曲列表接口返回的分页结果.
 
     Attributes:
         album_mid: 专辑 MID.
         total_num: 歌曲总数.
-        song_list: 专辑歌曲列表.
+        song_list: 当前响应携带的专辑歌曲列表.
     """
 
     album_mid: str = Field(alias="albumMid")

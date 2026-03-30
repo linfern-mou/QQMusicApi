@@ -1,4 +1,4 @@
-"""搜索业务模型."""
+"""Search API 返回模型定义."""
 
 from typing import Any, Generic, TypeVar
 
@@ -47,29 +47,29 @@ class AlbumSearch(Album):
     """搜索场景下的专辑详尽模型.
 
     Attributes:
-       album_type: 专辑类型标识 (来自 $.core_album_config.album_type)。通常 1 代表正规专辑。
-       singer: 搜索命中的高亮歌手名称。通常包含 `<em>` 标签。
-       singer_list: 结构化的歌手对象列表。包含歌手的数字 ID 和标准名称。
-       pic: 专辑封面图片 URL (通常为 180x180 或 300x300 规格)。
-       pic_icon: 封面配套显示的勋章或类型图标链接。
-       publish_date: 专辑发行日期 (YYYY-MM-DD)。
-       description: 简短描述文案。在搜索结果中常存放发行日期或厂牌。
-       description2: 备用描述文案。
-       desc_detail: 详尽描述对象。包含长篇专辑介绍及背景信息。
-       hotness: 热度数据对象。包含收藏量、趋势等原始数值。
-       hotness_desc: 热度简述文案。如“全网热搜”、“飙升榜前十”。
-       audio_play: 播放排行信息。包含榜单名称及具体排名。
-       label_new: 专辑关联的特性标签对象。
-       tag_list: 专辑标签列表。用于 UI 显示“数字专辑”、“独家”等勋章。
-       url: 静态元数据下载链接。
+       album_type: 专辑类型标识 (来自 $.core_album_config.album_type).通常 1 代表正规专辑.
+       singer: 搜索命中的高亮歌手名称.通常包含 `<em>` 标签.
+       singer_list: 结构化的歌手对象列表.包含歌手的数字 ID 和标准名称.
+       pic: 专辑封面图片 URL (通常为 180x180 或 300x300 规格).
+       pic_icon: 封面配套显示的勋章或类型图标链接.
+       publish_date: 专辑发行日期 (YYYY-MM-DD).
+       description: 简短描述文案.在搜索结果中常存放发行日期或厂牌.
+       description2: 备用描述文案.
+       desc_detail: 详尽描述对象.包含长篇专辑介绍及背景信息.
+       hotness: 热度数据对象.包含收藏量、趋势等原始数值.
+       hotness_desc: 热度简述文案.如“全网热搜”、“飙升榜前十”.
+       audio_play: 播放排行信息.包含榜单名称及具体排名.
+       label_new: 专辑关联的特性标签对象.
+       tag_list: 专辑标签列表.用于 UI 显示“数字专辑”、“独家”等勋章.
+       url: 静态元数据下载链接.
     """
 
     class RankingInfo(Response):
         """歌曲排行信息.
 
         Attributes:
-            rank: 歌曲或专辑在对应榜单中的具体排名。
-            toplist: 所属的榜单名称(如“热歌榜”、“流行指数榜”)。
+            rank: 歌曲或专辑在对应榜单中的具体排名.
+            toplist: 所属的榜单名称(如“热歌榜”、“流行指数榜”).
         """
 
         rank: str
@@ -93,11 +93,11 @@ class AlbumSearch(Album):
 
 
 class SongListSearch(SongList):
-    """搜索场景下的歌单模型.
+    """搜索结果中的歌单摘要模型.
 
     Attributes:
         nickname: 歌单创建者昵称.
-        dirtype: 目录类型.
+        dirtype: 歌单目录类型标识.
     """
 
     nickname: str = ""
@@ -148,13 +148,13 @@ T = TypeVar("T")
 
 
 class GeneralSearchRequestBody(Response, Generic[T]):
-    """通用搜索分类结果容器模型.
+    """综合搜索中单个分类桶的结果容器.
 
     Attributes:
-    estimate_sum: 搜索命中的预估总记录数.
-    total_num: 搜索命中的确切总记录数.
-    items: 具体的业务实体列表 (泛型支持 SongSearch, Singer, Album 等).
-    more_info: 分类翻页上下文对象.在执行该分类下的“加载更多”请求时,需将其作为参数回传.
+        estimate_sum: 搜索命中的预估总记录数.
+        total_num: 搜索命中的确切总记录数.
+        items: 当前分类下已展开的业务实体列表.
+        more_info: 继续加载该分类结果时需要回传的翻页上下文.
     """
 
     estimate_sum: int | None = None
@@ -176,23 +176,23 @@ class RelatedSearchWord(Response):
 
 
 class SearchByTypeResponse(Response):
-    """分类搜索响应模型.
+    """按指定类型搜索时的响应模型.
+
+    它将元信息与对应分类的实体列表放在同一对象中,便于直接消费该类型下的当前页结果.
 
     Attributes:
-        searchid: 搜索会话 ID, 用于后续相关请求.
+        searchid: 搜索会话 ID,用于后续相关请求.
         perpage: 每页结果数量.
-        nextpage: 下一页页码, -1 表示已加载全部结果.
+        nextpage: 下一页页码,-1 表示已加载全部结果.
         estimate_sum: 搜索命中的预估总记录数.
         total_num: 搜索命中的确切总记录数.
-        song: 单曲,歌词搜索,节目结果列表.
+        song: 单曲、歌词或节目类型下的结果列表.
         singer: 歌手结果列表.
         album: 专辑结果列表.
         songlist: 歌单结果列表.
         user: 用户结果列表.
-        audio: 节目结果列表.
-        audio_alum: 节目专辑列表.
+        audio_alum: 节目专辑结果列表.
         mv: MV 结果列表.
-        lyric: 歌词搜索结果列表.
     """
 
     searchid: str = Field(json_schema_extra={"jsonpath": "$.meta.searchid"})
@@ -233,19 +233,21 @@ class SearchByTypeResponse(Response):
 class GeneralSearchResponse(Response):
     """综合搜索响应模型.
 
+    每个分类字段都是独立的结果容器,既给出当前已返回的数据,也保留该分类继续翻页所需的上下文.
+
     Attributes:
-        searchid: 搜索会话 ID, 用于后续相关请求.
+        searchid: 搜索会话 ID,用于后续相关请求.
         perpage: 每页结果数量.
-        nextpage: 下一页页码, -1 表示已加载全部结果.
-        nextpage_start: 翻页关键参数.
-        song: 单曲结果.
-        singer: 歌手结果.
-        album: 专辑结果.
-        mv: sid结果.
-        songlist: 歌单结果.
-        audio: 节目结果.
-        direct: 直接搜索结果.
-        related: 相关搜索词推荐列表.
+        nextpage: 下一页页码,-1 表示已加载全部结果.
+        nextpage_start: 综合搜索继续翻页的关键参数.
+        song: 单曲结果容器.
+        singer: 歌手结果容器.
+        album: 专辑结果容器.
+        mv: MV 结果容器.
+        songlist: 歌单结果容器.
+        audio: 节目结果容器.
+        direct: 直接命中结果分组.
+        related: 相关搜索词推荐结果容器.
     """
 
     searchid: str = Field(json_schema_extra={"jsonpath": "$.meta.sid"})

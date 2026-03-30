@@ -1,4 +1,4 @@
-"""SonglistAPI 返回模型定义."""
+"""Songlist API 返回模型定义."""
 
 from pydantic import Field
 
@@ -23,17 +23,19 @@ class SonglistCreator(Response):
 
 
 class SonglistInfo(SongList):
-    """歌单基础信息.
+    """歌单详情接口返回的基础元数据.
 
     Attributes:
-        creator: 创建者信息.
+        creator: 歌单创建者信息.
     """
 
     creator: SonglistCreator
 
 
 class GetSonglistDetailResponse(Response):
-    """获取歌单详情结果.
+    """歌单详情响应.
+
+    该模型同时承载歌单基础信息、当前批次歌曲以及分页相关计数.
 
     Attributes:
         code: 返回码.
@@ -41,8 +43,8 @@ class GetSonglistDetailResponse(Response):
         msg: 附加消息.
         info: 歌单基础信息.
         size: 当前返回的歌曲数量.
-        songs: 歌曲列表.
-        total: 歌曲总数.
+        songs: 当前页歌曲列表.
+        total: 歌单歌曲总数.
         hasmore: 是否还有更多结果.
     """
 
