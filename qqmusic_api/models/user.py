@@ -6,11 +6,6 @@ from pydantic import AliasChoices, Field
 
 from .base import MV, Album, Singer, SongList
 from .request import Response
-from .songlist import GetSonglistDetailResponse
-
-
-class UserSonglistDetailResponse(GetSonglistDetailResponse):
-    """用户歌单详情响应."""
 
 
 class UserPlaylistSummary(SongList):

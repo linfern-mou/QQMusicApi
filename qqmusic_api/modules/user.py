@@ -3,6 +3,7 @@
 from typing import ClassVar
 
 from ..models.request import Credential
+from ..models.songlist import GetSonglistDetailResponse
 from ..models.user import (
     UserCreatedSonglistResponse,
     UserFavAlbumResponse,
@@ -12,7 +13,6 @@ from ..models.user import (
     UserHomepageResponse,
     UserMusicGeneResponse,
     UserRelationListResponse,
-    UserSonglistDetailResponse,
     UserVipInfoResponse,
 )
 from ._base import ApiModule
@@ -214,7 +214,7 @@ class UserApi(ApiModule):
                 "enc_host_uin": euin,
             },
             credential=credential,
-            response_model=UserSonglistDetailResponse,
+            response_model=GetSonglistDetailResponse,
         )
 
     def get_fav_songlist(
