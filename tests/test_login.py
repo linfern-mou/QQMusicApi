@@ -9,7 +9,7 @@ from qqmusic_api.models.login import (
     QRLoginType,
 )
 from qqmusic_api.modules.login import LoginApi
-from qqmusic_api.modules.login_utils import iter_qrcode_login
+from qqmusic_api.modules.login_utils import PhoneLoginSession, QRCodeLoginSession
 
 
 async def test_get_qrcode_qq(client: Client) -> None:
@@ -36,12 +36,6 @@ async def test_get_qrcode_mobile(client: Client) -> None:
     assert result.qr_type == QRLoginType.MOBILE
 
 
-def test_login_api_pure_entrypoints() -> None:
-    """测试登录纯 API 入口收敛."""
-    assert not hasattr(LoginApi, "iter_qrcode_login")
-    assert callable(iter_qrcode_login)
-
-
 def test_qrcode_login_result_done_property() -> None:
     """测试二维码登录结果对象语义."""
     done_result = QRLoginResult(event=QRCodeLoginEvents.DONE)
@@ -60,3 +54,31 @@ def test_phone_authcode_result_semantics() -> None:
     assert send_result.info is None
     assert send_result.event == PhoneLoginEvents.SEND
     assert captcha_result.info == "https://captcha.example"
+
+
+def test_phone_login_session_contract() -> None:
+    """测试手机验证码 session 保存必要状态."""
+    login_api = object.__new__(LoginApi)
+    session = PhoneLoginSession(login_api, 13000000000)
+    assert session.api is login_api
+    assert session.phone == 13000000000
+    assert session.country_code == 86
+    assert session.last_result is None
+
+
+def test_qrcode_login_session_contract() -> None:
+    """测试二维码登录 session 保存必要状态."""
+    login_api = object.__new__(LoginApi)
+    session = QRCodeLoginSession(
+        login_api,
+        QRLoginType.QQ,
+        interval=2.0,
+        timeout_seconds=90.0,
+        emit_repeat=True,
+    )
+    assert session.api is login_api
+    assert session.login_type == QRLoginType.QQ
+    assert session.qrcode is None
+    assert session.interval == 2.0
+    assert session.timeout_seconds == 90.0
+    assert session.emit_repeat is True

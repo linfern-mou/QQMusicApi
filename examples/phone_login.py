@@ -4,6 +4,7 @@ import asyncio
 
 from qqmusic_api import Client, LoginError
 from qqmusic_api.models.login import PhoneLoginEvents
+from qqmusic_api.modules.login_utils import PhoneLoginSession
 
 
 async def phone_login_example() -> None:
@@ -13,7 +14,8 @@ async def phone_login_example() -> None:
 
     try:
         async with Client() as client:
-            result = await client.login.send_authcode(phone, country_code)
+            session = PhoneLoginSession(client.login, phone, country_code)
+            result = await session.send_authcode()
 
             if result.event == PhoneLoginEvents.CAPTCHA:
                 print(f"需要验证,访问链接: {result.info}")
@@ -25,9 +27,7 @@ async def phone_login_example() -> None:
             print("验证码已发送")
 
             auth_code = (await asyncio.to_thread(input, "请输入验证码: ")).strip()
-            # auth_code = input("请输入验证码: ").strip()
-
-            credential = await client.login.phone_authorize(phone, int(auth_code), country_code)
+            credential = await session.authorize(int(auth_code))
             print(f"登录成功! MusicID: {credential.musicid}")
 
     except LoginError as e:

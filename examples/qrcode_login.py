@@ -4,8 +4,8 @@ import asyncio
 from pathlib import Path
 
 from qqmusic_api import Client, LoginError
-from qqmusic_api.models.login import QR, QRCodeLoginEvents, QRLoginType
-from qqmusic_api.modules.login_utils import iter_qrcode_login
+from qqmusic_api.models.login import QR, QRLoginType
+from qqmusic_api.modules.login_utils import QRCodeLoginSession
 
 
 def show_qrcode(qr: QR) -> None:
@@ -25,34 +25,21 @@ async def qrcode_login_example(login_type: QRLoginType) -> None:
     try:
         async with Client(verify=False) as client:
             print(f"正在获取 {login_type.name} 二维码...")
-            qr = await client.login.get_qrcode(login_type)
+            session = QRCodeLoginSession(
+                client.login,
+                login_type,
+                interval=1.5,
+                timeout_seconds=180.0,
+            )
+            qr = await session.get_qrcode()
             print(f"获取 {login_type.name} 二维码成功")
 
             show_qrcode(qr)
             print(">>> 请使用对应客户端扫码")
 
-            from contextlib import aclosing
-
-            async with aclosing(
-                iter_qrcode_login(
-                    client.login,
-                    qr,
-                    interval=1.5,
-                    timeout_seconds=180.0,
-                ),
-            ) as qrcode_stream:
-                async for result in qrcode_stream:
-                    print(f"当前状态: {result.event.name}")
-
-                    if result.done and result.credential is not None:
-                        print(f"登录成功! MusicID: {result.credential.musicid}")
-                        return
-                    if result.event == QRCodeLoginEvents.TIMEOUT:
-                        print("二维码已过期,请重新获取")
-                        return
-                    if result.event == QRCodeLoginEvents.REFUSE:
-                        print("用户拒绝了登录请求")
-                        return
+            credential = await session.wait_qrcode_login()
+            print(f"登录成功! MusicID: {credential.musicid}")
+            return
 
     except LoginError as e:
         print(f"登录失败: {e!s}")
