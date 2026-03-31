@@ -9,19 +9,19 @@ from qqmusic_api.modules.search import SearchType
 async def test_get_hotkey(client: Client) -> None:
     """测试获取热搜词列表."""
     result = await client.search.get_hotkey()
-    assert isinstance(result, dict)
+    assert result
 
 
 async def test_complete(client: Client) -> None:
     """测试搜索词补全建议."""
     result = await client.search.complete("周杰伦")
-    assert isinstance(result, dict)
+    assert result
 
 
 async def test_quick_search(client: Client) -> None:
     """测试快速搜索."""
     result = await client.search.quick_search("周杰伦")
-    assert isinstance(result, dict)
+    assert result
 
 
 @pytest.mark.parametrize("page", [1, 2])

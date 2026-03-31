@@ -31,3 +31,73 @@ async def test_relation_response_models_with_login(authenticated_client: Client)
     assert fans.total >= 0
     assert friends.has_more in (True, False)
     assert follow_users.total >= 0
+
+
+async def test_get_vip_info_with_login(authenticated_client: Client) -> None:
+    """测试获取 VIP 信息模型."""
+    result = await authenticated_client.user.get_vip_info()
+    assert result.max_dir_num >= 0
+    assert result.max_song_num >= 0
+    assert result.userinfo.music_level >= 0
+
+
+async def test_get_created_songlist_with_login(authenticated_client: Client) -> None:
+    """测试获取用户创建歌单列表模型."""
+    result = await authenticated_client.user.get_created_songlist(
+        uin=authenticated_client.credential.musicid,
+        credential=authenticated_client.credential,
+    )
+    assert result.total >= 0
+    assert result.finished in (True, False)
+    assert result.playlists is not None
+
+
+async def test_get_fav_song_with_login(authenticated_client: Client) -> None:
+    """测试获取用户收藏歌曲列表模型."""
+    result = await authenticated_client.user.get_fav_song(
+        euin=authenticated_client.credential.encrypt_uin,
+        credential=authenticated_client.credential,
+        num=5,
+        page=1,
+    )
+    assert result.total >= len(result.songs)
+    assert result.info.id >= 0
+
+
+async def test_get_fav_songlist_with_login(authenticated_client: Client) -> None:
+    """测试获取用户收藏歌单列表模型."""
+    result = await authenticated_client.user.get_fav_songlist(
+        euin=authenticated_client.credential.encrypt_uin,
+        credential=authenticated_client.credential,
+        num=5,
+        page=1,
+    )
+    assert result.total >= 0
+    assert result.hasmore in (0, 1)
+    assert result.playlists is not None
+
+
+async def test_get_fav_album_with_login(authenticated_client: Client) -> None:
+    """测试获取用户收藏专辑列表模型."""
+    result = await authenticated_client.user.get_fav_album(
+        euin=authenticated_client.credential.encrypt_uin,
+        credential=authenticated_client.credential,
+        num=5,
+        page=1,
+    )
+    assert result.total >= 0
+    assert result.hasmore in (0, 1)
+    assert result.albums is not None
+
+
+async def test_get_fav_mv_with_login(authenticated_client: Client) -> None:
+    """测试获取用户收藏 MV 列表模型."""
+    result = await authenticated_client.user.get_fav_mv(
+        euin=authenticated_client.credential.encrypt_uin,
+        credential=authenticated_client.credential,
+        num=5,
+        page=1,
+    )
+    assert result.code == 0
+    assert result.sub_code == 0
+    assert result.mv_list is not None

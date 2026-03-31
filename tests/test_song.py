@@ -94,3 +94,13 @@ async def test_get_fav_num(client: Client) -> None:
     """测试获取歌曲收藏数量."""
     result = await client.song.get_fav_num([100])
     assert "100" in result.numbers
+
+
+async def test_get_cdn_dispatch(client: Client) -> None:
+    """测试获取音频 CDN 调度信息."""
+    result = await client.song.get_cdn_dispatch()
+    assert result.retcode == 0
+    assert result.sip
+    assert result.expiration > 0
+    assert result.refresh_time > 0
+    assert result.cache_time > 0

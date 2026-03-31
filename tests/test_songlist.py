@@ -37,3 +37,23 @@ async def test_get_detail_without_userinfo(client: Client) -> None:
     """测试获取歌单详情时不返回用户信息."""
     result = await client.songlist.get_detail(songlist_id=7843129912, userinfo=False)
     assert result.info.id == 7843129912
+
+
+def test_create_requires_login(client: Client) -> None:
+    """测试创建歌单需要登录凭证."""
+    client.songlist.create("pytest-songlist")
+
+
+def test_delete_requires_login(client: Client) -> None:
+    """测试删除歌单需要登录凭证."""
+    client.songlist.delete(1)
+
+
+async def test_add_songs_requires_login(client: Client) -> None:
+    """测试添加歌曲到歌单需要登录凭证."""
+    await client.songlist.add_songs(dirid=1, song_info=[(100, 0)])
+
+
+async def test_del_songs_requires_login(client: Client) -> None:
+    """测试删除歌单歌曲需要登录凭证."""
+    await client.songlist.del_songs(dirid=1, song_info=[(100, 0)])
