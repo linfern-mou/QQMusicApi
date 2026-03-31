@@ -207,8 +207,6 @@ class LoginApi(ApiModule):
         Returns:
             PhoneAuthCodeResult: 包含发送状态及附加信息的结果对象.
         """
-        if self._client.platform != Platform.ANDROID:
-            raise _raise_login_error("PhoneLogin", "仅手机客户端支持手机验证码登录")
         try:
             await self._client.execute(
                 self._build_request(
@@ -216,6 +214,7 @@ class LoginApi(ApiModule):
                     method="SendPhoneAuthCode",
                     param={"tmeAppid": "qqmusic", "phoneNo": str(phone), "areaCode": str(country_code)},
                     comm={"tmeLoginMethod": 3},
+                    platform=Platform.ANDROID,
                 ),
             )
         except ApiError as exc:
@@ -250,6 +249,7 @@ class LoginApi(ApiModule):
                         "loginMode": 1,
                     },
                     comm={"tmeLoginMethod": 3, "tmeLoginType": 0},
+                    platform=Platform.ANDROID,
                 ),
             )
         except ApiError as exc:
@@ -313,8 +313,6 @@ class LoginApi(ApiModule):
 
     async def _get_mobile_qr(self) -> QR:
         """获取手机客户端登录二维码."""
-        if self._client.platform == Platform.WEB:
-            raise _raise_login_error("MobileLogin", "Web 端不支持获取手机客户端二维码")
         try:
             data = await self._client.execute(
                 self._build_request(
@@ -322,6 +320,7 @@ class LoginApi(ApiModule):
                     method="CreateQRCode",
                     param={"tmeAppID": "qqmusic", **self._build_query_common_params()},
                     comm={"ct": 23, "cv": 0},
+                    platform=Platform.ANDROID if self._client.platform == Platform.WEB else None,
                 ),
             )
         except ApiError as exc:

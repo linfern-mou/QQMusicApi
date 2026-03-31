@@ -2,6 +2,7 @@
 
 from enum import Enum, IntEnum
 
+from ..core import Platform
 from ..models.singer import (
     HomepageHeaderResponse,
     HomepageTabDetailResponse,
@@ -184,6 +185,7 @@ class SingerApi(ApiModule):
             method="GetHomepageHeader",
             param={"SingerMid": mid},
             response_model=HomepageHeaderResponse,
+            platform=Platform.ANDROID,
         )
 
     def get_tab_detail(
