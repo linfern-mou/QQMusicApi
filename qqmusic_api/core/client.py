@@ -30,7 +30,7 @@ from ..models.request import (
 )
 from ..utils.common import bool_to_int
 from ..utils.qimei import QimeiResult, get_qimei
-from .exceptions import ApiDataError, ApiError, HTTPError, NetworkError, build_api_error, extract_api_error_code
+from .exceptions import ApiDataError, ApiError, HTTPError, NetworkError, _build_api_error, _extract_api_error_code
 from .request import Request, RequestGroup, RequestResult, RequestResultT, ResponseModel
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
 
@@ -406,7 +406,7 @@ class Client:
             if item is None:
                 raise ApiError("缺少响应字段: req_0", code=-1, data=response)
             if item.code != 0:
-                code, subcode = extract_api_error_code(item)
+                code, subcode = _extract_api_error_code(item)
                 logger.debug(
                     "JCE 请求返回错误: module=%s method=%s code=%s subcode=%s",
                     request.module,
@@ -414,7 +414,7 @@ class Client:
                     code,
                     subcode,
                 )
-                raise build_api_error(
+                raise _build_api_error(
                     code=code,
                     subcode=subcode,
                     data=item.data,
@@ -439,7 +439,7 @@ class Client:
         item = response.get("req_0")
         if item is None:
             raise ApiError("缺少响应字段: req_0", code=-1, data=response)
-        code, subcode = extract_api_error_code(item)
+        code, subcode = _extract_api_error_code(item)
         if code is not None and code != 0:
             logger.debug(
                 "JSON 请求返回错误: module=%s method=%s code=%s subcode=%s",
@@ -448,7 +448,7 @@ class Client:
                 code,
                 subcode,
             )
-            raise build_api_error(
+            raise _build_api_error(
                 code=code,
                 subcode=subcode,
                 data=item.get("data"),

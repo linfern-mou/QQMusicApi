@@ -14,8 +14,8 @@ from .exceptions import (
     NotLoginError,
     RequestGroupResultMissingError,
     SignInvalidError,
-    build_api_error,
-    extract_api_error_code,
+    _build_api_error,
+    _extract_api_error_code,
 )
 from .request import Request, RequestGroup, RequestGroupResult
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy, VersionProfile
@@ -42,6 +42,6 @@ __all__ = [
     "SignInvalidError",
     "VersionPolicy",
     "VersionProfile",
-    "build_api_error",
-    "extract_api_error_code",
+    "_build_api_error",
+    "_extract_api_error_code",
 ]

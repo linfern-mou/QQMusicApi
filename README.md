@@ -4,7 +4,7 @@
     </a>
     <br/>
     <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13-blue" alt="Python">
+        <img src="https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13|3.14-blue" alt="Python">
     </a>
     <a href="https://github.com/l-1124/QQMusicApi?tab=MIT-1-ov-file">
         <img src="https://img.shields.io/github/license/l-1124/QQMusicApi" alt="GitHub license">
@@ -28,7 +28,6 @@
 ## 📚 快速链接
 
 * **[📖 完整文档](https://l-1124.github.io/QQMusicApi)**
-* **[💻 源代码仓库](https://github.com/l-1124/QQMusicApi)**
 
 ## 📖 介绍
 

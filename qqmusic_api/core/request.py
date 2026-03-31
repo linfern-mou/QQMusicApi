@@ -10,7 +10,13 @@ from pydantic import BaseModel
 from tarsio import TarsDict
 
 from ..models.request import Credential, RequestItem
-from .exceptions import ApiDataError, ApiError, RequestGroupResultMissingError, build_api_error, extract_api_error_code
+from .exceptions import (
+    ApiDataError,
+    ApiError,
+    RequestGroupResultMissingError,
+    _build_api_error,
+    _extract_api_error_code,
+)
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -270,7 +276,7 @@ class RequestGroup:
                     ),
                 )
                 continue
-            code, subcode = extract_api_error_code(item)
+            code, subcode = _extract_api_error_code(item)
             item_data: ResponseData | None
             if first.is_jce:
                 item_data = getattr(item, "data", None)
@@ -285,7 +291,7 @@ class RequestGroup:
                         module=req.module,
                         method=req.method,
                         success=False,
-                        error=build_api_error(
+                        error=_build_api_error(
                             code=code,
                             subcode=subcode,
                             data=item_data,

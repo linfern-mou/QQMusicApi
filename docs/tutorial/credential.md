@@ -1,4 +1,4 @@
-# 凭证（Credential）
+# Credential
 
 `Credential` 用于保存 QQ 音乐登录态相关数据，并在需要登录的接口中作为凭证使用。
 
@@ -19,9 +19,7 @@
 | `Q_H_L_`        | 6-11 位数字    | QQ 账号登录  |
 | `W_X_`          | 最长可到 19 位 | 微信账号登录 |
 
-## 注入到 Client
-
-最常见的做法是在初始化 `Client` 时传入全局凭证：
+## 全局使用
 
 ```python
 import asyncio
@@ -42,13 +40,17 @@ asyncio.run(main())
 
 ## 单次请求覆盖
 
-如果你不想把凭证绑定到整个 `Client`，也可以在构造请求时单独传入 `credential`。  
-这只会覆盖账号态字段和 cookies，不会改变 `Client` 自身的设备、QIMEI 与平台上下文。
+如果你不想把凭证绑定到整个 `Client`，需要 `Crential` 的接口都支持使用 `credential` 参数进行单次请求覆盖。
 
-## 获取凭证
+```python
+import asyncio
+from qqmusic_api import Client, Credential
 
-如果你还没有可用凭证，可以参考：
+async def main() -> None:
+    async with Client() as client:
+        credential = Credential(musicid=123456, musickey="Q_H_L_xxx")
+        result = await client.song.get_song_urls(..., credential=credential)
+        print(result)
 
-* [快速开始](start.md)
-* [Client 与连接管理](client.md)
-* [登录 API 文档](../api/login.md)
+asyncio.run(main())
+```

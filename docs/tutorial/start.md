@@ -1,6 +1,10 @@
 # 快速开始
 
-本页提供一个从安装到跑通第一个请求的最短路径，适合第一次使用 `qqmusic_api` 的读者。
+本页提供一个从安装到跑通第一个请求的最短路径。
+
+!!! example
+
+    可在 GitHub 上查看使用[示例](https://github.com/L-1124/QQMusicApi/tree/main/examples)
 
 ## 1. 安装
 
@@ -63,5 +67,3 @@ from qqmusic_api import Client, Credential
 credential = Credential(musicid=0, musickey="")
 client = Client(credential=credential)
 ```
-
-如果你还没有可用凭证，可以先看 [凭证（Credential）](credential.md)。

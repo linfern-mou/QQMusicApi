@@ -174,7 +174,6 @@ class SongApi(ApiModule):
         """获取并缓存音频 CDN 调度信息.
 
         Args:
-            force_refresh: 是否强制刷新缓存.
             use_new_domain: 是否启用新域名.
             use_ipv6: 是否启用 IPv6.
         """
@@ -205,9 +204,6 @@ class SongApi(ApiModule):
             file_type: 歌曲文件类型.
             credential: 凭据对象.
             media_mid: 获取媒体文件链接时需要的 media_mid 列表,与 mid 一一对应.
-
-        Returns:
-            dict[str, dict[str, Any]]: 以 `songmid` 为键的原始 `midurlinfo` 数据映射.
 
         Raises:
             ValueError: 当 `mid` 数量超过上限时抛出.

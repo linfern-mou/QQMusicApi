@@ -1,12 +1,12 @@
 # API 编写指南
 
-当前版本的 `qqmusic_api` 采用 `Client + ApiModule + Request` 的结构:
+`qqmusic_api` 采用 `Client + ApiModule + Request` 的结构:
 
 * `Client` 负责网络发送、平台信息、凭证和批量调度。
 * `ApiModule` 负责声明接口参数，并返回可 `await` 的 `Request`。
 * `RequestGroup` 用于批量执行多个 `Request`。
 
-## 0. 调用流程图
+## 调用流程图
 
 ### 单请求
 
@@ -41,27 +41,92 @@
         返回按添加顺序回填的 list[Any | Exception]
 ```
 
-## 1. 编写新的 API 模块
+## 编写新的 API
 
-API 按功能拆分在 `qqmusic_api/modules/` 下，每个模块继承 `ApiModule`。
+API 按功能拆分在 `qqmusic_api/modules/` 下，添加新的 API 只需在对应的模块中添加请求方法即可。
 
 ```python
-from qqmusic_api.modules._base import ApiModule
+from typing import Any
+
+
+class SongApi(ApiModule):
+    """歌曲相关 API 模块."""
+
+    ...
+
+    def get_detail(self, song_id: int):
+        """获取歌曲详情."""
+        return self._build_request(
+            module="music.songDetail",
+            method="GetDetail",
+            param={"songid": song_id},
+        )
+
+class SearchApi(ApiModule):
+    """搜索相关 API 模块."""
+
+    ...
+
+    async def quick_search(self, keyword: str) -> dict[str, Any]:
+        """快速搜索 (直接返回解析后的 JSON 数据).
+
+        Args:
+            keyword: 关键词.
+
+        Returns:
+            dict[str, Any]: 搜索结果字典.
+        """
+        resp = await self._client.fetch(
+            "GET",
+            "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg",
+            params={"key": keyword},
+        )
+        resp.raise_for_status()
+        return resp.json()["data"]
+```
+
+### `Credential` 和 `Platform` 参数
+
+`_build_request` 可以接受 `credential` 和 `platform` 参数，默认会继承当前 `Client` 的设置。
+通常情况下，模块方法不需要暴露这些参数，除非需要支持覆盖凭证或平台。
+不同的 `Platform` 会影响接口返回的数据内容和格式，是否需要登录。
+部分接口的 `Platform` 是固定的。
+
+### 响应模型 `response_model`
+
+每个响应模型都应继承 `.models.request.Response`。
+可以通过 `Field(json_schema_extra={"jsonpath": ...})` 声明字段的 JSONPath 映射路径，自动从嵌套响应中提取数据，以减少嵌套层级。
+
+```py
+from pydantic import Field
+
+from .request import Response
+
+
+class SonglistMeta(Response):
+    """歌单元数据示例."""
+
+    id: int = Field(json_schema_extra={"jsonpath": "$.result.tid"})
+    dirid: int = Field(json_schema_extra={"jsonpath": "$.result.dirId"})
+    name: str = Field(json_schema_extra={"jsonpath": "$.result.dirName"})
 
 
 class MyApi(ApiModule):
-    """自定义 API 模块."""
+    """带 JSONPath 响应模型的示例模块."""
 
-    def get_info(self, item_id: int):
-        """获取信息."""
+    def get_songlist_meta(self, disstid: int):
+        """获取歌单元数据."""
         return self._build_request(
-            module="music.myModule",
-            method="GetInfo",
-            param={"id": item_id},
+            module="music.srfDissInfo.aiDissInfo",
+            method="uniform_get_Dissinfo",
+            param={"disstid": disstid},
+            response_model=SonglistMeta,
         )
 ```
 
-然后在 `Client` 中注册该模块属性:
+## 在 `Client` 中注册模块
+
+新增模块后，在 `Client` 中注册该模块属性:
 
 ```python
 class Client:
@@ -72,56 +137,7 @@ class Client:
         return MyApi(self)
 ```
 
-## 2. 处理凭证、平台和响应模型
-
-默认情况下，请求会继承当前 `Client` 的 `credential` 和 `platform`。如需强制要求登录，可使用 `_require_login()`。
-
-```python
-from qqmusic_api.models.request import Credential
-
-
-class MyApi(ApiModule):
-    """需要登录的示例模块."""
-
-    def get_vip_info(self, *, credential: Credential | None = None):
-        """获取登录态信息."""
-        target_credential = self._require_login(credential)
-        return self._build_request(
-            module="VipLogin.VipLoginInter",
-            method="vip_login_base",
-            param={},
-            credential=target_credential,
-        )
-```
-
-如果接口返回值需要自动转换为 Pydantic 模型，可以传入 `response_model`:
-
-```python
-from pydantic import BaseModel
-
-
-class InfoResponse(BaseModel):
-    """接口响应模型."""
-
-    name: str
-
-
-class MyApi(ApiModule):
-    """带响应模型的示例模块."""
-
-    def get_info(self, item_id: int):
-        """获取信息."""
-        return self._build_request(
-            module="music.myModule",
-            method="GetInfo",
-            param={"id": item_id},
-            response_model=InfoResponse,
-        )
-```
-
-如果接口不是标准 `musicu/jce` 请求，而是直接访问 HTTP 地址，可以在模块里编写 `async def` 方法并调用 `_request()`。
-
-## 3. 编写组合型异步接口
+## 编写组合型异步接口
 
 当一个公开方法需要发起多次请求、合并分页结果或处理原始响应时，可以直接写成 `async def`。
 
@@ -155,7 +171,7 @@ class MyApi(ApiModule):
 * 批量聚合多个 `Request`
 * 对原始响应做二次整理后再返回
 
-## 4. 批量请求 `RequestGroup`
+## 批量请求 `RequestGroup`
 
 使用 `Client.request_group()` 可以批量提交请求。`RequestGroup` 会自动按 `platform`、`credential`、`comm` 和 `is_jce` 分组，并按 `batch_size` 分批发送。
 
@@ -199,13 +215,11 @@ async def batch_query_stream(song_ids: list[int]):
 * `data`: 成功时的返回数据
 * `error`: 失败时的异常对象
 
-## 5. 编写文档和测试
+## 编写文档和测试
 
 新增或调整 API 时，请同步更新这些内容:
 
 * public API 的 docstring
 * 对应模块测试
 * 用户可见行为变更涉及的文档页
-* `mkdocs.yml` 的 `nav`（如果新增或移动了文档页面）
-
-测试函数需要包含单行中文 docstring（英文标点），并优先验证可观察行为，而不是内部实现细节。
+* `zensical.toml` 的 `nav`（如果新增或移动了文档页面）

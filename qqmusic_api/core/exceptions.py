@@ -15,8 +15,8 @@ __all__ = [
     "NotLoginError",
     "RequestGroupResultMissingError",
     "SignInvalidError",
-    "build_api_error",
-    "extract_api_error_code",
+    "_build_api_error",
+    "_extract_api_error_code",
 ]
 
 
@@ -35,13 +35,6 @@ class BaseError(Exception):
         context: dict[str, Any] | None = None,
         cause: BaseException | None = None,
     ):
-        """初始化异常基类.
-
-        Args:
-            message: 错误描述信息.
-            context: 错误相关的上下文数据.
-            cause: 导致此异常的原始异常 (如果有).
-        """
         super().__init__(message)
         self.message = message
         self.context = context or {}
@@ -61,12 +54,6 @@ class NetworkError(BaseError):
     """
 
     def __init__(self, message: str, original_exc: Exception | None = None):
-        """初始化网络异常.
-
-        Args:
-            message: 错误描述信息.
-            original_exc: 原始的网络异常对象.
-        """
         super().__init__(message, cause=original_exc)
         self.original_exc = original_exc
 
@@ -80,13 +67,6 @@ class HTTPError(BaseError):
     """
 
     def __init__(self, message: str, status_code: int, cause: BaseException | None = None):
-        """初始化 HTTP 协议错误.
-
-        Args:
-            message: 错误描述信息.
-            status_code: HTTP 响应状态码.
-            cause: 原始异常.
-        """
         super().__init__(f"HTTP {status_code}: {message}", context={"status_code": status_code}, cause=cause)
         self.status_code = status_code
 
@@ -110,15 +90,6 @@ class ApiError(BaseError):
         cause: BaseException | None = None,
         context: dict[str, Any] | None = None,
     ):
-        """初始化 API 业务逻辑异常.
-
-        Args:
-            message: 错误描述信息.
-            code: API 返回的错误码.
-            data: API 返回的原始数据.
-            cause: 原始异常.
-            context: 上下文数据.
-        """
         merged_context = dict(context or {})
         merged_context.setdefault("data", data)
         super().__init__(message, context=merged_context, cause=cause)
@@ -126,7 +97,7 @@ class ApiError(BaseError):
         self.data = data
 
 
-def extract_api_error_code(payload: Any) -> tuple[int | None, int | None]:
+def _extract_api_error_code(payload: Any) -> tuple[int | None, int | None]:
     """从响应数据中提取错误码.
 
     尝试从对象属性或字典键值中获取 `code` 和 `subcode`.
@@ -157,12 +128,6 @@ class ApiDataError(ApiError):
     """
 
     def __init__(self, message: str, data: Any = None):
-        """初始化 API 数据错误.
-
-        Args:
-            message: 错误描述信息.
-            data: 相关数据.
-        """
         payload = data if data is not None else {}
         full_msg = f"API Data Error: {message}"
         super().__init__(full_msg, code=-2, data=payload)
@@ -182,12 +147,6 @@ class LoginExpiredError(CredentialError):
     """
 
     def __init__(self, message: str = "登录凭证已过期, 请重新登录", data: dict | None = None):
-        """初始化登录凭证过期异常.
-
-        Args:
-            message: 错误信息.
-            data: 原始响应数据.
-        """
         super().__init__(message, code=1000, data=data)
 
 
@@ -198,12 +157,6 @@ class NotLoginError(CredentialError):
     """
 
     def __init__(self, message: str = "未检测到有效登录信息", data: dict | None = None):
-        """初始化未登录异常.
-
-        Args:
-            message: 错误信息.
-            data: 原始响应数据.
-        """
         super().__init__(message, code=-1, data=data)
 
 
@@ -214,12 +167,6 @@ class LoginError(BaseError):
     """
 
     def __init__(self, message: str = "登录失败", cause: BaseException | None = None):
-        """初始化登录失败异常.
-
-        Args:
-            message: 错误信息.
-            cause: 原始异常.
-        """
         super().__init__(message, cause=cause)
 
 
@@ -230,12 +177,6 @@ class RequestGroupResultMissingError(ApiError):
     """
 
     def __init__(self, message: str, context: dict[str, Any] | None = None):
-        """初始化 RequestGroup 结果缺失异常.
-
-        Args:
-            message: 错误描述信息.
-            context: 结果缺失对应的请求上下文.
-        """
         super().__init__(message, code=-1, context=context)
 
 
@@ -246,28 +187,16 @@ class SignInvalidError(ApiError):
     """
 
     def __init__(self, message: str = "请求签名无效", data: dict | None = None):
-        """初始化签名无效异常.
-
-        Args:
-            message: 错误信息.
-            data: 原始响应数据.
-        """
         super().__init__(message, code=2000, data=data)
 
 
 class GlobalAuthFailedError(ApiError):
-    """全局会话过期或触发风控异常 (code=2001).
+    """触发风控异常 (code=2001).
 
-    当 API 返回 2001 错误码时抛出,表示登录凭证过期或触发风控。
+    当 API 返回 2001 错误码时抛出,表示触发风控,部分接口表示 musickey 失效。
     """
 
-    def __init__(self, message: str = "全局会话过期或触发风控, 需进行登录或者安全验证", data: dict | None = None):
-        """初始化全局会话过期异常.
-
-        Args:
-            message: 错误信息.
-            data: 原始响应数据.
-        """
+    def __init__(self, message: str = "触发风控, 需进行登录或者安全验证", data: dict | None = None):
         super().__init__(message, code=2001, data=data)
         self.feedback_url = data.get("feedbackURL") if isinstance(data, dict) else None
 
@@ -295,7 +224,7 @@ _SUBCODE_TO_MESSAGE: dict[int, str] = {
 }
 
 
-def build_api_error(
+def _build_api_error(
     *,
     code: int | None = None,
     subcode: int | None = None,

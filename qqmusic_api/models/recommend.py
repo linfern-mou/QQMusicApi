@@ -112,10 +112,10 @@ class RecommendSonglistItem(SongList):
         creator_nick: 创建者昵称.
     """
 
-    picurl: str = Field(json_schema_extra={"jsonpath": "$.cover.default_url"})
-    songnum: int = Field(validation_alias=AliasChoices("song_cnt", "songnum", "songNum"))
-    listennum: int = Field(validation_alias=AliasChoices("play_cnt", "listennum", "playCnt"))
-    creator_nick: str = Field(json_schema_extra={"jsonpath": "$.creator.nick"})
+    picurl: str = Field(default="", json_schema_extra={"jsonpath": "$.cover.default_url"})
+    songnum: int = Field(default=0, validation_alias=AliasChoices("song_cnt", "songnum", "songNum"))
+    listennum: int = Field(default=0, validation_alias=AliasChoices("play_cnt", "listennum", "playCnt"))
+    creator_nick: str = Field(default="", json_schema_extra={"jsonpath": "$.creator.nick"})
 
 
 class RecommendSonglistResponse(Response):

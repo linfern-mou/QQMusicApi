@@ -1,10 +1,8 @@
-# Client 与连接管理
+# Client
 
-`qqmusic_api` 使用 `Client` 统一管理连接、凭证、设备信息与请求配置。
+`Client` 用于统一管理连接、凭证、设备信息与请求配置，是调用 API 的入口。
 
-## 推荐用法
-
-推荐使用 `async with Client()`，这样可以自动关闭底层 `httpx.AsyncClient`：
+## 用法
 
 ```python
 import asyncio
@@ -26,7 +24,7 @@ asyncio.run(main())
 `Client` 当前常用参数包括：
 
 * `credential`: 全局凭证。
-* `device_path`: 单个设备信息文件路径。
+* `device_path`: 单个设备信息文件路径，传入即可复用设备信息。
 * `enable_sign`: 是否启用签名参数。
 * `platform`: 请求默认平台。
 * `max_concurrency`: 单个 `Client` 的最大并发请求数。
@@ -46,14 +44,25 @@ credential = Credential(musicid=123456, musickey="Q_H_L_xxx")
 client = Client(credential=credential)
 ```
 
-## 设备与上下文
+## 请求平台
 
-`Client` 会维护自己的设备信息、QIMEI 缓存和平台上下文。  
-即使某次请求临时覆盖了 `credential`，这些上下文仍然属于当前 `Client` 实例本身。
-同一个 `Client` 上的模块属性也会复用同一份模块实例。
+默认的请求平台是 `android`，如果需要可以在初始化时覆盖：
 
-`device_path` 的行为固定如下：
+!!! note
 
-* 不传 `device_path`：每个 `Client` 启动时在内存中生成一份新设备，仅在当前实例内复用，不会落盘。
-* 传入已存在的 `device_path`：从该文件加载设备并复用。
-* 传入不存在的 `device_path`：生成一份新设备并立即保存到该路径，之后继续复用该文件。
+    部分 API 的请求平台是固定的，无法覆盖。
+
+```python
+import asyncio
+
+from qqmusic_api import Client, Platform
+
+
+async def main():
+    async with Client(platform=Platform.DESKTOP) as client:
+        ...
+
+
+asyncio.run(_main())
+
+```

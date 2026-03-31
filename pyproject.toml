@@ -58,11 +58,9 @@ dev = [
   { include-group = "testing" },
 ]
 docs = [
-  "markdown-callouts>=0.4.0",
-  "mkdocs-material>=9.7.5",
   "mkdocstrings>=1.0.3",
   "mkdocstrings-python>=2.0.3",
-  "zensical>=0.0.27",
+  "zensical>=0.0.30",
 ]
 linting = [
   "prek>=0.3.5",
@@ -135,6 +133,7 @@ ignore = [
   "TID252",
   "C901",
 ]
+extend-per-file-ignores = { "qqmusic_api/core/exceptions.py" = ["D107"] }
 pydocstyle = { convention = "google" }
 
 [tool.uv]
