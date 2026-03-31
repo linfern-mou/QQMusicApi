@@ -343,3 +343,47 @@ class GetFavNumResponse(Response):
 
     numbers: dict[str, int] = Field(alias="m_numbers")
     show: dict[str, str] = Field(alias="m_show")
+
+
+class CdnDispatchSipInfo(Response):
+    """CDN 调度中的单个节点信息.
+
+    Attributes:
+        cdn: CDN 节点地址.
+        quic: 是否支持 QUIC.
+        ipstack: IP 栈类型.
+        quichost: QUIC 主机名.
+        plaintext_quic: 是否支持明文 QUIC.
+        encrypt_quic: 是否支持加密 QUIC.
+    """
+
+    cdn: str = ""
+    quic: int = 0
+    ipstack: int = 0
+    quichost: str = ""
+    plaintext_quic: int = Field(default=0, alias="plaintextquic")
+    encrypt_quic: int = Field(default=0, alias="encryptquic")
+
+
+class GetCdnDispatchResponse(Response):
+    """获取音频 CDN 调度响应.
+
+    仅保留歌曲 URL 构建与缓存控制所需字段.
+
+    Attributes:
+        retcode: 接口返回码.
+        sip: 可用 CDN 根地址列表.
+        sipinfo: 可用 CDN 节点明细列表.
+        test_file: 用于测试 CDN 可用性的文件路径.
+        expiration: 数据有效期 (秒).
+        refresh_time: 建议刷新间隔 (秒).
+        cache_time: 建议缓存时长 (秒).
+    """
+
+    retcode: int
+    sip: list[str] = Field(default_factory=list)
+    sipinfo: list[CdnDispatchSipInfo] = Field(default_factory=list)
+    test_file: str = Field(alias="keepalivefile")
+    expiration: int
+    refresh_time: int = Field(alias="refreshTime")
+    cache_time: int = Field(alias="cacheTime")

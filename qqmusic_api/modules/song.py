@@ -7,6 +7,7 @@ from qqmusic_api import Platform
 
 from ..models.request import Credential
 from ..models.song import (
+    GetCdnDispatchResponse,
     GetFavNumResponse,
     GetOtherVersionResponse,
     GetProducerResponse,
@@ -186,6 +187,7 @@ class SongApi(ApiModule):
                 "use_new_domain": int(use_new_domain),
                 "use_ipv6": int(use_ipv6),
             },
+            response_model=GetCdnDispatchResponse,
         )
 
     def get_song_urls(

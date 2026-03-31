@@ -33,15 +33,6 @@ _WX_UUID_RE = re.compile(r"uuid=(.+?)\"")
 _WX_STATUS_RE = re.compile(r"window\.wx_errcode=(\d+);window\.wx_code='([^']*)'")
 
 
-def _as_str_dict(value: Any) -> dict[str, Any] | None:
-    """将值收窄为键为字符串的字典."""
-    if not isinstance(value, dict):
-        return None
-    if any(not isinstance(key, str) for key in value):
-        return None
-    return value
-
-
 def _raise_login_error(
     scope: str,
     message: str,
@@ -326,12 +317,11 @@ class LoginApi(ApiModule):
         except ApiError as exc:
             raise _raise_login_error("MobileLogin", "获取二维码失败", cause=exc) from exc
 
-        payload = _as_str_dict(data)
-        if payload is None:
+        if data is None:
             raise _raise_login_error("MobileLogin", "获取二维码失败")
 
-        qrcode = str(payload.get("qrcode", ""))
-        qrcode_id = str(payload.get("qrcodeID", ""))
+        qrcode = str(data.get("qrcode", ""))
+        qrcode_id = str(data.get("qrcodeID", ""))
         if not qrcode or not qrcode_id:
             raise _raise_login_error("MobileLogin", "获取二维码失败")
         return QR(
