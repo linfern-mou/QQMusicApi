@@ -9,7 +9,7 @@ import pytest
 import pytest_asyncio
 
 from qqmusic_api import Client, Credential
-from qqmusic_api.core.exceptions import GlobalAuthFailedError, LoginExpiredError, NotLoginError
+from qqmusic_api.core.exceptions import LoginExpiredError, NotLoginError, RatelimitedError
 
 TEST_CREDENTIAL_ENV_PREFIX = "QQMUSIC_"
 
@@ -45,7 +45,7 @@ def _rerun_test_call_with_rate_limit_retry(
     """在调用阶段重试命中限流的测试."""
     try:
         item.runtest()
-    except GlobalAuthFailedError:
+    except RatelimitedError:
         if not delays:
             _skip_rate_limit_after_retries()
         time.sleep(delays[0])
@@ -70,7 +70,7 @@ def pytest_runtest_call(item: pytest.Item) -> Generator[None, Any, Any]:
     exc = excinfo[1]
     if isinstance(exc, (NotLoginError, LoginExpiredError)):
         pytest.skip(str(exc))
-    elif isinstance(exc, GlobalAuthFailedError):
+    elif isinstance(exc, RatelimitedError):
         _rerun_test_call_with_rate_limit_retry(item, RATE_LIMIT_RETRY_DELAYS)
         outcome.force_result(None)
 

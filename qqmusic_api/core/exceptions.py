@@ -7,12 +7,12 @@ __all__ = [
     "ApiError",
     "BaseError",
     "CredentialError",
-    "GlobalAuthFailedError",
     "HTTPError",
     "LoginError",
     "LoginExpiredError",
     "NetworkError",
     "NotLoginError",
+    "RatelimitedError",
     "RequestGroupResultMissingError",
     "SignInvalidError",
     "_build_api_error",
@@ -190,7 +190,7 @@ class SignInvalidError(ApiError):
         super().__init__(message, code=2000, data=data)
 
 
-class GlobalAuthFailedError(ApiError):
+class RatelimitedError(ApiError):
     """触发风控异常 (code=2001).
 
     当 API 返回 2001 错误码时抛出,表示触发风控,部分接口表示 musickey 失效。
@@ -204,7 +204,7 @@ class GlobalAuthFailedError(ApiError):
 _CODE_TO_EXCEPTION: dict[int, type[ApiError]] = {
     1000: LoginExpiredError,
     2000: SignInvalidError,
-    2001: GlobalAuthFailedError,
+    2001: RatelimitedError,
 }
 
 _CODE_TO_MESSAGE: dict[int, str] = {
@@ -262,10 +262,10 @@ def _build_api_error(
         if message is not None:
             return SignInvalidError(message=message, data=data_dict)
         return SignInvalidError(data=data_dict)
-    if exc_cls is GlobalAuthFailedError:
+    if exc_cls is RatelimitedError:
         if message is not None:
-            return GlobalAuthFailedError(message=message, data=data_dict)
-        return GlobalAuthFailedError(data=data_dict)
+            return RatelimitedError(message=message, data=data_dict)
+        return RatelimitedError(data=data_dict)
 
     if message is None:
         if subcode is not None and subcode in _SUBCODE_TO_MESSAGE:

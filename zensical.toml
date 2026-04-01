@@ -45,7 +45,7 @@ nav = [
       { "client" = "reference/core/client.md" },
       { "request" = "reference/core/request.md" },
       { "versioning" = "reference/core/versioning.md" },
-      { "exceptions" = "reference/exceptions.md" },
+      { "exception" = "reference/core/exception.md" },
     ] },
   ] },
   { "帮助" = [

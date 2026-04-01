@@ -3,12 +3,12 @@
 from .core.client import Client
 from .core.exceptions import (
     ApiError,
-    GlobalAuthFailedError,
     HTTPError,
     LoginError,
     LoginExpiredError,
     NetworkError,
     NotLoginError,
+    RatelimitedError,
     SignInvalidError,
 )
 from .core.versioning import Platform
@@ -20,13 +20,13 @@ __all__ = [
     "ApiError",
     "Client",
     "Credential",
-    "GlobalAuthFailedError",
     "HTTPError",
     "LoginError",
     "LoginExpiredError",
     "NetworkError",
     "NotLoginError",
     "Platform",
+    "RatelimitedError",
     "SignInvalidError",
     "__version__",
 ]
