@@ -125,7 +125,7 @@ class Client:
 
         self.enable_sign = enable_sign
         self.platform = platform
-        self.qimei_timeout = qimei_timeout
+        self._qimei_timeout = qimei_timeout
         self._version_policy: VersionPolicy = DEFAULT_VERSION_POLICY
 
         self._limiter = anyio.CapacityLimiter(max_concurrency)
@@ -315,7 +315,7 @@ class Client:
                     device=device,
                     version=self._version_policy.get_qimei_app_version(),
                     session=self._session,
-                    request_timeout=self.qimei_timeout,
+                    request_timeout=self._qimei_timeout,
                     sdk_version=self._version_policy.get_qimei_sdk_version(),
                 )
                 self._qimei_loaded = True

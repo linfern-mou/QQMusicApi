@@ -141,9 +141,9 @@ class CredentialError(ApiError):
 
 
 class LoginExpiredError(CredentialError):
-    """登录凭证过期异常 (code=1000).
+    """登录凭证过期异常 (code=1000,104400,104401).
 
-    当 API 返回 1000 错误码时抛出,提示用户需要重新登录或刷新 Cookie。
+    当 API 返回 1000, 104400, 104401 错误码时抛出,提示用户需要重新登录或刷新 Cookie。
     """
 
     def __init__(self, message: str = "登录凭证已过期, 请重新登录", data: dict | None = None):
@@ -203,6 +203,8 @@ class RatelimitedError(ApiError):
 
 _CODE_TO_EXCEPTION: dict[int, type[ApiError]] = {
     1000: LoginExpiredError,
+    104400: LoginExpiredError,
+    104401: LoginExpiredError,
     2000: SignInvalidError,
     2001: RatelimitedError,
 }
