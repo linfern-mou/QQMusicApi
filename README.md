@@ -6,7 +6,7 @@
     <a href="https://www.python.org">
         <img src="https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13|3.14-blue" alt="Python">
     </a>
-    <a href="https://github.com/l-1124/QQMusicApi?tab=MIT-1-ov-file">
+    <a href="https://github.com/l-1124/QQMusicApi/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/l-1124/QQMusicApi" alt="GitHub license">
     </a>
     <a href="https://github.com/l-1124/QQMusicApi/stargazers">
@@ -20,8 +20,8 @@
 ---
 
 > [!IMPORTANT]
-> 本仓库的所有内容仅供学习和参考之用，**禁止用于商业用途**
-> **音乐平台不易，请尊重版权，支持正版。**
+> 请在使用前阅读仓库中的 `LICENSE` 文件, **并遵守相关平台条款与版权法律**。  
+> **音乐平台不易, 请尊重版权, 支持正版**。
 
 ---
 
@@ -41,7 +41,11 @@
 
 ## 📄 许可证
 
-本项目基于 **[MIT License](https://github.com/l-1124/QQMusicApi?tab=MIT-1-ov-file)** 许可证发行。
+本项目当前采用 **[GNU General Public License v3.0 or later](https://github.com/l-1124/QQMusicApi/blob/main/LICENSE)**。
+
+`v0.5.0` 及后续版本均按 GPL 条款分发, 具体内容以仓库中的 `LICENSE` 文件为准。
+
+本项目仅用于对技术可行性的探索及研究，请勿将其用于任何商业用途或侵犯版权的行为。
 
 ## ⚠️ 免责声明
 

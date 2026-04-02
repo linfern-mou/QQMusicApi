@@ -18,7 +18,7 @@ classifiers = [
   "Framework :: Pydantic :: 2",
   "Framework :: Pytest",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Natural Language :: Chinese (Simplified)",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
