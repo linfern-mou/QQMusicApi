@@ -1,8 +1,38 @@
 """定义多个接口共享的基础业务实体模型."""
 
+from typing import Final, Literal
+
 from pydantic import AliasChoices, Field
 
 from .request import Response
+
+CoverSize = Literal[150, 300, 500, 800, 1200, 1500]
+
+_PHOTO_NEW_SIZE_SEGMENTS: Final[dict[int, str]] = {
+    150: "R150x150",
+    300: "R300x300",
+    500: "R500x500",
+    800: "R800x800",
+    1200: "R1200x1200",
+    1500: "R1500x1500",
+}
+
+
+def _normalize_cover_size(size: CoverSize) -> str:
+    """返回 APK `photo_new` 模板使用的尺寸片段."""
+    try:
+        return _PHOTO_NEW_SIZE_SEGMENTS[size]
+    except KeyError as exc:
+        raise ValueError("not supported size") from exc
+
+
+def _build_photo_new_cover_url(kind: str, mid: str, size: CoverSize) -> str:
+    """按 APK `photo_new` 规则拼接封面链接."""
+    normalized_mid = mid.strip()
+    if not normalized_mid:
+        return ""
+
+    return f"https://y.gtimg.cn/music/photo_new/{kind}{_normalize_cover_size(size)}M000{normalized_mid}.jpg"
 
 
 class Singer(Response):
@@ -29,6 +59,10 @@ class Singer(Response):
     uin: int = -1
     pmid: str = Field(default="", validation_alias=AliasChoices("pmid", "singerPmid", "singer_pmid", "pic_mid"))
 
+    def cover_url(self, size: CoverSize = 300) -> str:
+        """获取歌手封面链接."""
+        return _build_photo_new_cover_url("T001", self.mid or self.pmid, size)
+
 
 class Album(Response):
     """表示接口响应中的专辑摘要信息.
@@ -50,6 +84,10 @@ class Album(Response):
     subtitle: str = Field(default="", validation_alias=AliasChoices("subtitle", "albumTranName"))
     time_public: str = Field(default="", validation_alias=AliasChoices("time_public", "publish_date", "publishDate"))
     pmid: str = Field(default="", validation_alias=AliasChoices("pmid", "logo"))
+
+    def cover_url(self, size: CoverSize = 300) -> str:
+        """获取专辑封面链接."""
+        return _build_photo_new_cover_url("T002", self.mid or self.pmid, size)
 
 
 class File(Response):
@@ -250,3 +288,20 @@ class Song(Response):
     vs: list[str]
     vi: list[int]
     vf: list[float]
+
+    def cover_url(self, size: CoverSize = 300) -> str:
+        """获取歌曲封面链接.
+
+        依次使用专辑封面->首个可用歌手封面.
+
+        Args:
+            size: 封面大小.
+        """
+        if self.album.mid or self.album.pmid:
+            return self.album.cover_url(size)
+
+        for singer in self.singer:
+            if singer.mid or singer.pmid:
+                return singer.cover_url(size)
+
+        return ""

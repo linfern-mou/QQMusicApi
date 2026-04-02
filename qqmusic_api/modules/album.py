@@ -1,6 +1,6 @@
 """专辑相关 API."""
 
-from typing import Any, Literal
+from typing import Any
 
 from ..models.album import GetAlbumDetailResponse, GetAlbumSongResponse
 from ._base import ApiModule
@@ -8,20 +8,6 @@ from ._base import ApiModule
 
 class AlbumApi(ApiModule):
     """专辑相关 API."""
-
-    def get_cover(self, mid: str, size: Literal[150, 300, 500, 800] = 300) -> str:
-        """获取专辑封面链接.
-
-        Args:
-            mid: 专辑 MID.
-            size: 封面大小, 支持 150, 300, 500, 800.
-
-        Returns:
-            str: 封面图片 URL 地址.
-        """
-        if size not in [150, 300, 500, 800]:
-            raise ValueError("not supported size")
-        return f"https://y.gtimg.cn/music/photo_new/T002R{size}x{size}M000{mid}.jpg"
 
     def get_detail(self, value: str | int):
         """获取专辑详细信息.
