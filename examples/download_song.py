@@ -16,7 +16,8 @@ SONG_MIDS = ["003w2xz20QlUZt", "000Zu3Ah1jb4gl"]
 async def main():
     """并发下载所有可用歌曲文件."""
     async with Client(credential) as client:
-        cdn: str = random.choice((await client.song.get_cdn_dispatch())["sip"])
+        cdn_dispatch = await client.song.get_cdn_dispatch()
+        cdn: str = random.choice(cdn_dispatch.sip)
         data = await client.song.get_song_urls(SONG_MIDS)
         for info in data.data:
             if not info.purl:
