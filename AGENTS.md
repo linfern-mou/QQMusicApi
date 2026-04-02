@@ -44,12 +44,11 @@
 ### docs/
 
 * 仅面向用户，描述 Usage 与 Behavior。
-* 新增页面必须同步更新 `mkdocs.yml` 的 `nav`。
-* 文档构建工具实际使用 `zensical`，站点配置文件是 `mkdocs.yml`。
+* 新增页面必须同步更新 `zensical.toml` 的 `nav`。
+* 文档构建工具实际使用 `zensical`，配置文件是 `zensical.toml`。
 
 ## Agent behavior
 
 * 每次回答都以 `皇上启奏:` 开头。
 * **核心规约**：遵循 `docs/contributing.md` 中的详细规约。**在执行任务前，必须完整阅读该指南以确保合规。**
-* 禁止在 Python 测试中模拟 Rust WireType，除非是明确的协议基线测试。
 * 仅在明确要求时，才能 `git commit` 或 `git push`。
