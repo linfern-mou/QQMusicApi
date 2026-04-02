@@ -30,6 +30,7 @@ from ..models.request import (
 )
 from ..utils.common import bool_to_int
 from ..utils.qimei import QimeiResult, get_qimei
+from ..utils.retry import AsyncRetrying
 from .exceptions import ApiDataError, ApiError, HTTPError, NetworkError, _build_api_error, _extract_api_error_code
 from .request import Request, RequestGroup, RequestResult, RequestResultT, ResponseModel
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
@@ -247,7 +248,7 @@ class Client:
     async def fetch(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         """发送底层 HTTP 请求.
 
-        该方法提供并发控制及网络异常转换.
+        该方法提供并发控制、网络波动自动重试及网络异常转换.
 
         Args:
             method: HTTP 方法, 如 "GET" 或 "POST".
@@ -258,16 +259,23 @@ class Client:
             httpx.Response: HTTP 响应对象.
 
         Raises:
-            NetworkError: 网络请求过程中发生异常.
+            NetworkError: 网络请求在重试耗尽后仍然失败.
         """
         logger.debug("HTTP 请求开始: %s %s", method, url)
+        retrying = AsyncRetrying(
+            max_attempts=3,
+            wait_multiplier=0.5,
+            wait_exp_base=2.0,
+            log=logger,
+        )
+
         await self._limiter.acquire()
         try:
-            resp = await self._session.request(method, url, **kwargs)
+            resp = await retrying(self._session.request, method, url, **kwargs)
             logger.debug("HTTP 请求完成: %s %s -> %s", method, url, resp.status_code)
             return resp
         except httpx.RequestError as exc:
-            logger.debug("HTTP 请求失败: %s %s, error=%s", method, url, exc)
+            logger.debug("HTTP 请求重试耗尽: %s %s, error=%s", method, url, exc)
             raise NetworkError(f"Network error: {exc}", original_exc=exc) from exc
         finally:
             self._limiter.release()

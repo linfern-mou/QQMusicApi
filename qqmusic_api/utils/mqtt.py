@@ -20,11 +20,14 @@ from paho.mqtt.enums import CallbackAPIVersion
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
 
+from .retry import AsyncRetrying
+
 if TYPE_CHECKING:
     from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
     from paho.mqtt.client import MQTTMessage
 
 logger = logging.getLogger("qqmusicapi.MQTTClient")
+_MQTT_RETRY_EXCEPTIONS = (ConnectionError, TimeoutError, OSError, ssl.SSLError)
 
 
 class MqttRedirectError(Exception):
@@ -417,6 +420,52 @@ class Client:
         """异步等待 threading.Event."""
         return await anyio.to_thread.run_sync(event.wait, wait_seconds)
 
+    async def _connect_candidate(
+        self,
+        *,
+        current_path: str,
+        headers: dict[str, str] | None,
+        connect_props: Properties | None,
+        connect_timeout: float,
+    ) -> tuple[mqtt.Client, int, dict[int, Any]]:
+        """执行单次 MQTT 连接尝试并返回连接结果."""
+        connect_outcome = _ConnectOutcome()
+        self._current_connect = connect_outcome
+        candidate = self._create_paho_client()
+        candidate.ws_set_options(path=current_path, headers=headers)
+
+        try:
+            candidate.connect(
+                self.host,
+                self.port,
+                self.keep_alive,
+                clean_start=True,
+                properties=connect_props,
+            )
+        except Exception as exc:
+            self._current_connect = None
+            raise ConnectionError(f"MQTT connection failed: {exc}") from exc
+
+        candidate.loop_start()
+        connected = await self._wait_threading_event(connect_outcome.event, connect_timeout)
+        if not connected:
+            await self._stop_paho_client(candidate, should_disconnect=True)
+            self._current_connect = None
+            raise TimeoutError("MQTT connect timed out")
+
+        if connect_outcome.error is not None:
+            await self._stop_paho_client(candidate, should_disconnect=True)
+            self._current_connect = None
+            raise ConnectionError(f"MQTT connection failed: {connect_outcome.error}") from connect_outcome.error
+
+        reason_code = connect_outcome.reason_code
+        if reason_code is None:
+            await self._stop_paho_client(candidate, should_disconnect=True)
+            self._current_connect = None
+            raise ConnectionError("MQTT connect finished without CONNACK")
+
+        return candidate, reason_code, connect_outcome.properties
+
     async def connect(self, properties: dict[Any, Any] | None = None, headers: dict[str, str] | None = None) -> None:
         """建立 WebSocket 连接并发送 MQTT CONNECT 报文.
 
@@ -436,44 +485,29 @@ class Client:
         self._current_headers = headers
         connect_props = self._build_paho_properties(PacketTypes.CONNECT, properties)
 
+        retrying = AsyncRetrying(
+            max_attempts=3,
+            retry_exceptions=_MQTT_RETRY_EXCEPTIONS,
+            wait_multiplier=0.5,
+            wait_exp_base=2.0,
+            log=logger,
+        )
+
         while True:
             logger.debug("Connecting to wss://%s:%s%s...", self.host, self.port, current_path)
-            connect_outcome = _ConnectOutcome()
-            self._current_connect = connect_outcome
-            candidate = self._create_paho_client()
-            candidate.ws_set_options(path=current_path, headers=headers)
-
             try:
-                candidate.connect(
-                    self.host,
-                    self.port,
-                    self.keep_alive,
-                    clean_start=True,
-                    properties=connect_props,
+                candidate, reason_code, connack_properties = await retrying(
+                    self._connect_candidate,
+                    current_path=current_path,
+                    headers=headers,
+                    connect_props=connect_props,
+                    connect_timeout=connect_timeout,
                 )
-            except Exception as exc:
+            except _MQTT_RETRY_EXCEPTIONS as exc:
                 self._current_connect = None
+                if isinstance(exc, ConnectionError):
+                    raise
                 raise ConnectionError(f"MQTT connection failed: {exc}") from exc
-
-            candidate.loop_start()
-            connected = await self._wait_threading_event(connect_outcome.event, connect_timeout)
-            if not connected:
-                await self._stop_paho_client(candidate, should_disconnect=True)
-                self._current_connect = None
-                raise ConnectionError("MQTT connect timed out")
-
-            if connect_outcome.error is not None:
-                await self._stop_paho_client(candidate, should_disconnect=True)
-                self._current_connect = None
-                raise ConnectionError(f"MQTT connection failed: {connect_outcome.error}") from connect_outcome.error
-
-            reason_code = connect_outcome.reason_code
-            if reason_code is None:
-                await self._stop_paho_client(candidate, should_disconnect=True)
-                self._current_connect = None
-                raise ConnectionError("MQTT connect finished without CONNACK")
-
-            connack_properties = connect_outcome.properties
             if reason_code == 0x00:
                 if isinstance(connack_properties.get(PropertyId.SERVER_KEEP_ALIVE), int):
                     self.keep_alive = connack_properties[PropertyId.SERVER_KEEP_ALIVE]
