@@ -65,9 +65,6 @@ uv run mkdocs serve
 
 ### 创建 Pull Request
 
-> [!NOTE]
-> 请向 `main` 分支发起 [Pull Request](https://github.com/l-1124/QQMusicApi/pulls)
-
 提交更改，将分支推送到 GitHub，然后创建拉取请求。
 
 请遵循拉取请求模板并填写尽可能多的信息。链接到任何相关问题，并说明行为变化、兼容性影响和验证结果。

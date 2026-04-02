@@ -4,7 +4,7 @@
 
 !!! example
 
-    可在 GitHub 上查看使用[示例](https://github.com/L-1124/QQMusicApi/tree/main/examples)
+    可在 GitHub 上查看[使用示例](https://github.com/L-1124/QQMusicApi/tree/main/examples)
 
 ## 1. 安装
 

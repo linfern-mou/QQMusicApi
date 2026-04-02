@@ -56,15 +56,22 @@ ModuleT = TypeVar("ModuleT")
 
 
 class ClientConfig(TypedDict, total=False):
-    """Client 的可选底层网络配置."""
+    """支持透传的 `httpx.AsyncClient` 的配置项."""
 
     proxy: Any
+    """代理配置, 详见 `httpx.AsyncClient` 的 `proxy` 参数."""
     trust_env: bool
+    """是否信任环境变量中的代理设置, 详见 `httpx.AsyncClient` 的 `trust_env` 参数."""
     verify: Any
+    """SSL 证书验证配置, 详见 `httpx.AsyncClient` 的 `verify` 参数."""
     cert: Any
+    """客户端证书配置, 详见 `httpx.AsyncClient` 的 `cert` 参数."""
     event_hooks: Any
+    """事件钩子配置, 详见 `httpx.AsyncClient` 的 `event_hooks` 参数."""
     transport: Any
+    """自定义传输后端, 详见 `httpx.AsyncClient` 的 `transport` 参数."""
     mounts: Any
+    """自定义协议适配器, 详见 `httpx.AsyncClient` 的 `mounts` 参数."""
 
 
 class _NullCookieJar(CookieJar):
@@ -256,7 +263,7 @@ class Client:
             **kwargs: 传递给 httpx.AsyncClient.request 的附加参数.
 
         Returns:
-            httpx.Response: HTTP 响应对象.
+            HTTP 响应对象.
 
         Raises:
             NetworkError: 网络请求在重试耗尽后仍然失败.
@@ -295,7 +302,7 @@ class Client:
         并将其持久化到当前 Client 绑定的设备存储中. 该方法保证并发请求时的安全性 (Lock).
 
         Returns:
-            QimeiResult | None: 成功则返回 QIMEI 字典数据, 失败则返回 None.
+            成功则返回 QIMEI 字典数据, 失败则返回 None.
         """
         if self._qimei_loaded:
             return self._qimei_cache
@@ -347,7 +354,7 @@ class Client:
             comm: 额外覆盖或补充的 comm 字段, 将覆盖默认生成的字段.
 
         Returns:
-            dict[str, Any]: 组装好的 comm 参数字典.
+            组装好的 comm 参数字典.
         """
         target_platform = platform or self.platform
         qimei = await self._get_qimei_cached() if target_platform == Platform.ANDROID else None
@@ -372,7 +379,7 @@ class Client:
             max_inflight_batches: 允许同时发送的最多批次数量.
 
         Returns:
-            RequestGroup: 批量请求对象.
+            批量请求对象.
         """
         from .request import RequestGroup
 
@@ -394,7 +401,7 @@ class Client:
             request: 请求描述符对象.
 
         Returns:
-            R: 解析后对应的响应对象模型.
+            解析后对应的响应对象模型.
 
         Raises:
             ApiError: 接口返回状态码异常或缺少预期字段.
@@ -510,7 +517,7 @@ class Client:
             response_model: 期望的响应模型类型, 支持 Pydantic BaseModel.
 
         Returns:
-            R: 构建好的响应模型实例, 或原样返回 (如果无需转换).
+            构建好的响应模型实例, 或原样返回 (如果无需转换).
         """
         if response_model is None:
             return raw
@@ -543,7 +550,7 @@ class Client:
             platform: 平台标识. 若为 None, 使用当前 Client 默认平台.
 
         Returns:
-            str: 格式化好的 User-Agent 字符串.
+            格式化好的 User-Agent 字符串.
         """
         target_platform = platform or self.platform
         return self._version_policy.get_user_agent(target_platform, await self._ensure_device())
@@ -557,7 +564,7 @@ class Client:
             credential: 提供凭证对象. 若为 None 则使用 Client 当前实例的全局凭证.
 
         Returns:
-            dict[str, str]: 包含 Cookie 键值对的字典.
+            包含 Cookie 键值对的字典.
         """
         auth: dict[str, str] = {}
         cred = credential or self.credential
@@ -589,7 +596,7 @@ class Client:
             **kwargs: 传递给 httpx 的其他参数.
 
         Returns:
-            httpx.Response: HTTP 响应对象.
+            HTTP 响应对象.
         """
         auth_cookies = self._get_cookies(credential)
         if "cookies" in kwargs:
@@ -626,7 +633,7 @@ class Client:
             preserve_bool: 是否保留 JSON 参数中的布尔字面量.
 
         Returns:
-            dict[str, Any]: 解析后的 JSON 响应字典.
+            解析后的 JSON 响应字典.
 
         Raises:
             HTTPError: HTTP 状态码不是 200.
@@ -693,7 +700,7 @@ class Client:
             url: JCE 网关 URL.
 
         Returns:
-            JceResponse: 解析后的 JCE 响应对象.
+            解析后的 JCE 响应对象.
 
         Raises:
             HTTPError: HTTP 状态码不是 200.

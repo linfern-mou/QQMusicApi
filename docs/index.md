@@ -6,7 +6,7 @@ hide: navigation
 
 <div align="center">
     <a>
-        <img src="https://socialify.git.ci/L-1124/QQMusicApi/image?font=JetBrains+Mono&language=1&name=1&pattern=Transparent&theme=Auto" alt="QQMusicApi" width="640" height="320" />
+        <img src="https://socialify.git.ci/L-1124/QQMusicApi/image?font=JetBrains+Mono&language=1&name=1&pattern=Transparent&theme=Auto&logo=https%3A%2F%2Fraw.githubusercontent.com%2FL-1124%2FQQMusicApi%2Frefs%2Fheads%2Fmain%2Fassets%2Fqq-music.svg" alt="QQMusicApi" width="640" height="320" />
     </a>
     <br/>
     <a href="https://www.python.org">

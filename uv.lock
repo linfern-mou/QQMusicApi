@@ -216,6 +216,18 @@ wheels = [
 ]
 
 [[package]]
+name = "docstring-inheritance"
+version = "3.0.0"
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/73/64/d3c77997ddfa19281445c8ae8316d27b50b91fd250b09c6c87e18dfbc9b0/docstring_inheritance-3.0.0.tar.gz", hash = "sha256:3ee19b35549279a7a03e184d66e4d5b25e859ae67785e2e5373e224e1f874934", size = 30686, upload-time = "2025-12-11T06:43:08.599Z" }
+wheels = [
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/28/76/b42a11e16de9a8cecd950cbf8a92da20dcaf54648aa08b97f15233709f28/docstring_inheritance-3.0.0-py3-none-any.whl", hash = "sha256:1fbd9b1c8570b63e6670880504adb9c63fc1c8376725a312cf62b5d07728664d", size = 26498, upload-time = "2025-12-11T06:43:09.513Z" },
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
@@ -237,6 +249,30 @@ dependencies = [
 sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/d9/29/d40217cbe2f6b1359e00c6c307bb3fc876ba74068cbab3dde77f03ca0dc4/ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343", size = 10943, upload-time = "2022-05-02T15:47:16.11Z" }
 wheels = [
     { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619", size = 11034, upload-time = "2022-05-02T15:47:14.552Z" },
+]
+
+[[package]]
+name = "griffe-inherited-docstrings"
+version = "1.1.3"
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
+dependencies = [
+    { name = "griffelib" },
+]
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/cb/da/fd002dc5f215cd896bfccaebe8b4aa1cdeed8ea1d9d60633685bd61ff933/griffe_inherited_docstrings-1.1.3.tar.gz", hash = "sha256:cd1f937ec9336a790e5425e7f9b92f5a5ab17f292ba86917f1c681c0704cb64e", size = 26738, upload-time = "2026-02-21T09:38:44.312Z" }
+wheels = [
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/16/20/4bc15f242181daad1c104e0a7d33be49e712461ea89e548152be0365b9ea/griffe_inherited_docstrings-1.1.3-py3-none-any.whl", hash = "sha256:aa7f6e624515c50d9325a5cfdf4b2acac547f1889aca89092d5da7278f739695", size = 6710, upload-time = "2026-02-20T11:06:38.75Z" },
+]
+
+[[package]]
+name = "griffe-pydantic"
+version = "1.3.1"
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
+dependencies = [
+    { name = "griffelib" },
+]
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/5a/bd/d2eaeaf3f9910c9cd72793af0de18ee3d3a3a27bb30ab01cfd7659c08dc4/griffe_pydantic-1.3.1.tar.gz", hash = "sha256:f7caedfa0effedb22893bf01cc411fd567614f7b4de7ce0c1f4293eb7acb5c44", size = 38176, upload-time = "2026-02-21T09:38:49.674Z" }
+wheels = [
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/2d/88/17d656aa97406cd509e2be0e6eddcf81fc1666104bf81042b89721d4a44c/griffe_pydantic-1.3.1-py3-none-any.whl", hash = "sha256:475103794a1d5da3933d3968e82a2bd9d9a1fa507c06d5ee1a39ee1fadcca628", size = 15189, upload-time = "2026-02-20T11:34:14.965Z" },
 ]
 
 [[package]]
@@ -1048,6 +1084,9 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "docstring-inheritance" },
+    { name = "griffe-inherited-docstrings" },
+    { name = "griffe-pydantic" },
     { name = "mkdocstrings" },
     { name = "mkdocstrings-python" },
     { name = "prek" },
@@ -1061,6 +1100,9 @@ dev = [
     { name = "zensical" },
 ]
 docs = [
+    { name = "docstring-inheritance" },
+    { name = "griffe-inherited-docstrings" },
+    { name = "griffe-pydantic" },
     { name = "mkdocstrings" },
     { name = "mkdocstrings-python" },
     { name = "zensical" },
@@ -1091,6 +1133,9 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "docstring-inheritance", specifier = ">=3.0.0" },
+    { name = "griffe-inherited-docstrings", specifier = ">=1.1.3" },
+    { name = "griffe-pydantic", specifier = ">=1.3.1" },
     { name = "mkdocstrings", specifier = ">=1.0.3" },
     { name = "mkdocstrings-python", specifier = ">=2.0.3" },
     { name = "prek", specifier = ">=0.3.5" },
@@ -1104,6 +1149,9 @@ dev = [
     { name = "zensical", specifier = ">=0.0.30" },
 ]
 docs = [
+    { name = "docstring-inheritance", specifier = ">=3.0.0" },
+    { name = "griffe-inherited-docstrings", specifier = ">=1.1.3" },
+    { name = "griffe-pydantic", specifier = ">=1.3.1" },
     { name = "mkdocstrings", specifier = ">=1.0.3" },
     { name = "mkdocstrings-python", specifier = ">=2.0.3" },
     { name = "zensical", specifier = ">=0.0.30" },

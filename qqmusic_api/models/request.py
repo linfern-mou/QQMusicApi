@@ -88,6 +88,27 @@ class Credential(BaseModel):
     encrypt_uin: str = Field(default="", alias="encryptUin")
     login_type: int = Field(default=0, alias="loginType")
 
+    @model_validator(mode="before")
+    @classmethod
+    def _infer_login_type(cls, data: Any) -> Any:
+        """在缺省时根据 musickey 推断登录类型."""
+        if not isinstance(data, dict):
+            return data
+
+        if data.get("loginType") or data.get("login_type"):
+            return data
+
+        musickey = data.get("musickey", "")
+        inferred_login_type = 1 if isinstance(musickey, str) and musickey.startswith("W_X") else 2
+        return {**data, "loginType": inferred_login_type}
+
+    def is_expired(self) -> bool:
+        """检查凭据是否过期."""
+        import time
+
+        current_time = int(time.time())
+        return current_time >= self.musickey_create_time + self.key_expires_in
+
 
 class RequestItem(TypedDict):
     """请求项."""

@@ -54,3 +54,30 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
+
+## 刷新
+
+可以通过 `client.login.check_expired` 和 `credential.is_expired()` 来判断是否过期。
+
+!!! note
+
+     `credential.is_expired()` 只是简单的通过时间戳判断是否过期
+
+```python
+import asyncio
+from qqmusic_api import Client, Credential
+
+async def main() -> None:
+    async with Client() as client:
+        credential = Credential(
+            musicid=123456,
+            musickey="Q_H_L_xxx",
+            refresh_key="xxx",
+            refresh_token="xxx",
+            access_token="xxx",
+        )
+        await credential.refresh(client)
+        print(credential.musicid, credential.musickey)
+
+asyncio.run(main())
+```

@@ -119,7 +119,7 @@ class RequestGroup:
             request: 请求描述符.
 
         Returns:
-            BaseGroupKey: 用于批处理分组的稳定键.
+            用于批处理分组的稳定键.
         """
         platform_key = request.platform or ""
         credential_musicid = request.credential.musicid if request.credential is not None else 0
@@ -232,7 +232,7 @@ class RequestGroup:
             batch_slice: 单个批次中的请求切片.
 
         Returns:
-            list[RequestGroupResult]: 单个批次中的逐条结果.
+            单个批次中的逐条结果.
         """
         first = batch_slice[0][1]
         data: list[RequestItem] = [
