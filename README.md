@@ -42,8 +42,6 @@
 
 本项目当前采用 **[GNU General Public License v3.0 or later](https://github.com/l-1124/QQMusicApi/blob/main/LICENSE)**。
 
-`v0.5.0` 及后续版本均按 GPL 条款分发, 具体内容以仓库中的 `LICENSE` 文件为准。
-
 本项目仅用于对技术可行性的探索及研究，请勿将其用于任何商业用途或侵犯版权的行为。
 
 ## ⚠️ 免责声明
