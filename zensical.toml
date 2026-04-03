@@ -17,6 +17,7 @@ nav = [
       { "AlbumApi" = "reference/modules/album.md" },
       { "CommentApi" = "reference/modules/comment.md" },
       { "LoginApi" = "reference/modules/login.md" },
+      { "LoginUtils" = "reference/modules/login_utils.md" },
       { "LyricApi" = "reference/modules/lyric.md" },
       { "MvApi" = "reference/modules/mv.md" },
       { "SearchApi" = "reference/modules/search.md" },
