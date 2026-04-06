@@ -58,8 +58,8 @@ from qqmusic_api import Client
 async def main():
     """演示基础调用."""
     async with Client() as client:
-        result = await client.search.search_by_type("周杰伦")
-        print(f"搜索结果数量: {len(result.list)}")
+        result = await client.search.search_by_type(keyword="周杰伦", num=5)
+        print(f"单曲结果数量: {len(result.song)}")
 
 
 asyncio.run(main())
