@@ -1,4 +1,17 @@
 
+## What's Changed
+
+### 文档更新
+
+* **(index)** 修正首页使用示例 ([ebafd9c](https://github.com/L-1124/QQMusicApi/commit/ebafd9cfc119c35e8b7a8fa16cd60abe81657707)) by [@L-1124](https://github.com/L-1124)
+* 添加缺少的模块文档 ([376970e](https://github.com/L-1124/QQMusicApi/commit/376970ececc30e876342548ddacded06e48112d7)) by [@L-1124](https://github.com/L-1124)
+* 更新 index.md ([d8e3668](https://github.com/L-1124/QQMusicApi/commit/d8e3668fdfb8e4766f8cf0cbc0e3bb9eece0bfd0)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.5.0](https://github.com/L-1124/QQMusicApi/compare/v0.4.1..v0.5.0)] - 2026-04-02
 
 ### Bug 修复
