@@ -13,4 +13,6 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Run prek
-        run: uv run prek run --all-files --hook-stage pre-push
+        uses: j178/prek-action@v2
+        with:
+          extra-args: --all-files --hook-stage pre-push
