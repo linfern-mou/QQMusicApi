@@ -142,7 +142,3 @@ pydocstyle = { convention = "google" }
 [tool.uv]
 package = true
 default-groups = ["dev"]
-
-[[tool.uv.index]]
-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
-default = true
