@@ -1,9 +1,10 @@
 """搜索相关 API."""
 
 from enum import IntEnum
-from typing import Any
+from typing import Any, cast
 
 from ..core import Platform
+from ..core.pagination import MultiFieldContinuationStrategy, PagerMeta, PageStrategy, ResponseAdapter
 from ..models.search import GeneralSearchResponse, SearchByTypeResponse
 from ..utils import get_searchID
 from ._base import ApiModule
@@ -106,6 +107,21 @@ class SearchApi(ApiModule):
                 "grp": True,
             },
             response_model=GeneralSearchResponse,
+            pager_meta=PagerMeta(
+                strategy=MultiFieldContinuationStrategy(
+                    lambda params, response, adapter: {
+                        **cast("dict[str, Any]", params),
+                        "searchid": response.searchid,
+                        "page_id": response.nextpage,
+                        "page_start": cast("dict[str, Any]", adapter.get_cursor(response)),
+                    },
+                    context_name="general_search",
+                ),
+                adapter=ResponseAdapter(
+                    has_more_flag=lambda response: response.nextpage != -1,
+                    cursor="nextpage_start",
+                ),
+            ),
         )
 
     def search_by_type(
@@ -141,4 +157,11 @@ class SearchApi(ApiModule):
             },
             platform=Platform.ANDROID,
             response_model=SearchByTypeResponse,
+            pager_meta=PagerMeta(
+                strategy=PageStrategy(page_key="page_num", page_size=num, start_page=page),
+                adapter=ResponseAdapter(
+                    has_more_flag=lambda r: getattr(r, "nextpage", -1) != -1,
+                    total="total_num",
+                ),
+            ),
         )

@@ -1,7 +1,9 @@
 """请求描述符与批量请求容器. 提供对 API 请求的抽象与调度."""
 
+import copy
 from collections.abc import AsyncIterator, Generator
 from dataclasses import dataclass, field
+from dataclasses import replace as dc_replace
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar
 
 import anyio
@@ -17,6 +19,7 @@ from .exceptions import (
     _build_api_error,
     _extract_api_error_code,
 )
+from .pagination import PagerMeta, RefreshMeta, ResponsePager, ResponseRefresher
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -31,7 +34,7 @@ ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
 RequestResultT = TypeVar("RequestResultT", bound=RequestResult)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Request(Generic[RequestResultT]):
     """请求描述符."""
 
@@ -49,6 +52,48 @@ class Request(Generic[RequestResultT]):
     def __await__(self) -> Generator[Any, Any, RequestResultT]:
         """使 Request 对象可被 await 执行."""
         return self._client.execute(self).__await__()
+
+    def replace(self, **changes: Any) -> "Request[RequestResultT]":
+        """返回一个应用了修改的新 Request 对象, 不会修改原对象."""
+        if "param" not in changes:
+            changes["param"] = copy.deepcopy(self.param)
+        if "comm" not in changes and self.comm is not None:
+            changes["comm"] = copy.deepcopy(self.comm)
+        return dc_replace(self, **changes)
+
+
+@dataclass
+class PaginatedRequest(Request[RequestResultT]):
+    """声明了连续翻页能力的请求描述符."""
+
+    pager_meta: PagerMeta
+
+    def get_pager_meta(self) -> PagerMeta:
+        """返回连续翻页元数据."""
+        return self.pager_meta
+
+    def paginate(self, limit: int | None = None) -> ResponsePager[RequestResultT]:
+        """返回响应的分页迭代器.
+
+        Args:
+            limit: 最大获取页数.
+        """
+        return ResponsePager(self, limit=limit)
+
+
+@dataclass
+class RefreshableRequest(Request[RequestResultT]):
+    """声明了换一批能力的请求描述符."""
+
+    refresh_meta: RefreshMeta
+
+    def get_refresh_meta(self) -> RefreshMeta:
+        """返回换一批元数据."""
+        return self.refresh_meta
+
+    def refresh(self) -> ResponseRefresher[RequestResultT]:
+        """返回响应的换一批控制器."""
+        return ResponseRefresher(self)
 
 
 @dataclass(frozen=True, slots=True)
