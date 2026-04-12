@@ -4,8 +4,7 @@ import asyncio
 import random
 
 from qqmusic_api import Client, Credential
-
-from ..qqmusic_api.modules.song import SongFileInfo
+from qqmusic_api.modules.song import SongFileInfo
 
 MUSICID = 0
 MUSICKEY = ""
