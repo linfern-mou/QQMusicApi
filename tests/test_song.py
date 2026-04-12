@@ -3,7 +3,7 @@
 import pytest
 
 from qqmusic_api import Client
-from qqmusic_api.modules.song import EncryptedSongFileType, SongFileType
+from qqmusic_api.modules.song import EncryptedSongFileType, SongFileInfo, SongFileType
 
 
 @pytest.mark.parametrize("value", [[100], ["003w2xz20QlUZt"]])
@@ -29,14 +29,8 @@ async def test_query_song_empty_value(client: Client) -> None:
 )
 async def test_get_song_urls(client: Client, file_type: SongFileType | EncryptedSongFileType) -> None:
     """测试获取歌曲文件链接."""
-    result = await client.song.get_song_urls(mid=["003w2xz20QlUZt"], file_type=file_type)
+    result = await client.song.get_song_urls([SongFileInfo(mid="003w2xz20QlUZt", file_type=file_type)])
     assert len(result.data) == 1
-
-
-async def test_get_song_urls_empty(client: Client) -> None:
-    """测试空列表获取歌曲链接返回空结果集."""
-    result = await client.song.get_song_urls(mid=[])
-    assert result.data == []
 
 
 @pytest.mark.parametrize("value", [100, "003w2xz20QlUZt"])

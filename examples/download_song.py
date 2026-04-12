@@ -5,6 +5,8 @@ import random
 
 from qqmusic_api import Client, Credential
 
+from ..qqmusic_api.modules.song import SongFileInfo
+
 MUSICID = 0
 MUSICKEY = ""
 
@@ -18,7 +20,7 @@ async def main():
     async with Client(credential) as client:
         cdn_dispatch = await client.song.get_cdn_dispatch()
         cdn: str = random.choice(cdn_dispatch.sip)
-        data = await client.song.get_song_urls(SONG_MIDS)
+        data = await client.song.get_song_urls([SongFileInfo(mid=mid) for mid in SONG_MIDS])
         for info in data.data:
             if not info.purl:
                 print(f"{info.mid} 无法下载")

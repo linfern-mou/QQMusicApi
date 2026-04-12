@@ -136,6 +136,7 @@ ignore = [
   "TRY301",
   "TID252",
   "C901",
+  "COM81"
 ]
 extend-per-file-ignores = { "qqmusic_api/core/exceptions.py" = ["D107"] }
 pydocstyle = { convention = "google" }
