@@ -161,14 +161,16 @@ class SpecialSongFileType(BaseSongFileType):
 class SongFileInfo(NamedTuple):
     """歌曲文件信息.
 
-    Args:
+    Attributes:
         mid: 歌曲 MID.
         file_type: 歌曲文件类型.
+        song_type: 歌曲类型.
         media_mid: 媒体文件 mid.
     """
 
     mid: str
     file_type: BaseSongFileType | None = None
+    song_type: int | None = None
     media_mid: str | None = None
 
 
@@ -206,26 +208,16 @@ class SongApi(ApiModule):
             response_model=QuerySongResponse,
         )
 
-    def get_cdn_dispatch(
-        self,
-        *,
-        use_new_domain: bool = True,
-        use_ipv6: bool = True,
-    ):
-        """获取并缓存音频 CDN 调度信息.
-
-        Args:
-            use_new_domain: 是否启用新域名.
-            use_ipv6: 是否启用 IPv6.
-        """
+    def get_cdn_dispatch(self):
+        """获取音频链接 CDN 信息."""
         return self._build_request(
             module="music.audioCdnDispatch.cdnDispatch",
             method="GetCdnDispatch",
             param={
                 "guid": get_guid(),
                 "uid": "0",
-                "use_new_domain": int(use_new_domain),
-                "use_ipv6": int(use_ipv6),
+                "use_new_domain": 1,
+                "use_ipv6": 1,
             },
             response_model=GetCdnDispatchResponse,
         )
@@ -250,8 +242,11 @@ class SongApi(ApiModule):
         module, method = (
             ("music.vkey.GetVkey", "UrlGetVkey") if not encrypted else ("music.vkey.GetEVkey", "CgiGetEVkey")
         )
+        songmid: list[str] = []
         filename: list[str] = []
+        songtype: list[int] = []
         for item in file_info:
+            songmid.append(item.mid)
             final_file_type = item.file_type or file_type
 
             filename.append(
@@ -259,6 +254,7 @@ class SongApi(ApiModule):
                 if not item.media_mid
                 else f"{final_file_type.s}{item.media_mid}{final_file_type.e}",
             )
+            songtype.append(item.song_type or 0)
 
         return self._build_request(
             module=module,
@@ -267,8 +263,8 @@ class SongApi(ApiModule):
                 "uin": self._client.credential.str_musicid if not credential else credential.str_musicid,
                 "filename": filename,
                 "guid": get_guid(),
-                "songmid": [file_info.mid for file_info in file_info],
-                "songtype": [0] * len(file_info),
+                "songmid": songmid,
+                "songtype": songtype,
                 "ctx": 0,
             },
             response_model=GetSongUrlsResponse,
