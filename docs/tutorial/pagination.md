@@ -19,11 +19,12 @@ from qqmusic_api import Client
 async def main() -> None:
     async with Client() as client:
         pager = client.search.search_by_type("周杰伦", num=5).paginate(limit=3)
+        page_number = 1
 
         async for page in pager:
-            print(page.nextpage)
+            print(f"第 {page_number} 页")
             print(len(page.song))
-
+            page_number += 1
 
 asyncio.run(main())
 ```
