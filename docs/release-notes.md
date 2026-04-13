@@ -1,4 +1,15 @@
 
+## What's Changed
+
+### 文档更新
+
+* **(pagination)** 修正分页示例错误 ([c310450](https://github.com/L-1124/QQMusicApi/commit/c31045021034ce130136a17b458091c456998d53)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.5.1](https://github.com/L-1124/QQMusicApi/compare/v0.5.0..v0.5.1)] - 2026-04-13
 
 ### 功能更新
