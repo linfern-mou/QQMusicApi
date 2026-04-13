@@ -1,5 +1,15 @@
 
-## What's Changed
+## [[0.5.1](https://github.com/L-1124/QQMusicApi/compare/v0.5.0..v0.5.1)] - 2026-04-13
+
+### 功能更新
+
+* 获取歌曲文件支持传入歌曲类型 ([a2ad367](https://github.com/L-1124/QQMusicApi/commit/a2ad3675ac56a501f8e08e761e12c68bf6155a98)) by [@L-1124](https://github.com/L-1124)
+* [**breaking**] 重构歌曲文件获取逻辑，支持获取特殊类型的歌曲文件 ([5e31a48](https://github.com/L-1124/QQMusicApi/commit/5e31a4888cf3d4818b3cd59861ffc4d883c4ca1a)) by [@L-1124](https://github.com/L-1124)
+* 接口请求支持更方便的下一页、换一批请求 ([98693f8](https://github.com/L-1124/QQMusicApi/commit/98693f86995df7a62ca705a46643afffb3306e4a)) by [@L-1124](https://github.com/L-1124) in [#235](https://github.com/L-1124/QQMusicApi/pull/235)
+
+### 功能重构
+
+* **(login)** 优化 MQTT 登录链路并替换 HTTP 重试实现 ([244e000](https://github.com/L-1124/QQMusicApi/commit/244e000c08dce6beb3ab46c7d266c361515b4b20)) by [@L-1124](https://github.com/L-1124) in [#237](https://github.com/L-1124/QQMusicApi/pull/237)
 
 ### 文档更新
 
@@ -10,6 +20,7 @@
 ### 贡献者
 
 * @L-1124
+* @renovate[bot] [#238](https://github.com/L-1124/QQMusicApi/pull/238)
 * @github-actions[bot]
 
 ## [[0.5.0](https://github.com/L-1124/QQMusicApi/compare/v0.4.1..v0.5.0)] - 2026-04-02
