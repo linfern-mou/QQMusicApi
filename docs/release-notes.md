@@ -1,5 +1,14 @@
 
-## What's Changed
+## [[0.5.2](https://github.com/L-1124/QQMusicApi/compare/v0.5.1..v0.5.2)] - 2026-04-18
+
+### Bug 修复
+
+* `UserFavSonglistResponse`jsonpath错误 ([2c54ebb](https://github.com/L-1124/QQMusicApi/commit/2c54ebb8d21a8ba02bb5b865a7ff0aa9aadcbc0d)) by [@L-1124](https://github.com/L-1124)
+* `GetAlbumSongResponse`上游返回单个歌曲信息报错 ([adbdc40](https://github.com/L-1124/QQMusicApi/commit/adbdc4069f964125ca2228d36014f64893f3e69a)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(core)** 为 ResponsePager 添加 next 与 has_more ([0a63a26](https://github.com/L-1124/QQMusicApi/commit/0a63a264433bf37b5854064aa8ef95edba97adab)) by [@L-1124](https://github.com/L-1124)
 
 ### 文档更新
 
@@ -8,6 +17,7 @@
 ### 贡献者
 
 * @L-1124
+* @renovate[bot] [#240](https://github.com/L-1124/QQMusicApi/pull/240)
 * @github-actions[bot]
 
 ## [[0.5.1](https://github.com/L-1124/QQMusicApi/compare/v0.5.0..v0.5.1)] - 2026-04-13
