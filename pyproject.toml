@@ -103,6 +103,9 @@ asyncio_mode = "auto"
 line-length = 120
 extend-exclude = ["docs"]
 
+[tool.pyright]
+typeCheckingMode  = "basic"
+
 [tool.ruff.lint]
 extend-select = [
   "A",
