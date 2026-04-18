@@ -14,7 +14,7 @@ from .core.exceptions import (
 from .core.versioning import Platform
 from .models.request import Credential
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 __all__ = [
     "ApiError",
