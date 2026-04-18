@@ -126,7 +126,7 @@ class UserFavSonglistResponse(Response):
     total: int
     hasmore: int
     hide: bool
-    playlists: list[UserFavSonglistItem] = Field(json_schema_extra={"jsonpath": "$.v_list[*]"})
+    playlists: list[UserFavSonglistItem] = Field(json_schema_extra={"jsonpath": "$.v_list"})
     deleted_ids: list[int] = Field(alias="v_delTids")
     failed_ids: list[int] = Field(alias="v_failTids")
 
