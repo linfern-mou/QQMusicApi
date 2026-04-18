@@ -434,17 +434,33 @@ class ResponsePager(_BaseResponseAdvancer[RequestResultT], AsyncIterator[Request
         self._limit = limit
         self._yielded_count = 0
 
+    def _can_advance(self) -> bool:
+        """返回当前分页器是否还能继续产出下一页."""
+        if self._next_request is None:
+            return False
+        if self._limit is None:
+            return True
+        return self._yielded_count < self._limit
+
     def __aiter__(self) -> AsyncIterator[RequestResultT]:
         """返回分页器自身, 以支持 `async for` 迭代."""
         return self
 
     async def __anext__(self) -> RequestResultT:
         """获取并返回下一页响应."""
-        if self._limit is not None and self._yielded_count >= self._limit:
+        if not self._can_advance():
             raise StopAsyncIteration
         response = await self._advance()
         self._yielded_count += 1
         return response
+
+    async def next(self) -> RequestResultT:
+        """获取并返回下一页响应."""
+        return await self.__anext__()
+
+    def has_more(self) -> bool:
+        """返回当前分页器是否还能继续产出下一页."""
+        return self._can_advance()
 
     def _get_meta(self, request: "PaginatedRequest[RequestResultT]") -> PagerMeta:
         """读取分页请求对应的连续翻页元数据."""

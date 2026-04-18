@@ -29,6 +29,32 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+## Pager 手动逐页拉取
+
+如果你希望自行控制何时请求下一页, 可以配合 `has_more()` 与 `next()` 使用。`has_more()` 只读取分页器当前状态, 不会主动发起网络请求。
+
+> `next()` 与 `async for` 的终止行为一致: 没有更多结果时会抛出 `StopAsyncIteration`。
+
+```python
+import asyncio
+
+from qqmusic_api import Client
+
+
+async def main() -> None:
+    async with Client() as client:
+        pager = client.comment.get_hot_comments(102065756, page_size=5).paginate(limit=2)
+
+        while pager.has_more():
+            page = await pager.next()
+            print(len(page.comments))
+
+
+asyncio.run(main())
+```
+
+在第一页尚未请求前, 只要分页器未耗尽且未达到 `limit`, `has_more()` 就会返回 `True`。当上游响应已经明确没有下一页, 或者你已经达到 `limit`, `has_more()` 会变为 `False`。
+
 ## Pager 返回值
 
 分页器每次迭代返回的，仍然是该接口原本的响应模型。

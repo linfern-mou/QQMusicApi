@@ -60,14 +60,17 @@ async def test_search_by_type_with_int(client: Client) -> None:
 
 
 async def test_search_by_type_paginate(client: Client) -> None:
-    """测试按类型搜索的分页能力."""
-    # 测试分页迭代 (取前两页)
-    pager = client.search.search_by_type("周杰伦", num=5, page=1).paginate()
-    pages = []
-    async for page in pager:
-        pages.append(page)
-        if len(pages) >= 2:
-            break
+    """测试搜索分页支持 next 与 has_more."""
+    pager = client.search.search_by_type("周杰伦", num=5, page=1).paginate(limit=2)
 
-    assert len(pages) == 2
-    assert pages[0].nextpage == 2
+    assert pager.has_more() is True
+    first_page = await pager.next()
+    assert pager.has_more() is True
+    second_page = await pager.next()
+
+    assert first_page.song
+    assert second_page.song
+    assert first_page.nextpage == 2
+    assert pager.has_more() is False
+    with pytest.raises(StopAsyncIteration):
+        await pager.next()
