@@ -5,6 +5,7 @@ import random
 import re
 from collections.abc import Callable
 from contextlib import aclosing
+from dataclasses import dataclass
 from time import time
 from typing import Any
 from uuid import uuid4
@@ -12,7 +13,25 @@ from uuid import uuid4
 import anyio
 import httpx
 
-from ..core import ApiError, LoginError, LoginExpiredError, NetworkError, Platform
+from ..core import (
+    ApiError,
+    CredentialError,
+    LoginAccountBannedError,
+    LoginAccountRestrictedError,
+    LoginApiError,
+    LoginAuthCodeError,
+    LoginAuthFailedError,
+    LoginBindRequiredError,
+    LoginCredentialExpiredError,
+    LoginDeviceLimitError,
+    LoginError,
+    LoginExpiredError,
+    LoginRateLimitedError,
+    LoginSecurityRequiredError,
+    NetworkError,
+    Platform,
+    Request,
+)
 from ..models.login import (
     QR,
     PhoneAuthCodeResult,
@@ -34,10 +53,65 @@ _QQ_SIGX_RE = re.compile(r"(?:\?|&)ptsigx=(.+?)&s_url")
 _QQ_UIN_RE = re.compile(r"(?:\?|&)uin=(.+?)&service")
 _WX_UUID_RE = re.compile(r"uuid=(.+?)\"")
 _WX_STATUS_RE = re.compile(r"window\.wx_errcode=(\d+);window\.wx_code='([^']*)'")
+_SERVER_MESSAGE_KEYS = (
+    "errMsg",
+    "err_msg",
+    "errtip",
+    "errTip2",
+    "tip3",
+    "tips",
+    "message",
+    "msg",
+)
+_SERVER_URL_KEYS = ("feedbackURL", "feedback_url", "securityUrl", "security_url", "url")
+
+
+@dataclass(frozen=True, slots=True)
+class _LoginErrorSpec:
+    """登录错误码对应的异常规格."""
+
+    message: str
+    error_type: type[LoginApiError] = LoginAuthFailedError
+
+
+_DEFAULT_LOGIN_ERROR_SPEC = _LoginErrorSpec("登录失败")
+_COMMON_LOGIN_ERROR_SPECS: dict[int, _LoginErrorSpec] = {
+    1000: _LoginErrorSpec("凭证失效", LoginCredentialExpiredError),
+    2001: _LoginErrorSpec("需要安全验证", LoginSecurityRequiredError),
+    20254: _LoginErrorSpec("需要安全验证", LoginSecurityRequiredError),
+    20261: _LoginErrorSpec("登录参数错误"),
+    20271: _LoginErrorSpec("验证码错误", LoginAuthCodeError),
+    20272: _LoginErrorSpec("账号绑定异常", LoginBindRequiredError),
+    20274: _LoginErrorSpec("需要账号绑定", LoginBindRequiredError),
+    20276: _LoginErrorSpec("需要验证码校验", LoginSecurityRequiredError),
+    20277: _LoginErrorSpec("账号受限", LoginAccountRestrictedError),
+    20278: _LoginErrorSpec("账号受限", LoginAccountRestrictedError),
+    20279: _LoginErrorSpec("设备超限", LoginDeviceLimitError),
+    20450: _LoginErrorSpec("账号封禁", LoginAccountBannedError),
+    104400: _LoginErrorSpec("登录过期", LoginCredentialExpiredError),
+    104401: _LoginErrorSpec("登录过期", LoginCredentialExpiredError),
+    104604: _LoginErrorSpec("操作频繁", LoginRateLimitedError),
+}
+_SCOPED_LOGIN_ERROR_SPECS: dict[str, dict[int, _LoginErrorSpec]] = {
+    "PhoneLogin": {
+        20261: _LoginErrorSpec("登录参数错误"),
+        20271: _LoginErrorSpec("验证码错误", LoginAuthCodeError),
+        20274: _LoginErrorSpec("需要账号绑定", LoginBindRequiredError),
+        100001: _LoginErrorSpec("操作频繁", LoginRateLimitedError),
+    },
+    "QQLogin": {
+        20274: _LoginErrorSpec("设备超限", LoginDeviceLimitError),
+    },
+    "RefreshCredential": {
+        1000: _LoginErrorSpec("凭证失效", LoginCredentialExpiredError),
+        2001: _LoginErrorSpec("需要安全验证", LoginSecurityRequiredError),
+        104400: _LoginErrorSpec("登录过期", LoginCredentialExpiredError),
+        104401: _LoginErrorSpec("登录过期", LoginCredentialExpiredError),
+    },
+}
 
 
 def _raise_login_error(
-    scope: str,
     message: str,
     *,
     code: int | None = None,
@@ -45,11 +119,96 @@ def _raise_login_error(
 ) -> LoginError:
     """构造统一格式的登录异常."""
     suffix = f" (code={code})" if code is not None else ""
-    return LoginError(f"[{scope}] {message}{suffix}", cause=cause)
+    return LoginError(f"{message}{suffix}", cause=cause)
+
+
+def _get_login_error_spec(scope: str, code: int) -> _LoginErrorSpec:
+    """根据登录场景和错误码返回业务异常规格."""
+    return _SCOPED_LOGIN_ERROR_SPECS.get(scope, {}).get(code) or _COMMON_LOGIN_ERROR_SPECS.get(
+        code,
+        _DEFAULT_LOGIN_ERROR_SPEC,
+    )
+
+
+def _find_first_string(data: dict[str, Any], keys: tuple[str, ...]) -> str:
+    """从响应数据中提取首个非空字符串字段."""
+    for key in keys:
+        value = data.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def _build_api_login_error(scope: str, exc: ApiError) -> LoginError:
+    """根据 API 错误构造登录异常."""
+    data = exc.data if isinstance(exc.data, dict) else {}
+    code = exc.code
+    spec = _get_login_error_spec(scope, code)
+    server_message = _find_first_string(data, _SERVER_MESSAGE_KEYS)
+    action_url = _find_first_string(data, _SERVER_URL_KEYS)
+
+    context: dict[str, Any] = {"code": code}
+    if data:
+        context["data"] = data
+    if action_url:
+        context["url"] = action_url
+
+    reason = server_message or spec.message
+    message = f"{reason} (code={code})"
+    return spec.error_type(message, code=code, data=data or None, action_url=action_url, cause=exc, context=context)
 
 
 class LoginApi(ApiModule):
     """登录相关的 API."""
+
+    async def _execute_login_request(self, request: Request, scope: str) -> Any:
+        """执行登录请求并统一转换业务异常."""
+        try:
+            return await request
+        except CredentialError:
+            raise
+        except ApiError as exc:
+            raise _build_api_login_error(scope, exc) from exc
+
+    @staticmethod
+    def _build_refresh_param(target: Credential) -> dict[str, Any]:
+        """构建刷新登录凭证的请求参数."""
+        if target.login_type == 1:
+            return {
+                "openid": target.openid,
+                "refresh_token": target.refresh_token,
+                "str_musicid": target.str_musicid or str(target.musicid),
+                "musickey": target.musickey,
+                "unionid": target.unionid,
+                "refresh_key": target.refresh_key,
+                "loginMode": 2,
+            }
+
+        if target.login_type == 2:
+            return {
+                "openid": target.openid,
+                "access_token": target.access_token,
+                "refresh_token": target.refresh_token,
+                "expired_in": target.expired_at,
+                "musicid": target.musicid,
+                "musickey": target.musickey,
+                "refresh_key": target.refresh_key,
+                "loginMode": 2,
+            }
+
+        # 手机登录等类型, 回退到通用参数
+        return {
+            "openid": target.openid,
+            "access_token": target.access_token,
+            "refresh_token": target.refresh_token,
+            "expired_in": target.expired_at,
+            "str_musicid": target.str_musicid or str(target.musicid),
+            "musicid": target.musicid,
+            "musickey": target.musickey,
+            "unionid": target.unionid,
+            "refresh_key": target.refresh_key,
+            "loginMode": 2,
+        }
 
     async def check_expired(self, credential: Credential | None = None) -> bool:
         """检查登录凭证是否已过期.
@@ -84,27 +243,16 @@ class LoginApi(ApiModule):
             Credential: 刷新后的新凭证对象.
         """
         target = credential or self._client.credential
-        try:
-            data = await self._client.execute(
-                self._build_request(
-                    module="music.login.LoginServer",
-                    method="Login",
-                    param={
-                        "openid": target.openid,
-                        "access_token": target.access_token,
-                        "unionid": target.unionid,
-                        "refresh_key": target.refresh_key,
-                        "refresh_token": target.refresh_token,
-                        "musickey": target.musickey,
-                        "musicid": target.musicid,
-                        "loginMode": 2,
-                    },
-                    comm={"tmeLoginType": target.login_type},
-                    credential=target,
-                ),
-            )
-        except ApiError as exc:
-            raise _raise_login_error("RefreshCredential", "刷新凭证失败", cause=exc) from exc
+        data = await self._execute_login_request(
+            self._build_request(
+                module="music.login.LoginServer",
+                method="Login",
+                param=self._build_refresh_param(target),
+                comm={"tmeLoginType": target.login_type},
+                credential=target,
+            ),
+            "RefreshCredential",
+        )
 
         return Credential.model_validate(data)
 
@@ -235,67 +383,77 @@ class LoginApi(ApiModule):
             except ConnectionError as exc:
                 raise NetworkError(f"MQTT network error: {exc}", original_exc=exc) from exc
 
-    async def send_authcode(self, phone: int, country_code: int = 86) -> PhoneAuthCodeResult:
+    async def send_authcode(
+        self,
+        phone: int | str,
+        country_code: int = 86,
+    ) -> PhoneAuthCodeResult:
         """发送手机验证码.
 
         Args:
-            phone: 手机号.
+            phone: 手机号 (int) 或加密手机号 (str).
             country_code: 国家代码, 默认为 86 (中国).
 
         Returns:
             PhoneAuthCodeResult: 包含发送状态及附加信息的结果对象.
         """
+        param: dict[str, str] = {"tmeAppid": "qqmusic", "areaCode": str(country_code)}
+        if isinstance(phone, str):
+            param["encryptedPhoneNo"] = phone
+        else:
+            param["phoneNo"] = str(phone)
+
         try:
             await self._client.execute(
                 self._build_request(
                     module="music.login.LoginServer",
                     method="SendPhoneAuthCode",
-                    param={"tmeAppid": "qqmusic", "phoneNo": str(phone), "areaCode": str(country_code)},
+                    param=param,
                     comm={"tmeLoginMethod": 3},
                     platform=Platform.ANDROID,
                 ),
             )
+        except CredentialError:
+            raise
         except ApiError as exc:
             if exc.code == PhoneLoginEvents.CAPTCHA.value:
                 return PhoneAuthCodeResult(event=PhoneLoginEvents.CAPTCHA)
             if exc.code == PhoneLoginEvents.FREQUENCY.value:
                 return PhoneAuthCodeResult(event=PhoneLoginEvents.FREQUENCY)
-            raise _raise_login_error("PhoneLogin", "发送验证码失败", code=exc.code, cause=exc) from exc
+            raise _build_api_login_error("PhoneLogin", exc) from exc
 
         return PhoneAuthCodeResult(event=PhoneLoginEvents.SEND)
 
-    async def phone_authorize(self, phone: int, auth_code: int, country_code: int = 86) -> Credential:
+    async def phone_authorize(
+        self,
+        phone: int | str,
+        auth_code: int,
+    ) -> Credential:
         """使用手机验证码鉴权.
 
         Args:
-            phone: 手机号.
+            phone: 手机号 (int) 或加密手机号 (str).
             auth_code: 验证码.
-            country_code: 国家代码, 默认为 86.
 
         Returns:
             Credential: 登录成功后的凭证对象.
         """
-        try:
-            data = await self._client.execute(
-                self._build_request(
-                    module="music.login.LoginServer",
-                    method="Login",
-                    param={
-                        "code": str(auth_code),
-                        "phoneNo": str(phone),
-                        "areaCode": str(country_code),
-                        "loginMode": 1,
-                    },
-                    comm={"tmeLoginMethod": 3, "tmeLoginType": 0},
-                    platform=Platform.ANDROID,
-                ),
-            )
-        except ApiError as exc:
-            if exc.code == 20274:
-                raise _raise_login_error("PhoneLogin", "设备数量限制", code=exc.code, cause=exc) from exc
-            if exc.code == 20271:
-                raise _raise_login_error("PhoneLogin", "验证码错误或已鉴权", code=exc.code, cause=exc) from exc
-            raise _raise_login_error("PhoneLogin", "鉴权失败", code=exc.code, cause=exc) from exc
+        param: dict[str, str | int] = {"code": str(auth_code), "loginMode": 1}
+        if isinstance(phone, str):
+            param["encryptedPhoneNo"] = phone
+        else:
+            param["phoneNo"] = str(phone)
+
+        data = await self._execute_login_request(
+            self._build_request(
+                module="music.login.LoginServer",
+                method="Login",
+                param=param,
+                comm={"tmeLoginMethod": 3, "tmeLoginType": 0},
+                platform=Platform.ANDROID,
+            ),
+            "PhoneLogin",
+        )
 
         return Credential.model_validate(data)
 
@@ -319,7 +477,7 @@ class LoginApi(ApiModule):
         )
         qrsig = self._extract_cookies(response).get("qrsig")
         if not qrsig:
-            raise _raise_login_error("QQLogin", "获取二维码失败")
+            raise _raise_login_error("获取二维码失败")
         return QR(response.read(), QRLoginType.QQ, "image/png", qrsig)
 
     async def _get_wx_qr(self) -> QR:
@@ -338,7 +496,7 @@ class LoginApi(ApiModule):
         )
         matches = _WX_UUID_RE.findall(response.text)
         if not matches:
-            raise _raise_login_error("WXLogin", "获取 uuid 失败")
+            raise _raise_login_error("获取 uuid 失败")
         uuid = matches[0]
         qrcode_data = (
             await self._request(
@@ -351,26 +509,24 @@ class LoginApi(ApiModule):
 
     async def _get_mobile_qr(self) -> QR:
         """获取手机客户端登录二维码."""
-        try:
-            data = await self._client.execute(
-                self._build_request(
-                    module="music.login.LoginServer",
-                    method="CreateQRCode",
-                    param={"tmeAppID": "qqmusic", **self._build_query_common_params()},
-                    comm={"ct": 23, "cv": 0},
-                    platform=Platform.ANDROID if self._client.platform == Platform.WEB else None,
-                ),
-            )
-        except ApiError as exc:
-            raise _raise_login_error("MobileLogin", "获取二维码失败", cause=exc) from exc
+        data = await self._execute_login_request(
+            self._build_request(
+                module="music.login.LoginServer",
+                method="CreateQRCode",
+                param={"tmeAppID": "qqmusic", **self._build_query_common_params()},
+                comm={"ct": 23, "cv": 0},
+                platform=Platform.ANDROID if self._client.platform == Platform.WEB else None,
+            ),
+            "MobileLogin",
+        )
 
         if data is None:
-            raise _raise_login_error("MobileLogin", "获取二维码失败")
+            raise _raise_login_error("获取二维码失败")
 
         qrcode = str(data.get("qrcode", ""))
         qrcode_id = str(data.get("qrcodeID", ""))
         if not qrcode or not qrcode_id:
-            raise _raise_login_error("MobileLogin", "获取二维码失败")
+            raise _raise_login_error("获取二维码失败")
         return QR(
             data=base64.b64decode(qrcode.split(",")[-1]),
             qr_type=QRLoginType.MOBILE,
@@ -406,15 +562,15 @@ class LoginApi(ApiModule):
                 headers={"Referer": "https://xui.ptlogin2.qq.com/", "Cookie": f"qrsig={qrsig}"},
             )
         except httpx.HTTPStatusError as exc:
-            raise _raise_login_error("QQLogin", "无效 qrsig", cause=exc) from exc
+            raise _raise_login_error("无效 qrsig", cause=exc) from exc
 
         match = _QQ_STATUS_RE.search(response.text)
         if not match:
-            raise _raise_login_error("QQLogin", "获取二维码状态失败")
+            raise _raise_login_error("获取二维码状态失败")
 
         args = _QQ_ARGS_RE.findall(match.group(1))
         if not args:
-            raise _raise_login_error("QQLogin", "获取二维码状态失败")
+            raise _raise_login_error("获取二维码状态失败")
 
         code_str = args[0]
         if not code_str.isdigit():
@@ -425,12 +581,12 @@ class LoginApi(ApiModule):
             return QRLoginResult(event=event)
 
         if len(args) < 3:
-            raise _raise_login_error("QQLogin", "获取登录凭据失败")
+            raise _raise_login_error("获取登录凭据失败")
 
         sigx_match = _QQ_SIGX_RE.findall(args[2])
         uin_match = _QQ_UIN_RE.findall(args[2])
         if not sigx_match or not uin_match:
-            raise _raise_login_error("QQLogin", "获取登录凭据失败")
+            raise _raise_login_error("获取登录凭据失败")
 
         return QRLoginResult(
             event=event,
@@ -453,7 +609,7 @@ class LoginApi(ApiModule):
 
         match = _WX_STATUS_RE.search(response.text)
         if not match:
-            raise _raise_login_error("WXLogin", "获取二维码状态失败")
+            raise _raise_login_error("获取二维码状态失败")
 
         wx_errcode = match.group(1)
         if not wx_errcode.isdigit():
@@ -465,7 +621,7 @@ class LoginApi(ApiModule):
 
         wx_code = match.group(2)
         if not wx_code:
-            raise _raise_login_error("WXLogin", "获取 code 失败")
+            raise _raise_login_error("获取 code 失败")
 
         return QRLoginResult(event=event, credential=await self._authorize_wx_qr(wx_code))
 
@@ -570,7 +726,7 @@ class LoginApi(ApiModule):
         cookies = self._extract_cookies(response)
         p_skey = cookies.get("p_skey")
         if not p_skey:
-            raise _raise_login_error("QQLogin", "获取 p_skey 失败")
+            raise _raise_login_error("获取 p_skey 失败")
 
         authorize_response = await self._client.fetch(
             "POST",
@@ -596,37 +752,31 @@ class LoginApi(ApiModule):
         location = authorize_response.headers.get("Location", "")
         code_match = re.findall(r"(?<=code=)(.+?)(?=&)", location)
         if not code_match:
-            raise _raise_login_error("QQLogin", "获取 code 失败")
+            raise _raise_login_error("获取 code 失败")
 
-        try:
-            data = await self._client.execute(
-                self._build_request(
-                    module="QQConnectLogin.LoginServer",
-                    method="QQLogin",
-                    param={"code": code_match[0]},
-                    comm={"tmeLoginType": 2},
-                ),
-            )
-        except ApiError as exc:
-            if exc.code == 20274:
-                raise _raise_login_error("QQLogin", "设备数量限制", code=exc.code, cause=exc) from exc
-            raise _raise_login_error("QQLogin", "鉴权失败", code=exc.code, cause=exc) from exc
+        data = await self._execute_login_request(
+            self._build_request(
+                module="QQConnectLogin.LoginServer",
+                method="QQLogin",
+                param={"code": code_match[0]},
+                comm={"tmeLoginType": 2},
+            ),
+            "QQLogin",
+        )
 
         return Credential.model_validate(data)
 
     async def _authorize_wx_qr(self, code: str) -> Credential:
         """完成微信二维码鉴权并返回凭证."""
-        try:
-            data = await self._client.execute(
-                self._build_request(
-                    module="music.login.LoginServer",
-                    method="Login",
-                    param={"code": code, "strAppid": "wx48db31d50e334801"},
-                    comm={"tmeLoginType": 1},
-                ),
-            )
-        except ApiError as exc:
-            raise _raise_login_error("WXLogin", "鉴权失败", code=exc.code, cause=exc) from exc
+        data = await self._execute_login_request(
+            self._build_request(
+                module="music.login.LoginServer",
+                method="Login",
+                param={"code": code, "strAppid": "wx48db31d50e334801"},
+                comm={"tmeLoginType": 1},
+            ),
+            "WXLogin",
+        )
         return Credential.model_validate(data)
 
 

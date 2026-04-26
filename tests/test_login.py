@@ -3,7 +3,15 @@
 import anyio
 import pytest
 
-from qqmusic_api import Client, LoginError
+from qqmusic_api import (
+    ApiError,
+    Client,
+    Credential,
+    LoginBindRequiredError,
+    LoginError,
+    LoginExpiredError,
+)
+from qqmusic_api.core import CredentialError
 from qqmusic_api.models.login import (
     QRCodeLoginEvents,
     QRLoginResult,
@@ -50,10 +58,15 @@ async def test_check_expired_returns_bool(authenticated_client: Client) -> None:
 
 async def test_refresh_credential_returns_controlled_result(authenticated_client: Client) -> None:
     """测试刷新凭证返回受控结果."""
+    error_type: type | None = None
     error_message: str | None = None
     try:
         result = await authenticated_client.login.refresh_credential()
+    except CredentialError as exc:
+        error_type = type(exc)
+        error_message = str(exc)
     except LoginError as exc:
+        error_type = type(exc)
         error_message = str(exc)
     else:
         assert result.musicid
@@ -61,8 +74,45 @@ async def test_refresh_credential_returns_controlled_result(authenticated_client
         return
 
     assert error_message is not None
-    assert "[RefreshCredential]" in error_message
-    assert "刷新凭证失败" in error_message
+    assert error_type is not None
+    assert "code=" in error_message, f"异常缺少错误码: {error_message}"
+    assert any(keyword in error_message for keyword in ("登录", "凭证", "过期", "安全", "风控", "认证")), (
+        f"错误信息不包含预期关键词: {error_message}"
+    )
+
+
+async def test_refresh_credential_preserves_auth_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """测试刷新凭证保留认证异常类型."""
+    async with Client(credential=Credential(musicid=1, musickey="old_key")) as client:
+
+        async def raise_expired(_request: object) -> None:
+            raise LoginExpiredError("登录态已过期", data={"feedbackURL": "https://example.test/auth"})
+
+        monkeypatch.setattr(client, "execute", raise_expired)
+
+        with pytest.raises(LoginExpiredError, match="登录态已过期"):
+            await client.login.refresh_credential()
+
+
+async def test_phone_authorize_reports_precise_login_code(monkeypatch: pytest.MonkeyPatch) -> None:
+    """测试手机登录错误使用具体异常类型."""
+    async with Client() as client:
+
+        async def raise_bind_required(_request: object) -> None:
+            raise ApiError(
+                "raw login error",
+                code=20274,
+                data={"errMsg": "need bind", "securityUrl": "https://example.test/security"},
+            )
+
+        monkeypatch.setattr(client, "execute", raise_bind_required)
+
+        with pytest.raises(LoginBindRequiredError) as exc_info:
+            await client.login.phone_authorize(phone=10000000000, auth_code=123456)
+
+    assert isinstance(exc_info.value, LoginError)
+    assert exc_info.value.code == 20274
+    assert exc_info.value.action_url == "https://example.test/security"
 
 
 async def test_check_qrcode_returns_login_event(client: Client) -> None:
@@ -114,7 +164,7 @@ async def test_checking_mobile_qrcode_short_deadline_closes_cleanly(client: Clie
 
 async def test_phone_authorize_returns_controlled_error(client: Client) -> None:
     """测试手机验证码鉴权返回受控错误."""
-    with pytest.raises(LoginError, match=r"\[PhoneLogin\]") as exc_info:
+    with pytest.raises(LoginError, match=r"code=") as exc_info:
         await client.login.phone_authorize(phone=10000000000, auth_code=123456)
 
     assert any(keyword in str(exc_info.value) for keyword in ("设备数量限制", "验证码错误或已鉴权", "鉴权失败"))
