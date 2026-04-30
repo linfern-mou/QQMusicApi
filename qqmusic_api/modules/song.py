@@ -268,6 +268,7 @@ class SongApi(ApiModule):
                 "ctx": 0,
             },
             response_model=GetSongUrlsResponse,
+            credential=credential,
         )
 
     def get_detail(self, value: str | int):
