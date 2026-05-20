@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from ..modules.login import LoginApi
     from ..modules.lyric import LyricApi
     from ..modules.mv import MvApi
+    from ..modules.private_message import PrivateMessageApi
     from ..modules.recommend import RecommendApi
     from ..modules.search import SearchApi
     from ..modules.singer import SingerApi
@@ -113,6 +114,13 @@ class Client:
         from ..modules.comment import CommentApi
 
         return CommentApi(self)
+
+    @cached_property
+    def private_message(self) -> "PrivateMessageApi":
+        """私信模块."""
+        from ..modules.private_message import PrivateMessageApi
+
+        return PrivateMessageApi(self)
 
     @cached_property
     def recommend(self) -> "RecommendApi":

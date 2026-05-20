@@ -5,6 +5,7 @@ from .comment import CommentApi
 from .login import LoginApi
 from .lyric import LyricApi
 from .mv import MvApi
+from .private_message import PrivateMessageApi
 from .recommend import RecommendApi
 from .search import SearchApi
 from .singer import SingerApi
@@ -19,6 +20,7 @@ __all__ = [
     "LoginApi",
     "LyricApi",
     "MvApi",
+    "PrivateMessageApi",
     "RecommendApi",
     "SearchApi",
     "SingerApi",

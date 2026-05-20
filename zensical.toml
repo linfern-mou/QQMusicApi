@@ -22,6 +22,7 @@ nav = [
       { "LoginUtils" = "reference/modules/login_utils.md" },
       { "LyricApi" = "reference/modules/lyric.md" },
       { "MvApi" = "reference/modules/mv.md" },
+      { "PrivateMessageApi" = "reference/modules/private_message.md" },
       { "SearchApi" = "reference/modules/search.md" },
       { "SingerApi" = "reference/modules/singer.md" },
       { "SonglistApi" = "reference/modules/songlist.md" },
