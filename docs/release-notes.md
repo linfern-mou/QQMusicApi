@@ -1,4 +1,20 @@
 
+## [[0.6.1](https://github.com/L-1124/QQMusicApi/compare/v0.6.0..v0.6.1)] - 2026-05-20
+
+### Bug 修复
+
+* 传入的platform不生效 ([b19bec5](https://github.com/L-1124/QQMusicApi/commit/b19bec52f044d6508d9506f7111fea6eee5b42de)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(comment)** 支持添加评论和删除评论功能 ([dc5f568](https://github.com/L-1124/QQMusicApi/commit/dc5f5685d31f48b5dd8fc6bfcfdb6fb357884e7e)) by [@L-1124](https://github.com/L-1124)
+* **(private-message)** 新增私信接口模块 ([0ce6c77](https://github.com/L-1124/QQMusicApi/commit/0ce6c77b423c01c684cf86ff7a7ee9ca9a70d9fa)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.6.0](https://github.com/L-1124/QQMusicApi/compare/v0.5.3..v0.6.0)] - 2026-05-09
 
 ### Bug 修复
