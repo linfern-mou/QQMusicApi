@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from pydantic import AliasChoices, Field, model_validator
+from pydantic import AliasChoices, Field
 
 from .base import Song, SongList
 from .request import Response
@@ -69,15 +69,7 @@ class GuessRecommendResponse(Response):
         songs: 推荐歌曲列表.
     """
 
-    songs: list[Song] = Field(default_factory=list, alias="Tracks")
-
-    @model_validator(mode="before")
-    @classmethod
-    def _normalize_tracks(cls, data: Any) -> Any:
-        """将猜你喜欢响应规整为稳定的歌曲列表载荷."""
-        if isinstance(data, dict) and "Tracks" not in data:
-            return {"Tracks": []}
-        return data
+    songs: list[Song] = Field(default_factory=list, alias="tracks")
 
 
 class RadarRecommendResponse(Response):

@@ -45,6 +45,7 @@ class CommonParams(BaseModel):
     udid: str | None = Field(default=None)
     aid: str | None = Field(default=None)
     guid: str | None = Field(default=None)
+    uid: str | None = Field(default=None)
     os_ver: str | None = Field(default=None)
     phonetype: str | None = Field(default=None)
     devicelevel: str | None = Field(default=None)

@@ -113,6 +113,7 @@ class VersionPolicy:
                 QIMEI36=qimei["q36"] if qimei is not None else "",
                 OpenUDID=guid,
                 udid=guid,
+                uid="6477838447",
                 OpenUDID2=guid,
                 aid=device.android_id,
                 os_ver=device.version.release,

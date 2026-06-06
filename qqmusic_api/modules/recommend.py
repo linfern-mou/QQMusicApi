@@ -17,6 +17,7 @@ from ..models.recommend import (
     RecommendNewSongResponse,
     RecommendSonglistResponse,
 )
+from ..models.request import Credential
 from ._base import ApiModule
 
 
@@ -82,8 +83,12 @@ class RecommendApi(ApiModule):
             ),
         )
 
-    def get_guess_recommend(self):
-        """获取猜你喜欢推荐."""
+    def get_guess_recommend(self, *, Credential: Credential | None = None):
+        """获取猜你喜欢推荐.
+
+        Tips:
+            请求平台非 `Platform.ANDROID` 时, 需要提供有效的 `Credential`.
+        """
         data = {
             "id": 99,
             "num": 5,
@@ -96,6 +101,7 @@ class RecommendApi(ApiModule):
             "get_radio_track",
             data,
             response_model=GuessRecommendResponse,
+            credential=Credential,
         )
 
     def get_radar_recommend(self, page: int = 1):
