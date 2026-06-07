@@ -85,6 +85,10 @@ class Device:
     vendor_os_name: str = "qmapi"
     qimei: str | None = None
     qimei36: str | None = None
+    session_uid: str | None = None
+    session_sid: str | None = None
+    session_vkey: str | None = None
+    open_udid: str = field(default_factory=lambda: uuid4().hex)
 
 
 class DeviceManager:

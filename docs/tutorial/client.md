@@ -94,3 +94,15 @@ async def main():
 asyncio.run(_main())
 
 ```
+
+## 设备信息
+
+可通过 `device_path` 参数指定设备信息文件的路径进行持久化存储：
+
+```python
+client = Client(device_path="device.json")
+```
+
+不传 `device_path` 则仅在内存维护设备状态，重启后丢失。
+
+`Client.credential` 更改时设备信息保持不变。

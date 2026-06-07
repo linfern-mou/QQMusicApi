@@ -15,7 +15,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from niquests import AsyncSession
-from niquests.exceptions import RequestException
 
 from .common import calc_md5
 from .device import Device, DeviceManager
@@ -30,7 +29,6 @@ MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEIxgwoutfwoJxcGQeedgP7FG9qaIuS0qzfR8gWkrk
 -----END PUBLIC KEY-----"""
 SECRET = "ZdJqM15EeO2zWc08"
 APP_KEY = "0AND0HD6FE4HY80F"
-DEFAULT_QIMEI = "6c9d3cd110abca9b16311cee10001e717614"
 CHANNEL_ID = "10003505"
 PACKAGE_ID = "com.tencent.qqmusic"
 HEX_CHARS = "0123456789abcdef"
@@ -71,17 +69,12 @@ class QimeiManager:
         async with self._lock:
             if self._cache is not None:
                 return self._cache
-
             device = await self._device_store.get_device()
             if device.qimei and device.qimei36:
                 self._cache = QimeiResult(q16=device.qimei, q36=device.qimei36)
                 return self._cache
 
-            try:
-                self._cache = await self._request_qimei(device)
-            except Exception:
-                self._cache = QimeiResult(q16=DEFAULT_QIMEI, q36=DEFAULT_QIMEI)
-
+            self._cache = await self._request_qimei(device)
             with contextlib.suppress(Exception):
                 await self._device_store.apply_qimei(
                     self._cache.get("q16") or "",
@@ -90,34 +83,38 @@ class QimeiManager:
             return self._cache
 
     async def _request_qimei(self, device: Device) -> QimeiResult:
-        """请求新的 QIMEI 信息."""
-        try:
-            _, headers, request_json = await to_thread.run_sync(
-                _build_qimei_request,
-                device,
-                self._app_version,
-                self._sdk_version,
-            )
+        """请求新的 QIMEI 信息.
 
-            client = self._session
-            res = await client.post(
-                "https://api.tencentmusic.com/tme/trpc/proxy",
-                headers=headers,
-                json=request_json,
-            )
-            res.raise_for_status()
+        Raises:
+            RuntimeError: QIMEI 服务端返回空内容或缺少必要字段时.
+            RequestException: 网络请求失败时.
+            json.JSONDecodeError: 响应解析失败时.
+        """
+        _, headers, request_json = await to_thread.run_sync(
+            _build_qimei_request,
+            device,
+            self._app_version,
+            self._sdk_version,
+        )
 
-            if res.content is None:
-                return QimeiResult(q16=DEFAULT_QIMEI, q36=DEFAULT_QIMEI)
+        client = self._session
+        res = await client.post(
+            "https://api.tencentmusic.com/tme/trpc/proxy",
+            headers=headers,
+            json=request_json,
+        )
+        await self._session.gather(res)
+        res.raise_for_status()
 
-            qimei_data: dict[str, str] = json.loads(json.loads(res.content).get("data", "{}")).get("data", {})
+        if res.content is None:
+            raise RuntimeError("QIMEI response content is empty")
 
-            if not qimei_data or "q36" not in qimei_data or "q16" not in qimei_data:
-                return QimeiResult(q16=DEFAULT_QIMEI, q36=DEFAULT_QIMEI)
+        qimei_data: dict[str, str] = json.loads(json.loads(res.content).get("data", "{}")).get("data", {})
 
-            return QimeiResult(q16=qimei_data["q16"], q36=qimei_data["q36"])
-        except (RequestException, json.JSONDecodeError, KeyError, ValueError):
-            return QimeiResult(q16=DEFAULT_QIMEI, q36=DEFAULT_QIMEI)
+        if not qimei_data or "q36" not in qimei_data or "q16" not in qimei_data:
+            raise RuntimeError(f"QIMEI response missing required fields: {qimei_data}")
+
+        return QimeiResult(q16=qimei_data["q16"], q36=qimei_data["q36"])
 
 
 def rsa_encrypt(content: bytes) -> bytes:

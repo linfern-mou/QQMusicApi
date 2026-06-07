@@ -1,10 +1,10 @@
 """API 客户端核心实现. 整合网络传输、鉴权与业务模块访问."""
 
-import uuid
 from collections import defaultdict
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
+import anyio
 from niquests import AsyncSession, AsyncTokenBucketLimiter, PreparedRequest
 from niquests.models import Response
 from niquests.typing import AsyncHookType, ProxyType, TLSClientCertType, TLSVerifyType
@@ -99,14 +99,50 @@ class Client:
 
         self._device_store = DeviceManager(device_path)
 
-        self._guid = uuid.uuid4().hex
         self._version_policy: VersionPolicy = DEFAULT_VERSION_POLICY
+        self._session_lock = anyio.Lock()
+        self._session_initialized = False
         self._qimei_manager = QimeiManager(
             device_store=self._device_store,
             app_version=self._version_policy.get_qimei_app_version(),
             sdk_version=self._version_policy.get_qimei_sdk_version(),
             session=self._session,
         )
+
+    async def _ensure_session(self) -> None:
+        """获取匿名会话 UID/SID.
+
+        ANDROID 平台首次发送 API 请求前自动调用. 通过 getSession CGI
+        从服务端获取 uid 和 sid, 持久化到 Device 后用于后续请求的 comm 参数.
+        """
+        async with self._session_lock:
+            if self._session_initialized:
+                return
+            device = await self._device_store.get_device()
+            if device.session_uid and device.session_sid:
+                self._session_initialized = True
+                return
+
+            session_req: dict[str, Any] = {
+                "uid": device.session_uid or "",
+                "vkey": 0,
+                "caller": 0,
+            }
+            resp = await self.request_api(
+                [
+                    RequestItem(
+                        module="music.getSession.session", method="GetSession", param=session_req, preserve_bool=False
+                    )
+                ],
+                _skip_session_check=True,
+            )
+            resp_data = resp.json()
+            session_data = resp_data["req_0"]["data"]["session"]
+            device.session_uid = str(session_data["uid"])
+            device.session_sid = session_data["sid"]
+            device.session_vkey = session_data.get("vkey")
+            await self._device_store.save_device()
+            self._session_initialized = True
 
     @cached_property
     def comment(self) -> "CommentApi":
@@ -283,22 +319,26 @@ class Client:
         *,
         is_jce: bool = False,
         lazy: bool = False,
+        _skip_session_check: bool = False,
     ) -> Response:
         """发送 API 请求."""
-        platform = Platform.ANDROID if is_jce else platform or self.platform
+        target_platform = Platform.ANDROID if is_jce else platform or self.platform
+        if target_platform == Platform.ANDROID and not _skip_session_check:
+            await self._ensure_session()
+        device = await self._device_store.get_device()
         finalcomm = self._version_policy.build_comm(
-            platform=platform or self.platform,
+            platform=target_platform,
             credential=credential or self.credential,
-            device=await self._device_store.get_device(),
+            device=device,
             qimei=cast("dict[str, str]", await self._qimei_manager.get_cached())
-            if platform == Platform.ANDROID
+            if target_platform == Platform.ANDROID
             else None,
-            guid=self._guid,
+            guid=device.open_udid,
         )
         if comm:
             finalcomm.update(comm)
 
-        user_agent = await self._get_user_agent(platform)
+        user_agent = await self._get_user_agent(target_platform)
 
         if is_jce:
             for k, v in finalcomm.items():

@@ -46,6 +46,7 @@ class CommonParams(BaseModel):
     aid: str | None = Field(default=None)
     guid: str | None = Field(default=None)
     uid: str | None = Field(default=None)
+    sid: str | None = Field(default=None)
     os_ver: str | None = Field(default=None)
     phonetype: str | None = Field(default=None)
     devicelevel: str | None = Field(default=None)
@@ -103,6 +104,7 @@ class Credential(BaseModel):
         if "loginType" in data or "login_type" in data:
             return data
 
+        # TODO: 修复没有 musickey 时误判为 QQ 登录的问题
         musickey = data.get("musickey", "")
         inferred_login_type = 1 if isinstance(musickey, str) and musickey.startswith("W_X") else 2
         return {**data, "loginType": inferred_login_type}
