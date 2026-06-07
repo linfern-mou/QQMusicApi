@@ -8,11 +8,17 @@ from qqmusic_api.models.recommend import (
     RecommendSonglistResponse,
 )
 
-from ..routing.route_types import PUBLIC_60, WebRoute
+from ..routing.route_types import PUBLIC_60, AuthPolicy, WebRoute
 from ._helpers import Q, R
 
 ROUTES: tuple[WebRoute, ...] = (
-    R("recommend", "get_guess_recommend", "/recommend/get_guess_recommend", GuessRecommendResponse, cache=PUBLIC_60),
+    R(
+        "recommend",
+        "get_guess_recommend",
+        "/recommend/get_guess_recommend",
+        GuessRecommendResponse,
+        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+    ),
     R("recommend", "get_home_feed", "/recommend/get_home_feed", RecommendFeedCardResponse, cache=PUBLIC_60),
     R(
         "recommend",

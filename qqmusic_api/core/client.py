@@ -100,7 +100,6 @@ class Client:
         self._device_store = DeviceManager(device_path)
 
         self._guid = uuid.uuid4().hex
-        print(f"客户端 GUID: {self._guid}")
         self._version_policy: VersionPolicy = DEFAULT_VERSION_POLICY
         self._qimei_manager = QimeiManager(
             device_store=self._device_store,

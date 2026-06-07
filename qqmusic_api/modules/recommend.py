@@ -83,7 +83,7 @@ class RecommendApi(ApiModule):
             ),
         )
 
-    def get_guess_recommend(self, *, Credential: Credential | None = None):
+    def get_guess_recommend(self, *, credential: Credential | None = None):
         """获取猜你喜欢推荐.
 
         Tips:
@@ -101,7 +101,7 @@ class RecommendApi(ApiModule):
             "get_radio_track",
             data,
             response_model=GuessRecommendResponse,
-            credential=Credential,
+            credential=credential,
         )
 
     def get_radar_recommend(self, page: int = 1):
