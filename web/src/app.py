@@ -123,7 +123,7 @@ def _configure_cors(app: FastAPI) -> None:
     if config.cors_allow_credentials and "*" in config.cors_allow_origins:
         raise RuntimeError("允许跨域凭据时 cors_allow_origins 不能包含通配符 *")
 
-    logger.info(f"配置 CORS, 允许来源: {config.cors_allow_origins}")
+    logger.info("配置 CORS, 允许来源: %s", config.cors_allow_origins)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.cors_allow_origins,
@@ -195,8 +195,13 @@ def create_app() -> FastAPI:
         client_host = request.client.host if request.client is not None else "-"
         status_suffix = f" {status_phrase}" if status_phrase else ""
         logger.info(
-            f"HTTP {request.method} {request.url.path} -> {response.status_code}{status_suffix} "
-            f"({elapsed_ms:.1f} ms) from {client_host}"
+            "HTTP %s %s -> %d%s (%.1f ms) from %s",
+            request.method,
+            request.url.path,
+            response.status_code,
+            status_suffix,
+            elapsed_ms,
+            client_host,
         )
         return response
 

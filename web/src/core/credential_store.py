@@ -36,7 +36,7 @@ class CredentialStore:
     def initialize(self) -> None:
         """初始化 SQLite 连接与表结构."""
         with self._lock:
-            logger.info(f"初始化凭证存储: {self.path}")
+            logger.info("初始化凭证存储: %s", self.path)
             self.path.parent.mkdir(parents=True, exist_ok=True)
             connection = self._connect()
             connection.execute(
@@ -60,7 +60,7 @@ class CredentialStore:
             valid_accounts = [account for account in accounts if account.has_login()]
             toml_ids = {account.musicid for account in valid_accounts}
 
-            logger.info(f"同步账号种子: 总计 {len(valid_accounts)} 个有效账号")
+            logger.info("同步账号种子: 总计 %d 个有效账号", len(valid_accounts))
 
             with connection:
                 for account in valid_accounts:
@@ -69,10 +69,10 @@ class CredentialStore:
                         (account.musicid,),
                     ).fetchone()
                     if exists is None:
-                        logger.debug(f"新增账号种子: musicid {account.musicid}")
+                        logger.debug("新增账号种子: musicid %s", account.musicid)
                         self._upsert(account.to_credential())
                     else:
-                        logger.debug(f"账号种子已存在, 跳过: musicid {account.musicid}")
+                        logger.debug("账号种子已存在, 跳过: musicid %s", account.musicid)
 
                 if toml_ids:
                     placeholders = ", ".join("?" for _ in toml_ids)
@@ -80,7 +80,7 @@ class CredentialStore:
                     cursor = connection.execute(query, tuple(toml_ids))
                     deleted = cursor.rowcount
                     if deleted > 0:
-                        logger.info(f"删除不在种子中的账号: {deleted} 个")
+                        logger.info("删除不在种子中的账号: %d 个", deleted)
                 else:
                     connection.execute("DELETE FROM credentials")
                     logger.warning("删除所有账号: 未配置有效的账号种子")
@@ -96,7 +96,7 @@ class CredentialStore:
             credential = _load_credential(row[0])
             if credential is not None and credential_has_login(credential):
                 credentials.append(credential)
-        logger.debug(f"获取有效凭证: {len(credentials)} 个")
+        logger.debug("获取有效凭证: %d 个", len(credentials))
         rng = secrets.SystemRandom()
         rng.shuffle(credentials)
         return credentials
@@ -113,20 +113,20 @@ class CredentialStore:
                 .fetchone()
             )
         if row is None:
-            logger.debug(f"凭证不存在: musicid {musicid}")
+            logger.debug("凭证不存在: musicid %s", musicid)
             return None
         credential = _load_credential(row[0])
         if credential is None or not credential_has_login(credential):
-            logger.debug(f"凭证无效或缺少登录信息: musicid {musicid}")
+            logger.debug("凭证无效或缺少登录信息: musicid %s", musicid)
             return None
-        logger.debug(f"凭证获取成功: musicid {musicid}")
+        logger.debug("凭证获取成功: musicid %s", musicid)
         return credential
 
     def update(self, credential: Credential) -> None:
         """保存刷新后的 Credential 并标记为有效."""
         if not credential_has_login(credential):
             raise ValueError("Credential 缺少 musicid 或 musickey")
-        logger.debug(f"更新凭证: musicid {credential.musicid}")
+        logger.debug("更新凭证: musicid %s", credential.musicid)
         with self._lock:
             connection = self._connect()
             with connection:
@@ -135,11 +135,11 @@ class CredentialStore:
                     "UPDATE credentials SET valid = 1 WHERE musicid = ?",
                     (credential.musicid,),
                 )
-        logger.info(f"凭证已更新并标记为有效: musicid {credential.musicid}")
+        logger.info("凭证已更新并标记为有效: musicid %s", credential.musicid)
 
     def mark_invalid(self, musicid: int) -> None:
         """标记账号为无效."""
-        logger.warning(f"标记凭证为无效: musicid {musicid}")
+        logger.warning("标记凭证为无效: musicid %s", musicid)
         with self._lock:
             connection = self._connect()
             connection.execute(
@@ -153,14 +153,14 @@ class CredentialStore:
         with self._lock:
             rows = self._connect().execute("SELECT musicid FROM credentials").fetchall()
         musicids = [row[0] for row in rows]
-        logger.debug(f"获取所有 musicid: {len(musicids)} 个")
+        logger.debug("获取所有 musicid: %d 个", len(musicids))
         return musicids
 
     def close(self) -> None:
         """关闭 SQLite 连接."""
         with self._lock:
             if self._connection is not None:
-                logger.debug(f"关闭凭证存储连接: {self.path}")
+                logger.debug("关闭凭证存储连接: %s", self.path)
                 self._connection.close()
                 self._connection = None
 
@@ -171,7 +171,7 @@ class CredentialStore:
 
     def _upsert(self, credential: Credential) -> None:
         """写入或替换单个 Credential."""
-        logger.debug(f"保存凭证到存储: musicid {credential.musicid}")
+        logger.debug("保存凭证到存储: musicid %s", credential.musicid)
         self._connect().execute(
             """
             INSERT INTO credentials (musicid, credential_json, updated_at)
@@ -192,9 +192,9 @@ def load_account_configs(path: str) -> list[AccountConfig]:
     """从账号种子 TOML 文件读取账号配置."""
     account_file = Path(path)
     if not account_file.exists():
-        logger.debug(f"账号种子文件不存在: {path}")
+        logger.debug("账号种子文件不存在: %s", path)
         return []
-    logger.info(f"读取账号种子文件: {path}")
+    logger.info("读取账号种子文件: %s", path)
     with account_file.open("rb") as file:
         data = tomllib.load(file)
     account_items = data.get("account", [])
@@ -203,7 +203,7 @@ def load_account_configs(path: str) -> list[AccountConfig]:
         raise TypeError("账号种子文件必须使用 [[account]] 数组") from None
     try:
         configs = [AccountConfig.model_validate(item) for item in account_items]
-        logger.info(f"账号种子加载成功: {len(configs)} 个配置")
+        logger.info("账号种子加载成功: %d 个配置", len(configs))
         return configs
     except ValidationError as exc:
         logger.exception("账号种子文件校验失败")
@@ -217,7 +217,10 @@ def credential_needs_refresh(credential: Credential) -> bool:
     needs_refresh = credential.is_expired()
     if needs_refresh:
         logger.debug(
-            f"凭证需要刷新 (检查 musicid {credential.musicid}): 创建于 {credential.musickey_create_time}, 有效期 {credential.key_expires_in}s"
+            "凭证需要刷新 (检查 musicid %s): 创建于 %s, 有效期 %ss",
+            credential.musicid,
+            credential.musickey_create_time,
+            credential.key_expires_in,
         )
     return needs_refresh
 

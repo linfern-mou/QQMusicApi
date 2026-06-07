@@ -225,6 +225,8 @@ async def _release_after_body(
 async def apply_security_middleware(request: Request, call_next: RequestResponseEndpoint) -> Response:
     """执行客户端 IP 解析、访问控制与限流."""
     services = get_security_services(request)
+    if services is None:
+        return await call_next(request)
     config: SecurityConfig = services.config
     if not config.enabled:
         return await call_next(request)

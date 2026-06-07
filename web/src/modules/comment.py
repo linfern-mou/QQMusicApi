@@ -3,7 +3,7 @@
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
-from web.src.routing.route_types import RouteContext
+from ..routing.route_types import RouteContext
 
 
 class AddCommentBody(BaseModel):

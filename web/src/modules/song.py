@@ -13,9 +13,10 @@ from qqmusic_api.modules.song import (
     SongFileType,
     SpecialSongFileType,
 )
-from web.src.routing.docstrings import get_enum_member_descriptions
-from web.src.routing.params import enum_mapping_schema, enum_mapping_validator
-from web.src.routing.route_types import EnumIntMapping, RouteContext
+
+from ..routing.docstrings import get_enum_member_descriptions
+from ..routing.params import enum_mapping_schema, enum_mapping_validator
+from ..routing.route_types import EnumIntMapping, RouteContext
 
 SONG_FILE_TYPES: tuple[BaseSongFileType, ...] = (
     SongFileType.DTS_X,
@@ -113,7 +114,17 @@ class SongUrlsRequest(BaseModel):
 
 
 def _parse_query_song_values(values: list[str]) -> list[int] | list[str]:
-    """解析批量查询歌曲 ID 或 MID 列表."""
+    """解析批量查询歌曲 ID 或 MID 列表.
+
+    Args:
+        values: 歌曲 ID 字符串列表或 MID 字符串列表.
+
+    Returns:
+        list[int] | list[str]: 全部为数字时返回 int 列表, 否则返回原始字符串列表.
+
+    Raises:
+        HTTPException: ID 与 MID 不能混合.
+    """
     numeric_values = [value.isdecimal() for value in values]
     if all(numeric_values):
         return [int(value) for value in values]

@@ -16,8 +16,9 @@ from qqmusic_api.models.login import (
     QRLoginResult,
     QRLoginType,
 )
-from web.src.routing.params import path_enum_value
-from web.src.routing.route_types import RouteContext
+
+from ..routing.params import path_enum_value
+from ..routing.route_types import RouteContext
 
 
 class WebQRLoginType(str, Enum):
@@ -140,7 +141,14 @@ def _validate_web_qr_login_type(login_type: WebQRLoginType) -> QRLoginType:
 
 
 def _serialize_qrcode(qrcode: QR) -> QRCodeData:
-    """序列化二维码对象为 Web 响应数据."""
+    """序列化二维码对象为 Web 响应数据.
+
+    Args:
+        qrcode: 二维码对象.
+
+    Returns:
+        QRCodeData: 包含 Base64 Data URL 的二维码数据.
+    """
     data = base64.b64encode(qrcode.data).decode("ascii")
     return QRCodeData(
         qr_type=path_enum_value(qrcode.qr_type),
@@ -152,7 +160,15 @@ def _serialize_qrcode(qrcode: QR) -> QRCodeData:
 
 
 def _serialize_qrcode_status(result: QRLoginResult, qrcode: QR) -> QRCodeStatusData:
-    """序列化二维码登录状态结果."""
+    """序列化二维码登录状态结果.
+
+    Args:
+        result: 二维码登录检查结果.
+        qrcode: 二维码对象.
+
+    Returns:
+        QRCodeStatusData: 登录状态数据.
+    """
     return QRCodeStatusData(
         event=QR_CODE_EVENT_CODES.get(result.event, -1),
         done=result.done,
@@ -163,7 +179,14 @@ def _serialize_qrcode_status(result: QRLoginResult, qrcode: QR) -> QRCodeStatusD
 
 
 def _serialize_phone_authcode(result: PhoneAuthCodeResult) -> PhoneAuthCodeData:
-    """序列化手机验证码发送结果."""
+    """序列化手机验证码发送结果.
+
+    Args:
+        result: 发送验证码结果.
+
+    Returns:
+        PhoneAuthCodeData: 验证码发送状态数据.
+    """
     event_code = PHONE_EVENT_CODES.get(result.event, -1)
     return PhoneAuthCodeData(event=event_code, info=result.info)
 

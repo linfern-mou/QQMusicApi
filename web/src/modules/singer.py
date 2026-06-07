@@ -1,6 +1,6 @@
 """歌手模块 Web 路由适配."""
 
-from web.src.routing.route_types import RouteContext
+from ..routing.route_types import RouteContext
 
 
 async def get_desc_by_mid_adapter(context: RouteContext):

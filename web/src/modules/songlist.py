@@ -2,7 +2,7 @@
 
 from fastapi import HTTPException
 
-from web.src.routing.route_types import RouteContext
+from ..routing.route_types import RouteContext
 
 
 def _song_info_tuples(song_ids: list[int], song_types: list[int]) -> list[tuple[int, int]]:
