@@ -140,7 +140,7 @@ class WebRoute:
     method: str
     path: str
     methods: tuple[HttpMethod, ...] = (HttpMethod.GET,)
-    response_model: Any = Any
+    response_model: type = dict
     param_overrides: tuple[ParamOverride, ...] = ()
     body_model: type[BaseModel] | None = None
     auth: AuthPolicy = AuthPolicy.NONE

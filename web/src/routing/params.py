@@ -1,5 +1,6 @@
 """动态请求参数模型构造与枚举参数辅助函数."""
 
+from collections.abc import Callable
 from enum import Enum, IntEnum
 from typing import Annotated, Any, TypeVar, get_args, get_origin
 
@@ -49,7 +50,7 @@ def parse_int_enum(value: Any, enum_type: type[IntEnumT]) -> IntEnumT:
         raise ValueError(f"unsupported {enum_type.__name__} value: {value}. allowed: {allowed}") from exc
 
 
-def int_enum_validator(enum_type: type[IntEnumT]):
+def int_enum_validator(enum_type: type[IntEnumT]) -> Callable[[Any], IntEnumT]:
     """构建 IntEnum 整数值校验器."""
 
     def validator(value: Any) -> IntEnumT:
@@ -92,7 +93,7 @@ def path_enum_schema(enum_type: type[Enum]) -> dict[str, Any]:
     return {"type": "string", "enum": path_enum_values(enum_type)}
 
 
-def path_enum_validator(enum_type: type[EnumT]):
+def path_enum_validator(enum_type: type[EnumT]) -> Callable[[Any], EnumT]:
     """构建路径枚举校验器."""
 
     def validator(value: Any) -> EnumT:
@@ -113,7 +114,7 @@ def enum_mapping_schema(mapping: EnumIntMapping[Any]) -> dict[str, Any]:
     return mapping.schema()
 
 
-def enum_mapping_validator(mapping: EnumIntMapping[EnumT]):
+def enum_mapping_validator(mapping: EnumIntMapping[EnumT]) -> Callable[[Any], EnumT]:
     """构建显式枚举整数映射校验器."""
 
     def validator(value: Any) -> EnumT:

@@ -2,6 +2,7 @@
 
 import inspect
 import re
+from collections.abc import Callable
 from enum import IntEnum
 from typing import Annotated, Any, get_args, get_origin
 
@@ -81,7 +82,7 @@ def include_routes(app: FastAPI, routes: tuple[WebRoute, ...]) -> None:
         )
 
 
-def make_endpoint(route: WebRoute):
+def make_endpoint(route: WebRoute) -> tuple[Callable[..., Any], MethodDocs]:
     """为类型化 Web 路由构造 FastAPI 端点."""
     doc_source = route.adapter or _resolve_method(route)
     docs = load_method_docs(doc_source) if doc_source is not None else MethodDocs(summary="", description="", params={})
