@@ -10,7 +10,9 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.middleware.base import RequestResponseEndpoint
+from starlette.responses import Response
 
 import qqmusic_api
 from qqmusic_api import Client
@@ -182,7 +184,7 @@ def create_app() -> FastAPI:
     app.middleware("http")(apply_security_middleware)
 
     @app.middleware("http")
-    async def _log_access(request: Request, call_next):
+    async def _log_access(request: Request, call_next: RequestResponseEndpoint) -> Response:
         start = perf_counter()
         response = await call_next(request)
         elapsed_ms = (perf_counter() - start) * 1000
@@ -201,21 +203,21 @@ def create_app() -> FastAPI:
     _configure_cors(app)
 
     @app.exception_handler(BaseApiException)
-    async def _handle_base_api_exception(_request: Request, exc: BaseApiException):
+    async def _handle_base_api_exception(_request: Request, exc: BaseApiException) -> JSONResponse:
         return error_response(
             status_code=_base_api_exception_status_code(exc),
             msg=str(exc),
         )
 
     @app.exception_handler(HTTPException)
-    async def _handle_http_exception(_request: Request, exc: HTTPException):
+    async def _handle_http_exception(_request: Request, exc: HTTPException) -> JSONResponse:
         return error_response(
             status_code=exc.status_code,
             msg=_http_exception_message(exc),
         )
 
     @app.exception_handler(RequestValidationError)
-    async def _handle_validation_error(_request: Request, exc: RequestValidationError):
+    async def _handle_validation_error(_request: Request, exc: RequestValidationError) -> JSONResponse:
         return error_response(
             status_code=422,
             msg="请求参数校验失败",

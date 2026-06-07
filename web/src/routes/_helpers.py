@@ -1,16 +1,21 @@
 """Web 路由声明辅助函数与共享参数."""
 
+from collections.abc import Awaitable, Callable
 from typing import Any
+
+from pydantic import BaseModel
 
 from qqmusic_api.modules.search import SearchType
 from qqmusic_api.modules.singer import AreaType, GenreType, IndexType, SexType
 
 from ..routing.route_types import (
     AuthPolicy,
+    CachePolicy,
     EnumIntMapping,
     HttpMethod,
     ParamOverride,
     ParamSource,
+    RouteContext,
     WebRoute,
 )
 
@@ -43,14 +48,14 @@ def R(
     module: str,
     method: str,
     path: str,
-    response_model: Any,
+    response_model: type,
     *,
     params: tuple[ParamOverride, ...] = (),
     methods: tuple[HttpMethod, ...] = (HttpMethod.GET,),
     auth: AuthPolicy = AuthPolicy.NONE,
-    cache: Any = None,
-    adapter: Any = None,
-    body_model: Any = None,
+    cache: CachePolicy | None = None,
+    adapter: Callable[[RouteContext], Awaitable[Any] | Any] | None = None,
+    body_model: type[BaseModel] | None = None,
     summary: str | None = None,
     description: str | None = None,
 ) -> WebRoute:
