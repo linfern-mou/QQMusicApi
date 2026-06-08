@@ -1,11 +1,14 @@
 """Web 层配置管理."""
 
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettingsSource
 
 from qqmusic_api import Credential
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 
 class LogConfig(BaseModel):
@@ -15,11 +18,11 @@ class LogConfig(BaseModel):
     level: Annotated[Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], Field(description="日志级别")] = "INFO"
     file_path: str = Field(default="web/data/logs/app.log", description="日志文件路径 (当 mode 为 file 或 both 时使用)")
     console_format: str = Field(
-        default="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level:<8}</level> | <cyan>{name}</cyan> | <level>{message}</level>",
+        default="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level:<8}</level> | <cyan>{extra[logger_name]:<15}</cyan> | <level>{message}</level>",
         description="控制台日志格式",
     )
     file_format: str = Field(
-        default="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name} | {message}",
+        default="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {extra[logger_name]:<15} | {message}",
         description="文件日志格式",
     )
     max_bytes: int = Field(default=10485760, ge=1, description="单个日志文件最大字节数 (10MB)")
@@ -176,8 +179,8 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="QQMUSIC_",
-        env_file=".env",
-        toml_file="web/config.toml",
+        env_file=str(PROJECT_ROOT / ".env"),
+        toml_file=str(PROJECT_ROOT / "web" / "config.toml"),
         env_nested_delimiter="_",
         extra="ignore",
     )

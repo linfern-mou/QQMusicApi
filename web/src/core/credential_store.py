@@ -17,11 +17,11 @@ from pydantic import ValidationError
 
 from qqmusic_api import Credential
 
-from .config import AccountConfig
+from .config import PROJECT_ROOT, AccountConfig
 
 logger = logging.getLogger(__name__)
 
-ACCOUNT_CONFIG_FILE = "web/accounts.toml"
+ACCOUNT_CONFIG_FILE = str(PROJECT_ROOT / "web" / "accounts.toml")
 
 
 class CredentialStore:
