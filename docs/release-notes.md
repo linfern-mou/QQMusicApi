@@ -1,4 +1,29 @@
 
+## [[0.6.2](https://github.com/L-1124/QQMusicApi/compare/v0.6.1..v0.6.2)] - 2026-06-08
+
+### Bug 修复
+
+* **(core)** 将 niquests 网络异常转换为`NetworkError`抛出" ([ff659c5](https://github.com/L-1124/QQMusicApi/commit/ff659c57dae8ad73db74cb00c5ba092b28f36466)) by [@L-1124](https://github.com/L-1124)
+* **(core)** 修复 ANDROID 会话初始化的循环依赖和缓存失效问题 ([4f9be43](https://github.com/L-1124/QQMusicApi/commit/4f9be437724497a789265ede40368628858aea47)) by [@L-1124](https://github.com/L-1124)
+* **(recommend)** 更新获取猜你喜欢推荐接口，支持传入 Credential, 添加 uid 字段到版本策略 ([81062d0](https://github.com/L-1124/QQMusicApi/commit/81062d0091883abb6904562a4ce5223c295d2b24)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(core)** 添加 getSession 匿名会话初始化和设备 OpenUDID 持久化 ([9a4532e](https://github.com/L-1124/QQMusicApi/commit/9a4532e922d3805ba60bc31b213efddbc4c18702)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 补充评论增删路由及推荐认证支持 ([08c9137](https://github.com/L-1124/QQMusicApi/commit/08c9137cb8adcc4ce29c0843f25b4a160819839b)) by [@L-1124](https://github.com/L-1124)
+
+### 功能重构
+
+* **(web)** 重构日志系统 ([20fe8c6](https://github.com/L-1124/QQMusicApi/commit/20fe8c62af0477c5bf1e4afd82f08dcd96881031)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 统一代码风格与日志惰性求值 ([4ba0bf0](https://github.com/L-1124/QQMusicApi/commit/4ba0bf06b0e3a88bda6efea699c60ec068b16e91)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 补齐路由辅助函数与应用入口类型注解 ([080b2fe](https://github.com/L-1124/QQMusicApi/commit/080b2fe99969f7256005c5a2f23793cacfd6db85)) by [@L-1124](https://github.com/L-1124)
+* **(web/routing)** 补齐路由类型与参数校验器类型注解 ([bcedc66](https://github.com/L-1124/QQMusicApi/commit/bcedc66bbb34d768957b36493250e067c4714e74)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.6.1](https://github.com/L-1124/QQMusicApi/compare/v0.6.0..v0.6.1)] - 2026-05-20
 
 ### Bug 修复
