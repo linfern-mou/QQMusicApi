@@ -110,11 +110,6 @@ class Client:
         )
 
     async def _ensure_session(self) -> None:
-        """获取匿名会话 UID/SID.
-
-        ANDROID 平台首次发送 API 请求前自动调用. 通过 getSession CGI
-        从服务端获取 uid 和 sid, 持久化到 Device 后用于后续请求的 comm 参数.
-        """
         async with self._session_lock:
             if self._session_initialized:
                 return
@@ -123,19 +118,42 @@ class Client:
                 self._session_initialized = True
                 return
 
-            session_req: dict[str, Any] = {
-                "uid": device.session_uid or "",
-                "vkey": 0,
-                "caller": 0,
-            }
-            resp = await self.request_api(
-                [
-                    RequestItem(
-                        module="music.getSession.session", method="GetSession", param=session_req, preserve_bool=False
-                    )
-                ],
-                _skip_session_check=True,
+            finalcomm = self._version_policy.build_comm(
+                platform=Platform.ANDROID,
+                credential=self.credential,
+                device=device,
+                qimei=cast("dict[str, str]", await self._qimei_manager.get_cached()),
+                guid=device.open_udid,
             )
+            payload: dict[str, Any] = {
+                "comm": finalcomm,
+                "req_0": {
+                    "module": "music.getSession.session",
+                    "method": "GetSession",
+                    "param": {
+                        "uid": device.session_uid or "",
+                        "vkey": 0,
+                        "caller": 0,
+                    },
+                },
+            }
+            user_agent = await self._get_user_agent(Platform.ANDROID)
+            resp = await self._session.post(
+                "https://u.y.qq.com/cgi-bin/musicu.fcg",
+                json=payload,
+                headers={"User-Agent": user_agent},
+                proxies=self.proxies,
+                hooks=self.hooks,
+                cert=self.cert,
+                verify=self.verify,
+            )
+            await self._session.gather(resp)
+            if resp.status_code != 200:
+                raise HTTPError(
+                    f"HTTP 请求状态码异常: {resp.status_code}",
+                    status_code=cast("int", resp.status_code),
+                )
+
             resp_data = resp.json()
             session_data = resp_data["req_0"]["data"]["session"]
             device.session_uid = str(session_data["uid"])
@@ -319,11 +337,10 @@ class Client:
         *,
         is_jce: bool = False,
         lazy: bool = False,
-        _skip_session_check: bool = False,
     ) -> Response:
         """发送 API 请求."""
         target_platform = Platform.ANDROID if is_jce else platform or self.platform
-        if target_platform == Platform.ANDROID and not _skip_session_check:
+        if target_platform == Platform.ANDROID:
             await self._ensure_session()
         device = await self._device_store.get_device()
         finalcomm = self._version_policy.build_comm(

@@ -88,6 +88,8 @@ class VersionPolicy:
                 device.model,
                 device.version.sdk,
                 device.fingerprint,
+                device.session_uid,
+                device.session_sid,
             )
             if platform == Platform.ANDROID
             else (),
