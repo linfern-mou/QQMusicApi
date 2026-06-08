@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
 import anyio
 from niquests import AsyncSession, AsyncTokenBucketLimiter, PreparedRequest
+from niquests.exceptions import RequestException
 from niquests.models import Response
 from niquests.typing import AsyncHookType, ProxyType, TLSClientCertType, TLSVerifyType
 from tarsio import TarsDict
@@ -21,6 +22,7 @@ from .exceptions import (
     CredentialExpiredError,
     GlobalApiError,
     HTTPError,
+    NetworkError,
     RatelimitedError,
 )
 from .request import Request, RequestResultT, _build_result
@@ -138,16 +140,19 @@ class Client:
                 },
             }
             user_agent = await self._get_user_agent(Platform.ANDROID)
-            resp = await self._session.post(
-                "https://u.y.qq.com/cgi-bin/musicu.fcg",
-                json=payload,
-                headers={"User-Agent": user_agent},
-                proxies=self.proxies,
-                hooks=self.hooks,
-                cert=self.cert,
-                verify=self.verify,
-            )
-            await self._session.gather(resp)
+            try:
+                resp = await self._session.post(
+                    "https://u.y.qq.com/cgi-bin/musicu.fcg",
+                    json=payload,
+                    headers={"User-Agent": user_agent},
+                    proxies=self.proxies,
+                    hooks=self.hooks,
+                    cert=self.cert,
+                    verify=self.verify,
+                )
+                await self._session.gather(resp)
+            except RequestException as exc:
+                raise NetworkError(str(exc)) from exc
             if resp.status_code != 200:
                 raise HTTPError(
                     f"HTTP 请求状态码异常: {resp.status_code}",
@@ -315,18 +320,21 @@ class Client:
             headers["User-Agent"] = await self._get_user_agent(platform)
         kwargs["headers"] = headers
 
-        resp = await self._session.request(
-            method,
-            url,
-            **kwargs,
-            proxies=self.proxies,
-            hooks=self.hooks,
-            cert=self.cert,
-            verify=self.verify,
-        )
-        if not lazy:
-            await self._session.gather(resp)
-        return resp
+        try:
+            resp = await self._session.request(
+                method,
+                url,
+                **kwargs,
+                proxies=self.proxies,
+                hooks=self.hooks,
+                cert=self.cert,
+                verify=self.verify,
+            )
+            if not lazy:
+                await self._session.gather(resp)
+            return resp
+        except RequestException as exc:
+            raise NetworkError(str(exc)) from exc
 
     async def request_api(
         self,
@@ -357,24 +365,50 @@ class Client:
 
         user_agent = await self._get_user_agent(target_platform)
 
-        if is_jce:
-            for k, v in finalcomm.items():
-                if not isinstance(v, str):
-                    finalcomm[k] = str(v)
-            content = JceRequest(
-                finalcomm,
-                {
-                    f"req_{idx}": JceRequestItem(
-                        module=req["module"],
-                        method=req["method"],
-                        param=TarsDict(cast("dict[int, Any]", req["param"])),
-                    )
-                    for idx, req in enumerate(data)
-                },
-            ).encode()
+        try:
+            if is_jce:
+                for k, v in finalcomm.items():
+                    if not isinstance(v, str):
+                        finalcomm[k] = str(v)
+                content = JceRequest(
+                    finalcomm,
+                    {
+                        f"req_{idx}": JceRequestItem(
+                            module=req["module"],
+                            method=req["method"],
+                            param=TarsDict(cast("dict[int, Any]", req["param"])),
+                        )
+                        for idx, req in enumerate(data)
+                    },
+                ).encode()
+                resp = await self._session.post(
+                    "http://u.y.qq.com/cgi-bin/musicw.fcg",
+                    data=content,
+                    headers={"User-Agent": user_agent},
+                    proxies=self.proxies,
+                    hooks=self.hooks,
+                    cert=self.cert,
+                    verify=self.verify,
+                )
+                if not lazy:
+                    await self._session.gather(resp)
+                return resp
+
+            payload: dict[str, Any] = {
+                "comm": finalcomm,
+            }
+            params = {}
+            for idx, req in enumerate(data):
+                payload[f"req_{idx}"] = {
+                    "module": req["module"],
+                    "method": req["method"],
+                    "param": req["param"] if req["preserve_bool"] else bool_to_int(req["param"]),
+                }
+
             resp = await self._session.post(
-                "http://u.y.qq.com/cgi-bin/musicw.fcg",
-                data=content,
+                "https://u.y.qq.com/cgi-bin/musicu.fcg",
+                json=payload,
+                params=params,
                 headers={"User-Agent": user_agent},
                 proxies=self.proxies,
                 hooks=self.hooks,
@@ -383,33 +417,10 @@ class Client:
             )
             if not lazy:
                 await self._session.gather(resp)
+
             return resp
-
-        payload: dict[str, Any] = {
-            "comm": finalcomm,
-        }
-        params = {}
-        for idx, req in enumerate(data):
-            payload[f"req_{idx}"] = {
-                "module": req["module"],
-                "method": req["method"],
-                "param": req["param"] if req["preserve_bool"] else bool_to_int(req["param"]),
-            }
-
-        resp = await self._session.post(
-            "https://u.y.qq.com/cgi-bin/musicu.fcg",
-            json=payload,
-            params=params,
-            headers={"User-Agent": user_agent},
-            proxies=self.proxies,
-            hooks=self.hooks,
-            cert=self.cert,
-            verify=self.verify,
-        )
-        if not lazy:
-            await self._session.gather(resp)
-
-        return resp
+        except RequestException as exc:
+            raise NetworkError(str(exc)) from exc
 
     @overload
     async def gather(
@@ -508,7 +519,10 @@ class Client:
                 )
                 batch_responses.append((batch_indices, response_task))
 
-        await self._session.gather(*(resp for _, resp in batch_responses))
+        try:
+            await self._session.gather(*(resp for _, resp in batch_responses))
+        except RequestException as exc:
+            raise NetworkError(str(exc)) from exc
 
         results: list[Any] = [_SENTINEL] * len(requests)
 

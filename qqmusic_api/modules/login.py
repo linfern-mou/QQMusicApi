@@ -10,7 +10,7 @@ from typing import Any
 from uuid import uuid4
 
 import anyio
-from niquests.exceptions import HTTPError, ReadTimeout
+from niquests.exceptions import HTTPError, ReadTimeout, RequestException
 
 from ..core import (
     ApiDataError,
@@ -501,6 +501,8 @@ class LoginApi(ApiModule):
             )
         except ReadTimeout:
             return QRLoginResult(event=QRCodeLoginEvents.SCAN)
+        except RequestException as exc:
+            raise NetworkError(str(exc)) from exc
 
         match = _WX_STATUS_RE.search(response.text or "")
         if not match:
