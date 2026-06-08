@@ -63,6 +63,7 @@ def _build_result(
         return response_model.model_validate(raw)
     return raw
 
+
 @dataclass(kw_only=True)
 class Request(Generic[RequestResultT]):
     """请求描述符."""
