@@ -253,6 +253,64 @@ class UserHomepageResponse(Response):
     tab_detail: dict[str, Any] = Field(alias="TabDetail")
 
 
+class VipIdentity(Response):
+    """VIP 信息响应中的会员身份明细块.
+
+    Attributes:
+        vip: 绿钻会员标志.
+        huge_vip: 豪华绿钻会员标志.
+        huge_vip_start: 豪华绿钻生效时间.
+        huge_vip_end: 豪华绿钻到期时间.
+        year_flag: 年费会员标志.
+        huge_year_flag: 豪华年费会员标志.
+        twelve: 十二平台会员标志.
+        twelve_start: 十二平台会员生效时间.
+        twelve_end: 十二平台会员到期时间.
+        child_vip: 儿童会员标志.
+        exp_vip: 体验会员标志.
+        group_vip_flag: 家庭组会员标志.
+        group_vip_start: 家庭组会员生效时间.
+        group_vip_end: 家庭组会员到期时间.
+        cp_lover_flag: 情侣会员标志.
+        cp_lover_start: 情侣会员生效时间.
+        cp_lover_end: 情侣会员到期时间.
+        ad_vip_flag: 广告会员标志.
+        eight: 八平台会员标志.
+        eight_start: 八平台会员生效时间.
+        eight_end: 八平台会员到期时间.
+        level: 会员等级.
+        next_level: 下一会员等级.
+        icon: 官方等级徽章图地址.
+        purchase_url: 会员购买页地址.
+    """
+
+    vip: int = 0
+    huge_vip: int = Field(default=0, alias="HugeVip")
+    huge_vip_start: str = Field(default="", alias="HugeVipStart")
+    huge_vip_end: str = Field(default="", alias="HugeVipEnd")
+    year_flag: int = Field(default=0, alias="yearflag")
+    huge_year_flag: int = Field(default=0, alias="HugeYearFlag")
+    twelve: int = 0
+    twelve_start: str = Field(default="", alias="twelveStart")
+    twelve_end: str = Field(default="", alias="twelveEnd")
+    child_vip: int = Field(default=0, alias="ChildVip")
+    exp_vip: int = Field(default=0, alias="ExpVip")
+    group_vip_flag: int = Field(default=0, alias="GroupVipFlag")
+    group_vip_start: str = Field(default="", alias="GroupVipStart")
+    group_vip_end: str = Field(default="", alias="GroupVipEnd")
+    cp_lover_flag: int = Field(default=0, alias="CPLoverFlag")
+    cp_lover_start: str = Field(default="", alias="CPLoverStart")
+    cp_lover_end: str = Field(default="", alias="CPLoverEnd")
+    ad_vip_flag: int = Field(default=0, alias="AdVipFlag")
+    eight: int = 0
+    eight_start: str = Field(default="", alias="eightStart")
+    eight_end: str = Field(default="", alias="eightEnd")
+    level: int = 0
+    next_level: int = Field(default=0, alias="nextlevel")
+    icon: str = ""
+    purchase_url: str = Field(default="", alias="purchaseUrl")
+
+
 class VipUserInfo(Response):
     """VIP 信息响应中的用户权益摘要块.
 
@@ -280,14 +338,30 @@ class UserVipInfoResponse(Response):
         max_dir_num: 最大歌单数量.
         max_song_num: 最大歌曲数量.
         song_limit_msg: 歌曲上限提示文案.
+        svip: 超级会员标志.
+        star: 星级会员标志.
+        star_start: 星级会员生效时间.
+        star_end: 星级会员到期时间.
+        ystar: 年费星级会员标志.
+        ystar_start: 年费星级会员生效时间.
+        ystar_end: 年费星级会员到期时间.
+        identity: 会员身份明细.
         userinfo: 用户权益摘要.
     """
 
-    auto_down: int = Field(default=0, alias="autoDown")
+    auto_down: int = Field(default=0, validation_alias=AliasChoices("auto_down", "autoDown", "autodown"))
     can_renew: int = Field(default=0, alias="canRenew")
-    max_dir_num: int = Field(default=0, alias="maxDirNum")
-    max_song_num: int = Field(default=0, alias="maxSongNum")
-    song_limit_msg: str = Field(default="", alias="songLimitMsg")
+    max_dir_num: int = Field(default=0, validation_alias=AliasChoices("max_dir_num", "maxDirNum", "maxdirnum"))
+    max_song_num: int = Field(default=0, validation_alias=AliasChoices("max_song_num", "maxSongNum", "maxsongnum"))
+    song_limit_msg: str = Field(default="", validation_alias=AliasChoices("song_limit_msg", "songLimitMsg"))
+    svip: int = 0
+    star: int = 0
+    star_start: str = Field(default="", alias="starstart")
+    star_end: str = Field(default="", alias="starend")
+    ystar: int = 0
+    ystar_start: str = Field(default="", alias="ystarstart")
+    ystar_end: str = Field(default="", alias="ystarend")
+    identity: VipIdentity = Field(default_factory=VipIdentity)
     userinfo: VipUserInfo = Field(default_factory=VipUserInfo)
 
 
