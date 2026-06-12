@@ -13,6 +13,8 @@ from .deps import get_credential_config, get_credential_store
 
 logger = logging.getLogger(__name__)
 
+_CREDENTIAL_LOCK_MAX_SIZE = 256
+
 _credential_refresh_locks: dict[int, asyncio.Lock] = {}
 _credential_refresh_locks_guard = asyncio.Lock()
 
@@ -44,7 +46,16 @@ async def _credential_refresh_lock(musicid: int) -> asyncio.Lock:
         if lock is None:
             lock = asyncio.Lock()
             _credential_refresh_locks[musicid] = lock
+        if len(_credential_refresh_locks) > _CREDENTIAL_LOCK_MAX_SIZE:
+            _purge_idle_locks()
         return lock
+
+
+def _purge_idle_locks() -> None:
+    """移除未被持有的空闲锁, 保留活跃锁."""
+    idle_keys = [mid for mid, lock in _credential_refresh_locks.items() if not lock.locked()]
+    for key in idle_keys[: len(idle_keys) // 2]:
+        del _credential_refresh_locks[key]
 
 
 async def _credential_is_expired(candidate: Credential, client: Client) -> bool:

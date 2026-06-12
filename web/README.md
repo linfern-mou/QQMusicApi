@@ -107,3 +107,7 @@ R(
 ## 特殊路由适配器
 
 复杂路由在 `web/src/modules/` 中保留请求/响应模型与适配函数，例如歌曲文件链接、二维码登录、歌单写操作。适配器接收 `RouteContext`，从 `context.params` 读取已校验参数，并调用 SDK 方法。所有注册、OpenAPI 元数据、认证与缓存策略仍由 `web/src/routes/` 统一声明。
+
+## 注意事项
+
+* **限流与并发控制**在进程内存中实现，当 `workers > 1` 时每个 worker 独立计数，实际允许的请求速率会乘以 worker 数量。如需精确限流，请保持 `workers = 1` 或使用外部方案（如 Nginx、Redis）。

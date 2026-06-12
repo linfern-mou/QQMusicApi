@@ -10,6 +10,9 @@ COPY web/ web/
 
 RUN uv sync --group web --no-dev --frozen
 
+RUN adduser --system --no-create-home appuser
+USER appuser
+
 ENV QQMUSIC_SERVER_HOST=0.0.0.0
 
 EXPOSE 8080

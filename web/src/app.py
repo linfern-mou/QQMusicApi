@@ -106,13 +106,19 @@ async def _lifespan(app: FastAPI):
     logger.info("Web 应用关闭中...")
     try:
         await services.cache.close()
+    except Exception:
+        logger.error("关闭缓存异常", exc_info=True)
+    try:
         if services.credential_store is not None:
             services.credential_store.close()
+    except Exception:
+        logger.error("关闭凭证存储异常", exc_info=True)
+    try:
         if services.client is not None:
             await services.client.close()
-        logger.info("Web 应用关闭完成")
     except Exception:
-        logger.error("Web 应用关闭异常", exc_info=True)
+        logger.error("关闭 SDK Client 异常", exc_info=True)
+    logger.info("Web 应用关闭完成")
 
 
 def _configure_cors(app: FastAPI) -> None:

@@ -133,7 +133,11 @@ class RateLimitResult:
 
 
 class InMemoryRateLimiter:
-    """固定窗口 IP 限流器."""
+    """固定窗口 IP 限流器.
+
+    Note:
+        进程内内存实现, 多 worker 模式下各 worker 独立计数.
+    """
 
     def __init__(
         self,
@@ -187,7 +191,11 @@ class InMemoryRateLimiter:
 
 
 class InMemoryConcurrencyLimiter:
-    """全局并发请求限制器."""
+    """全局并发请求限制器.
+
+    Note:
+        进程内内存实现, 多 worker 模式下各 worker 独立计数.
+    """
 
     def __init__(self, limit: int) -> None:
         """初始化限制器."""
