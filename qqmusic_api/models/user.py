@@ -1,8 +1,8 @@
 """User API 返回模型定义."""
 
-from typing import Any, cast
+from typing import Any
 
-from pydantic import AliasChoices, Field, field_validator
+from pydantic import AliasChoices, Field
 
 from .base import MV, Album, Singer, SongList
 from .request import Response
@@ -400,19 +400,6 @@ class UserRelationListResponse(Response):
         lock_msg: 锁定提示文案.
     """
 
-    @field_validator("users", mode="before")
-    @classmethod
-    def _coerce_users(
-        cls,
-        value: RelationUser | dict[str, Any] | list[RelationUser] | list[dict[str, Any]] | None,
-    ) -> list[RelationUser | dict[str, Any]]:
-        """将单条关系用户结果规整为列表."""
-        if value is None:
-            return []
-        if isinstance(value, list):
-            return cast("list[RelationUser | dict[str, Any]]", value)
-        return [value]
-
     total: int = Field(default=0, alias="Total")
     users: list[RelationUser] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.List[*]"})
     has_more: bool = Field(default=False, alias="HasMore")
@@ -487,6 +474,6 @@ class UserFavMvResponse(Response):
     """
 
     code: int
-    sub_code: int = Field(alias="subCode")
+    sub_code: int = Field(validation_alias=AliasChoices("subCode", "subcode"))
     msg: str
     mv_list: list[UserFavMvItem] = Field(alias="mvlist")
