@@ -110,7 +110,7 @@ class VersionPolicy:
                 qq=str(credential.musicid) if credential.musicid else None,
                 authst=credential.musickey or None,
                 tmeAppID="qqmusic",
-                tmeLoginType=credential.login_type,
+                tmeLoginType=credential.login_type or None,
                 QIMEI=qimei["q16"] if qimei is not None else "",
                 QIMEI36=qimei["q36"] if qimei is not None else "",
                 OpenUDID=guid,

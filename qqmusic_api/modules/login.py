@@ -83,6 +83,27 @@ class LoginApi(ApiModule):
             bool: 是否已过期.
         """
         target = credential or self._client.credential
+        if self._client.platform == Platform.WEB:
+            resp = await self._client.request(
+                "GET",
+                "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
+                credential=target,
+                params={
+                    "g_tk": hash33(target.musickey, 5381),
+                    "format": "json",
+                    "inCharset": "utf-8",
+                    "outCharset": "utf-8",
+                    "notice": 0,
+                    "cid": 205360838,
+                    "needNewCode": 0,
+                    "loginUin": target.musicid,
+                    "hostUin": 0,
+                    "userid": target.musicid,
+                    "reqfrom": "1",
+                },
+            )
+            return resp.json().get("code") != 0
+
         data = await self._build_request(
             module="music.UserInfo.userInfoServer",
             method="GetLoginUserInfo",
