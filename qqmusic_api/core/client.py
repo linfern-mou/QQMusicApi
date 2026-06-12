@@ -589,6 +589,8 @@ class Client:
         if request.allow_error_codes and (
             code == 0 or (request.allow_error_codes == "all" or code in request.allow_error_codes)
         ):
+            if request.parse_on_allow:
+                return cast("RequestResultT", _build_result(data, request.response_model))
             return cast(
                 "RequestResultT",
                 {"code": code, "data": data} if request.is_jce else item,

@@ -80,6 +80,7 @@ class Request(Generic[RequestResultT]):
     credential: Credential | None = None
     platform: Platform | None = None
     allow_error_codes: AllowErrorCodes | None = None
+    parse_on_allow: bool = False
 
     def __await__(self) -> Generator[Any, Any, RequestResultT]:
         """使 Request 对象可被 await 执行."""

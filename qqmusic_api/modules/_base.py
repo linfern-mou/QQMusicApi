@@ -90,6 +90,7 @@ class ApiModule:
         credential: "Credential | None" = None,
         platform: Platform | None = None,
         allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: None = None,
     ) -> "Request[dict[str, Any]]": ...
@@ -108,6 +109,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
     ) -> "PaginatedRequest[dict[str, Any]]": ...
@@ -126,6 +129,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
     ) -> "RefreshableRequest[dict[str, Any]]": ...
@@ -144,6 +149,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: None = None,
     ) -> "Request[TarsDict]": ...
@@ -162,6 +169,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
     ) -> "PaginatedRequest[TarsDict]": ...
@@ -180,6 +189,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
     ) -> "RefreshableRequest[TarsDict]": ...
@@ -198,6 +209,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: None = None,
     ) -> "Request[ResponseModel]": ...
@@ -216,6 +229,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
     ) -> "PaginatedRequest[ResponseModel]": ...
@@ -234,6 +249,8 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
+        allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
     ) -> "RefreshableRequest[ResponseModel]": ...
@@ -252,6 +269,7 @@ class ApiModule:
         credential: "Credential | None" = None,
         platform: Platform | None = None,
         allow_error_codes: "AllowErrorCodes | None" = None,
+        parse_on_allow: bool = False,
         pager_meta: "PagerMeta | None" = None,
         refresh_meta: "RefreshMeta | None" = None,
     ) -> "Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]":
@@ -269,6 +287,7 @@ class ApiModule:
             credential: 本次请求专用的凭证. 默认使用客户端当前凭证.
             platform: 本次请求的平台标识. 默认使用客户端所属平台.
             allow_error_codes: 允许放行的业务非零错误码.
+            parse_on_allow: 为 True 时, 匹配 `allow_error_codes` 的响应仍走模型解析而非返回原始字典.
             pager_meta: 分页组件元数据. 提供后则升级为 `PaginatedRequest`.
             refresh_meta: 刷新组件元数据. 提供后则升级为 `RefreshableRequest`.
 
@@ -296,6 +315,7 @@ class ApiModule:
             "credential": credential,
             "platform": platform,
             "allow_error_codes": allow_error_codes,
+            "parse_on_allow": parse_on_allow,
         }
         if pager_meta is not None:
             return PaginatedRequest(**common_kwargs, pager_meta=pager_meta)
