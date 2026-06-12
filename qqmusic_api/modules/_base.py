@@ -84,6 +84,7 @@ class ApiModule:
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -102,6 +103,7 @@ class ApiModule:
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -119,6 +121,7 @@ class ApiModule:
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -136,6 +139,7 @@ class ApiModule:
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = True,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -153,6 +157,7 @@ class ApiModule:
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = True,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -170,6 +175,7 @@ class ApiModule:
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = True,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -187,6 +193,7 @@ class ApiModule:
         response_model: type["ResponseModel"],
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -204,6 +211,7 @@ class ApiModule:
         response_model: type["ResponseModel"],
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -221,6 +229,7 @@ class ApiModule:
         response_model: type["ResponseModel"],
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -237,6 +246,7 @@ class ApiModule:
         response_model: type["ResponseModel"] | None = None,
         comm: dict[str, Any] | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
@@ -245,7 +255,29 @@ class ApiModule:
         pager_meta: "PagerMeta | None" = None,
         refresh_meta: "RefreshMeta | None" = None,
     ) -> "Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]":
-        """构建可 await 的请求描述符."""
+        """构建可 await 的请求描述符.
+
+        Args:
+            module: 接口所属的模块名称.
+            method: 接口调用的方法名称.
+            param: 请求的核心业务参数.
+            response_model: 用于解析响应数据的 Pydantic 模型.
+            comm: 附加的通用请求参数. 行为受 `override_comm` 影响.
+            override_comm: 为 True 时, `comm` 将彻底替代自动生成的参数; 为 False 时, 将与生成参数进行合并更新.
+            is_jce: 是否作为 JCE (Tars) 请求发送.
+            preserve_bool: 是否保留布尔值原样 (默认转为 0/1 整型).
+            credential: 本次请求专用的凭证. 默认使用客户端当前凭证.
+            platform: 本次请求的平台标识. 默认使用客户端所属平台.
+            allow_error_codes: 允许放行的业务非零错误码.
+            pager_meta: 分页组件元数据. 提供后则升级为 `PaginatedRequest`.
+            refresh_meta: 刷新组件元数据. 提供后则升级为 `RefreshableRequest`.
+
+        Returns:
+            组装好的 Request 或衍生子类描述符.
+
+        Raises:
+            ValueError: 如果同时提供 pager_meta 和 refresh_meta 时抛出.
+        """
         from ..core.request import PaginatedRequest, RefreshableRequest, Request
 
         if pager_meta is not None and refresh_meta is not None:
@@ -258,6 +290,7 @@ class ApiModule:
             "param": param,
             "response_model": response_model,
             "comm": comm,
+            "override_comm": override_comm,
             "is_jce": is_jce,
             "preserve_bool": preserve_bool,
             "credential": credential,

@@ -344,6 +344,7 @@ class Client:
         credential: Credential | None = None,
         platform: Platform | None = None,
         *,
+        override_comm: bool = False,
         is_jce: bool = False,
         lazy: bool = False,
     ) -> Response:
@@ -352,17 +353,20 @@ class Client:
         if target_platform == Platform.ANDROID:
             await self._ensure_session()
         device = await self._device_store.get_device()
-        finalcomm = self._version_policy.build_comm(
-            platform=target_platform,
-            credential=credential or self.credential,
-            device=device,
-            qimei=cast("dict[str, str]", await self._qimei_manager.get_cached())
-            if target_platform == Platform.ANDROID
-            else None,
-            guid=device.open_udid,
-        )
-        if comm:
-            finalcomm.update(comm)
+        if override_comm:
+            finalcomm = (comm or {}).copy()
+        else:
+            finalcomm = self._version_policy.build_comm(
+                platform=target_platform,
+                credential=credential or self.credential,
+                device=device,
+                qimei=cast("dict[str, str]", await self._qimei_manager.get_cached())
+                if target_platform == Platform.ANDROID
+                else None,
+                guid=device.open_udid,
+            )
+            if comm:
+                finalcomm.update(comm)
 
         user_agent = await self._get_user_agent(target_platform)
 
@@ -513,6 +517,7 @@ class Client:
                         for i in batch_indices
                     ],
                     comm=base_req.comm,
+                    override_comm=base_req.override_comm,
                     credential=base_req.credential,
                     platform=base_req.platform,
                     is_jce=base_req.is_jce,
@@ -621,6 +626,7 @@ class Client:
                 }
             ],
             comm=request.comm,
+            override_comm=request.override_comm,
             credential=request.credential,
             platform=request.platform,
             is_jce=request.is_jce,
