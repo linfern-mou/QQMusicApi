@@ -1,4 +1,19 @@
 
+## [[0.6.4](https://github.com/L-1124/QQMusicApi/compare/v0.6.3..v0.6.4)] - 2026-06-12
+
+### Bug 修复
+
+* **(models)** 修复没有 musickey 时误判为 QQ 登录的问题 ([9b122a7](https://github.com/L-1124/QQMusicApi/commit/9b122a77f418d85f1926da889846c61a55bf70a2)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(models)** 修改 BaseModel 的 model_config 设置，允许额外字段 ([12a2334](https://github.com/L-1124/QQMusicApi/commit/12a2334dbde580930b167c728998b6310508597e)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.6.3](https://github.com/L-1124/QQMusicApi/compare/v0.6.2..v0.6.3)] - 2026-06-12
 
 ### Bug 修复
