@@ -62,6 +62,20 @@ async def _retry_rate_limited_call(operation: Callable[[], Awaitable[Any]]) -> A
     raise RuntimeError("限流重试流程异常结束")
 
 
+async def _call_with_skip(coro_fn: Callable[[], Awaitable[Any]]) -> Any:
+    """执行 API 调用, 将环境不可用异常转为 pytest.skip."""
+    try:
+        return await _retry_rate_limited_call(coro_fn)
+    except (CredentialInvalidError, CredentialExpiredError) as exc:
+        pytest.skip(str(exc))
+    except RatelimitedError as exc:
+        pytest.skip(f"{exc}。指数退避重试 {len(RATE_LIMIT_RETRY_DELAYS)} 次后仍触发限流")
+    except Exception as exc:
+        if _is_network_timeout_error(exc):
+            pytest.skip(str(exc))
+        raise
+
+
 @pytest.fixture(autouse=True)
 def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch):
     """为测试 API 调用添加限流重试, 并将环境不可用异常转为跳过."""
@@ -69,7 +83,7 @@ def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch):
     original_gather = Client.gather
 
     async def execute_with_rate_limit_retry(client: Client, request: Any) -> Any:
-        return await _retry_rate_limited_call(lambda: original_execute(client, request))
+        return await _call_with_skip(lambda: original_execute(client, request))
 
     async def gather_with_rate_limit_retry(
         client: Client,
@@ -78,7 +92,7 @@ def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch):
         batch_size: int = 20,
         return_exceptions: bool = False,
     ) -> list[Any]:
-        return await _retry_rate_limited_call(
+        return await _call_with_skip(
             lambda: original_gather(
                 client,
                 requests,
@@ -90,16 +104,7 @@ def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(Client, "execute", execute_with_rate_limit_retry)
     monkeypatch.setattr(Client, "gather", gather_with_rate_limit_retry)
 
-    try:
-        yield
-    except (CredentialInvalidError, CredentialExpiredError) as exc:
-        pytest.skip(str(exc))
-    except RatelimitedError as exc:
-        pytest.skip(f"{exc}。指数退避重试 {len(RATE_LIMIT_RETRY_DELAYS)} 次后仍触发限流")
-    except Exception as exc:
-        if _is_network_timeout_error(exc):
-            pytest.skip(str(exc))
-        raise
+    return
 
 
 @pytest_asyncio.fixture
