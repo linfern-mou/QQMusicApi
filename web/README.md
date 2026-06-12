@@ -11,8 +11,16 @@ cd QQMusicApi
 
 ### 安装 Web 依赖
 
+#### 方式 A
+
 ```bash
 uv sync --group web
+```
+
+#### 方式 B
+
+```bash
+pip install -r web/requirements.txt
 ```
 
 ### 启动服务
