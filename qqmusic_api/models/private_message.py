@@ -1,9 +1,10 @@
 """私信模块返回模型定义."""
 
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 
+from ._validator import NoneToEmptyDict
 from .request import Response
 
 
@@ -208,18 +209,12 @@ class PrivateMessageListResponse(Response):
     session: PrivateMessageSession | None = None
     subcode: int = 0
     end_msg_seq: int = 0
-    attach: dict[str, Any] = Field(default_factory=dict, alias="Attach")
+    attach: Annotated[dict[str, Any], NoneToEmptyDict] = Field(default_factory=dict, alias="Attach")
     pat_interval: int = Field(default=0, alias="PatInterval")
-    pat_map: dict[str, PrivateMessagePatText] = Field(default_factory=dict, alias="PatMap")
+    pat_map: Annotated[dict[str, PrivateMessagePatText], NoneToEmptyDict] = Field(default_factory=dict, alias="PatMap")
     encrypt_star: str = Field(default="", alias="EncryptStar")
     location_tips: str = Field(default="", alias="LocationTips")
     new_msg_cnt: int = Field(default=0, alias="NewMsgCnt")
-
-    @field_validator("attach", "pat_map", mode="before")
-    @classmethod
-    def _normalize_nullable_fields(cls, value: Any) -> Any:
-        """将服务端返回的空映射归一为空字典."""
-        return {} if value is None else value
 
 
 class PrivateSendMessageResponse(Response):

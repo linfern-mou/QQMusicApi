@@ -1,9 +1,10 @@
 """Singer API 返回模型定义."""
 
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import AliasChoices, Field, field_validator
+from pydantic import AliasChoices, Field
 
+from ._validator import NoneOrZeroToEmptyStr, NoneToEmptyList
 from .base import MV, Album, Singer, Song
 from .request import Response
 
@@ -62,16 +63,10 @@ class SingerTagData(Response):
         index: 索引标签列表.
     """
 
-    @field_validator("area", "genre", "sex", "index", mode="before")
-    @classmethod
-    def _coerce_none_list(cls, value: list[TagOption] | None) -> list[TagOption]:
-        """将缺失的标签列表规整为空列表."""
-        return [] if value is None else value
-
-    area: list[TagOption] = Field(default_factory=list)
-    genre: list[TagOption] = Field(default_factory=list)
-    sex: list[TagOption] = Field(default_factory=list)
-    index: list[TagOption] = Field(default_factory=list)
+    area: Annotated[list[TagOption], NoneToEmptyList] = Field(default_factory=list)
+    genre: Annotated[list[TagOption], NoneToEmptyList] = Field(default_factory=list)
+    sex: Annotated[list[TagOption], NoneToEmptyList] = Field(default_factory=list)
+    index: Annotated[list[TagOption], NoneToEmptyList] = Field(default_factory=list)
 
 
 class SingerTypeListResponse(Response):
@@ -179,12 +174,6 @@ class AlbumBrief(Album):
         tags: 标签列表.
     """
 
-    @field_validator("tags", mode="before")
-    @classmethod
-    def _coerce_tags(cls, value: list[str] | None) -> list[str]:
-        """将专辑标签中的空值规整为空列表."""
-        return [] if value is None else value
-
     id: int = Field(default=-1, alias="albumID")
     mid: str = Field(default="", alias="albumMid")
     name: str = Field(default="", alias="albumName")
@@ -193,7 +182,7 @@ class AlbumBrief(Album):
     total_num: int = Field(default=0, alias="totalNum")
     album_type: str = Field(default="", alias="albumType")
     singer_name: str = Field(default="", alias="singerName")
-    tags: list[str] = Field(default_factory=list)
+    tags: Annotated[list[str], NoneToEmptyList] = Field(default_factory=list)
 
 
 class VideoBrief(MV):
@@ -239,24 +228,24 @@ class HomepageTabDetailResponse(Response):
         video_tab: 视频标签内容.
     """
 
-    @field_validator("tab_list", "introduction_tab", "song_tab", "album_tab", "video_tab", mode="before")
-    @classmethod
-    def _coerce_tab_lists(cls, value: list[Any] | None) -> list[Any]:
-        """将标签详情中的空列表占位规整为列表."""
-        return [] if value is None else value
-
     tab_id: str = Field(default="", alias="TabID")
     has_more: int = Field(default=0, alias="HasMore")
     need_show_tab: int = Field(default=0, alias="NeedShowTab")
     order: int = Field(default=0, alias="Order")
-    tab_list: list[TabMeta] = Field(default_factory=list, alias="TabList")
-    introduction_tab: list[dict[str, Any]] = Field(
+    tab_list: Annotated[list[TabMeta], NoneToEmptyList] = Field(default_factory=list, alias="TabList")
+    introduction_tab: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(
         default_factory=list,
         json_schema_extra={"jsonpath": "$.IntroductionTab.List"},
     )
-    song_tab: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.SongTab.List[*]"})
-    album_tab: list[AlbumBrief] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.AlbumTab.AlbumList[*]"})
-    video_tab: list[VideoBrief] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.VideoTab.VideoList[*]"})
+    song_tab: Annotated[list[Song], NoneToEmptyList] = Field(
+        default_factory=list, json_schema_extra={"jsonpath": "$.SongTab.List[*]"}
+    )
+    album_tab: Annotated[list[AlbumBrief], NoneToEmptyList] = Field(
+        default_factory=list, json_schema_extra={"jsonpath": "$.AlbumTab.AlbumList[*]"}
+    )
+    video_tab: Annotated[list[VideoBrief], NoneToEmptyList] = Field(
+        default_factory=list, json_schema_extra={"jsonpath": "$.VideoTab.VideoList[*]"}
+    )
 
 
 class HomepageHeaderResponse(Response):
@@ -315,21 +304,15 @@ class SingerExtraInfo(Response):
         blog_flag: 博客标记.
     """
 
-    @field_validator("area", "identity", "instrument", "genre", "enter", mode="before")
-    @classmethod
-    def _coerce_optional_text(cls, value: str | int | None) -> str:
-        """将上游返回的 0 或空值规整为空字符串."""
-        return "" if value in (None, 0) else str(value)
-
-    area: str = ""
+    area: Annotated[str, NoneOrZeroToEmptyStr] = ""
     desc: str = ""
     tag: str = ""
-    identity: str = ""
-    instrument: str = ""
-    genre: str = ""
+    identity: Annotated[str, NoneOrZeroToEmptyStr] = ""
+    instrument: Annotated[str, NoneOrZeroToEmptyStr] = ""
+    genre: Annotated[str, NoneOrZeroToEmptyStr] = ""
     foreign_name: str = ""
     birthday: str = ""
-    enter: str = ""
+    enter: Annotated[str, NoneOrZeroToEmptyStr] = ""
     blog_flag: int = Field(default=0, alias="blogFlag")
 
 
@@ -345,18 +328,12 @@ class SingerDetail(Response):
         group_info: 组合附加信息.
     """
 
-    @field_validator("group_list", "photos", "group_info", mode="before")
-    @classmethod
-    def _coerce_detail_lists(cls, value: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
-        """将歌手详情中的空列表占位规整为列表."""
-        return [] if value is None else value
-
     basic_info: SingerBasicInfo = Field(alias="basic_info")
     ex_info: SingerExtraInfo = Field(default_factory=SingerExtraInfo, alias="ex_info")
     wiki: str = ""
-    group_list: list[dict[str, Any]] = Field(default_factory=list)
-    photos: list[dict[str, Any]] = Field(default_factory=list)
-    group_info: list[dict[str, Any]] = Field(default_factory=list)
+    group_list: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(default_factory=list)
+    photos: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(default_factory=list)
+    group_info: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(default_factory=list)
 
 
 class SingerDetailResponse(Response):
@@ -402,13 +379,7 @@ class SimilarSingerResponse(Response):
         err_msg: 错误消息.
     """
 
-    @field_validator("singerlist", mode="before")
-    @classmethod
-    def _coerce_similar_list(cls, value: list[SimilarSinger] | None) -> list[SimilarSinger]:
-        """将相似歌手列表中的空值规整为空列表."""
-        return [] if value is None else value
-
-    singerlist: list[SimilarSinger] = Field(default_factory=list)
+    singerlist: Annotated[list[SimilarSinger], NoneToEmptyList] = Field(default_factory=list)
     code: int = 0
     err_msg: str = Field(default="", alias="errMsg")
 
@@ -422,15 +393,11 @@ class SingerSongListResponse(Response):
         song_list: 当前页歌曲列表.
     """
 
-    @field_validator("song_list", mode="before")
-    @classmethod
-    def _coerce_song_list(cls, value: list[Song] | None) -> list[Song]:
-        """将歌曲列表中的空值规整为空列表."""
-        return [] if value is None else value
-
     singer_mid: str = Field(default="", alias="singerMid")
     total_num: int = Field(default=0, alias="totalNum")
-    song_list: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.songList[*].songInfo"})
+    song_list: Annotated[list[Song], NoneToEmptyList] = Field(
+        default_factory=list, json_schema_extra={"jsonpath": "$.songList[*].songInfo"}
+    )
 
 
 class SingerAlbumListResponse(Response):
@@ -442,15 +409,9 @@ class SingerAlbumListResponse(Response):
         album_list: 当前页专辑列表.
     """
 
-    @field_validator("album_list", mode="before")
-    @classmethod
-    def _coerce_album_list(cls, value: list[AlbumBrief] | None) -> list[AlbumBrief]:
-        """将专辑列表中的空值规整为空列表."""
-        return [] if value is None else value
-
     singer_mid: str = Field(default="", alias="singerMid")
     total: int = 0
-    album_list: list[AlbumBrief] = Field(default_factory=list, alias="albumList")
+    album_list: Annotated[list[AlbumBrief], NoneToEmptyList] = Field(default_factory=list, alias="albumList")
 
 
 class SingerMvListResponse(Response):
@@ -461,11 +422,5 @@ class SingerMvListResponse(Response):
         mv_list: 当前页 MV 列表.
     """
 
-    @field_validator("mv_list", mode="before")
-    @classmethod
-    def _coerce_mv_list(cls, value: list[VideoBrief] | None) -> list[VideoBrief]:
-        """将 MV 列表中的空值规整为空列表."""
-        return [] if value is None else value
-
     total: int = 0
-    mv_list: list[VideoBrief] = Field(default_factory=list, alias="list")
+    mv_list: Annotated[list[VideoBrief], NoneToEmptyList] = Field(default_factory=list, alias="list")
