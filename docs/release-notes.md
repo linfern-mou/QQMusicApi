@@ -1,4 +1,16 @@
 
+## [[0.6.5](https://github.com/L-1124/QQMusicApi/compare/v0.6.4..v0.6.5)] - 2026-06-12
+
+### Bug 修复
+
+* **(core)** 开启 allow_incoming_cookies=False 防止上下请求的 cookies 污染 ([1cd1b69](https://github.com/L-1124/QQMusicApi/commit/1cd1b69338ffa2f26409480490b18b9c9080a29e)) by [@L-1124](https://github.com/L-1124)
+* **(login)** `Platform.WEB` 的 `check_expired` 总是返回 True ([f0b4533](https://github.com/L-1124/QQMusicApi/commit/f0b4533e7c172b6cb5b0556fbd7ff13e8b20f4c7)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.6.4](https://github.com/L-1124/QQMusicApi/compare/v0.6.3..v0.6.4)] - 2026-06-12
 
 ### Bug 修复
