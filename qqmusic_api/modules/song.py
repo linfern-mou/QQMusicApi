@@ -409,6 +409,8 @@ class SongApi(ApiModule):
             module="music.mir.SheetMusicSvr",
             method="GetMoreSheetMusic",
             param={"songmid": mid, "scoreType": -1},
+            allow_error_codes=(10007,),
+            parse_on_allow=True,
             response_model=GetSheetResponse,
         )
 

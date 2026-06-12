@@ -1,7 +1,10 @@
 """Song API 返回模型定义."""
 
+from typing import Annotated
+
 from pydantic import Field
 
+from ._validator import NoneToEmptyList
 from .base import MV, Singer, Song, SongList
 from .request import Response
 
@@ -327,7 +330,7 @@ class GetSheetResponse(Response):
         total_map: 各曲谱类型对应的数量聚合.
     """
 
-    result: list[SheetMusic]
+    result: Annotated[list[SheetMusic], NoneToEmptyList]
     total_map: dict[str, int] = Field(alias="totalMap")
 
 
