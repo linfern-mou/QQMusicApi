@@ -15,6 +15,6 @@ ENV QQMUSIC_SERVER_HOST=0.0.0.0
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD uv run python -c "from urllib.request import urlopen; urlopen('http://localhost:8080/')" || exit 1
+  CMD uv run --no-sync python -c "from urllib.request import urlopen; urlopen('http://localhost:8080/')" || exit 1
 
-CMD ["uv", "run", "web/run.py"]
+CMD ["uv", "run", "--no-sync", "web/run.py"]
