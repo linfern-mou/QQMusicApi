@@ -1,4 +1,25 @@
 
+## [[0.6.3](https://github.com/L-1124/QQMusicApi/compare/v0.6.2..v0.6.3)] - 2026-06-12
+
+### Bug 修复
+
+* **(models)** 修复 jsonpath 通配字段单条解包与收藏 MV subcode 别名不匹配 ([b31f802](https://github.com/L-1124/QQMusicApi/commit/b31f802bad06489315b9b1d3e15f141bcbcde121)) by [@jinzhongjia](https://github.com/jinzhongjia) in [#259](https://github.com/L-1124/QQMusicApi/pull/259)
+* **(tests)** 修复 handle_unavailable_api_errors fixture 无法正确捕获测试执行期异常并跳过的问题 ([412d6cf](https://github.com/L-1124/QQMusicApi/commit/412d6cf17d18c97f4fb0ebff9be86f3c86566120)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(user)** get_vip_info 响应模型补充会员身份字段 ([6504373](https://github.com/L-1124/QQMusicApi/commit/650437317290c4905bc81fefed169a9e725f7c29)) by [@jinzhongjia](https://github.com/jinzhongjia) in [#258](https://github.com/L-1124/QQMusicApi/pull/258)
+
+### 功能重构
+
+* **(models)** field_validator → Annotated + BeforeValidator ([5505ed1](https://github.com/L-1124/QQMusicApi/commit/5505ed1fd1630f4e7803a86eb40c7eaf113f8382)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @jinzhongjia [#259](https://github.com/L-1124/QQMusicApi/pull/259)
+* @github-actions[bot]
+
 ## [[0.6.2](https://github.com/L-1124/QQMusicApi/compare/v0.6.1..v0.6.2)] - 2026-06-08
 
 ### Bug 修复
