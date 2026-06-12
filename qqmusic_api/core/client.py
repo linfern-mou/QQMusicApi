@@ -90,6 +90,7 @@ class Client:
                 other=0,
                 backoff_factor=0.2,
             ),
+            allow_incoming_cookies=False,
         )
         self.credential = credential or Credential()
         self.platform = platform or Platform.ANDROID
