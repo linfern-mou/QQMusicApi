@@ -298,7 +298,7 @@ class SheetMusic(Response):
 
     score_mid: str = Field(alias="scoreMID")
     score_name: str = Field(alias="scoreName")
-    pic_urls: list[str] = Field(alias="picURLs")
+    pic_urls: Annotated[list[str], NoneToEmptyList] = Field(default_factory=list, alias="picURLs")
     version: str
     tonality: int
     score_type: int = Field(alias="scoreType")

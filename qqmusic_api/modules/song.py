@@ -400,7 +400,7 @@ class SongApi(ApiModule):
             response_model=GetProducerResponse,
         )
 
-    def get_sheet(self, mid: str, begin: int = 0, end: int = 50, ttype: int = 0):
+    def get_sheet(self, mid: str, ttype: int = 0):
         """获取歌曲相关曲谱.
 
         Args:
@@ -409,13 +409,45 @@ class SongApi(ApiModule):
             end: 返回数量.
             ttype: 曲谱来源类型. 0=用户上传, 1=引擎/AI曲谱, 2=虫虫钢琴.
         """
+        if ttype == 2:
+            return self._build_request(
+                module="music.mir.SheetMusicSvr",
+                method="GetChongChongSheetMusic",
+                param={"songMid": mid, "begin": 0, "end": 100, "scoreType": -1, "ttype": 1},
+                response_model=GetSheetResponse,
+                comm={
+                    "g_tk": 5381,
+                    "uin": "",
+                    "format": "json",
+                    "inCharset": "utf-8",
+                    "outCharset": "utf-8",
+                    "notice": 0,
+                    "platform": "h5",
+                    "needNewCode": 1,
+                },
+                sign=True,
+                override_comm=True,
+                allow_error_codes={10007},
+                parse_on_allow=True,
+            )
+        score_type = -473 if ttype == 1 else -1
         return self._build_request(
             module="music.mir.SheetMusicSvr",
             method="GetMoreSheetMusic",
-            param={"songmid": mid, "scoreType": -1},
-            allow_error_codes=(10007,),
-            parse_on_allow=True,
+            param={"songMid": mid, "begin": 0, "end": 100, "scoreType": score_type, "ttype": ttype},
             response_model=GetSheetResponse,
+            comm={
+                "g_tk": 5381,
+                "uin": "",
+                "format": "json",
+                "inCharset": "utf-8",
+                "outCharset": "utf-8",
+                "notice": 0,
+                "needNewCode": 1,
+            },
+            override_comm=True,
+            allow_error_codes={10007},
+            parse_on_allow=True,
         )
 
     def has_sheet(self, mid: str):
