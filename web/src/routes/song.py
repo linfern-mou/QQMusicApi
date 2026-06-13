@@ -14,6 +14,7 @@ from qqmusic_api.models.song import (
     GetSongDetailResponse,
     GetSongLabelsResponse,
     GetSongUrlsResponse,
+    HasSheetMusicResponse,
     QuerySongResponse,
 )
 
@@ -77,6 +78,7 @@ ROUTES: tuple[WebRoute, ...] = (
         params=(*SONG_ID, *SONG_RELATED_SONGLIST_PAGE),
         cache=PUBLIC_600,
     ),
+    R("song", "has_sheet", "/song/{mid}/has_sheet", HasSheetMusicResponse, params=MID, cache=PUBLIC_300),
     R("song", "get_sheet", "/song/{mid}/sheet", GetSheetResponse, params=MID, cache=PUBLIC_300),
     R("song", "get_similar_song", "/song/{songid}/similar", GetSimilarSongResponse, params=SONG_ID, cache=PUBLIC_600),
     R(
