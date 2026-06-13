@@ -81,6 +81,7 @@ class Request(Generic[RequestResultT]):
     platform: Platform | None = None
     allow_error_codes: AllowErrorCodes | None = None
     parse_on_allow: bool = False
+    sign: bool = False
 
     def __await__(self) -> Generator[Any, Any, RequestResultT]:
         """使 Request 对象可被 await 执行."""
@@ -95,13 +96,14 @@ class Request(Generic[RequestResultT]):
         tuple[tuple[str, int | str | bool], ...] | None,
         bool,
         tuple[int, str],
+        bool,
     ]:
         """返回可批量合并执行的稳定分组键."""
         platform = self.platform
         credential = self.credential or self._client.credential
         credential_key = (credential.musicid, credential.musickey)
         comm_items = tuple(sorted(self.comm.items(), key=lambda item: item[0])) if self.comm is not None else None
-        return (self.is_jce, platform, comm_items, self.override_comm, credential_key)
+        return (self.is_jce, platform, comm_items, self.override_comm, credential_key, self.sign)
 
     def replace(self, **changes: Any) -> "Request[RequestResultT]":
         """返回一个应用了修改的新 Request 对象, 不会修改原对象."""

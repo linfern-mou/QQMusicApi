@@ -93,6 +93,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: None = None,
+        sign: bool = False,
     ) -> "Request[dict[str, Any]]": ...
 
     @overload
@@ -113,6 +114,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
+        sign: bool = False,
     ) -> "PaginatedRequest[dict[str, Any]]": ...
 
     @overload
@@ -133,6 +135,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
+        sign: bool = False,
     ) -> "RefreshableRequest[dict[str, Any]]": ...
 
     @overload
@@ -153,6 +156,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: None = None,
+        sign: bool = False,
     ) -> "Request[TarsDict]": ...
 
     @overload
@@ -173,6 +177,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
+        sign: bool = False,
     ) -> "PaginatedRequest[TarsDict]": ...
 
     @overload
@@ -193,6 +198,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
+        sign: bool = False,
     ) -> "RefreshableRequest[TarsDict]": ...
 
     @overload
@@ -213,6 +219,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: None = None,
+        sign: bool = False,
     ) -> "Request[ResponseModel]": ...
 
     @overload
@@ -233,6 +240,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
+        sign: bool = False,
     ) -> "PaginatedRequest[ResponseModel]": ...
 
     @overload
@@ -253,6 +261,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
+        sign: bool = False,
     ) -> "RefreshableRequest[ResponseModel]": ...
 
     def _build_request(
@@ -272,6 +281,7 @@ class ApiModule:
         parse_on_allow: bool = False,
         pager_meta: "PagerMeta | None" = None,
         refresh_meta: "RefreshMeta | None" = None,
+        sign: bool = False,
     ) -> "Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]":
         """构建可 await 的请求描述符.
 
@@ -290,6 +300,7 @@ class ApiModule:
             parse_on_allow: 为 True 时, 匹配 `allow_error_codes` 的响应仍走模型解析而非返回原始字典.
             pager_meta: 分页组件元数据. 提供后则升级为 `PaginatedRequest`.
             refresh_meta: 刷新组件元数据. 提供后则升级为 `RefreshableRequest`.
+            sign: 是否对请求进行签名.
 
         Returns:
             组装好的 Request 或衍生子类描述符.
@@ -316,6 +327,7 @@ class ApiModule:
             "platform": platform,
             "allow_error_codes": allow_error_codes,
             "parse_on_allow": parse_on_allow,
+            "sign": sign,
         }
         if pager_meta is not None:
             return PaginatedRequest(**common_kwargs, pager_meta=pager_meta)

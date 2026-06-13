@@ -1,10 +1,12 @@
 """API 客户端核心实现. 整合网络传输、鉴权与业务模块访问."""
 
+import time
 from collections import defaultdict
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
 import anyio
+import orjson as json
 from niquests import AsyncSession, AsyncTokenBucketLimiter, PreparedRequest
 from niquests.exceptions import RequestException
 from niquests.models import Response
@@ -12,6 +14,7 @@ from niquests.typing import AsyncHookType, ProxyType, TLSClientCertType, TLSVeri
 from tarsio import TarsDict
 from urllib3.util.retry import Retry
 
+from ..algorithms import zzc_sign
 from ..models.request import Credential, JceRequest, JceRequestItem, JceResponse, JceResponseItem, RequestItem
 from ..utils.common import bool_to_int
 from ..utils.device import DeviceManager
@@ -347,6 +350,7 @@ class Client:
         override_comm: bool = False,
         is_jce: bool = False,
         lazy: bool = False,
+        sign: bool = False,
     ) -> Response:
         """发送 API 请求."""
         target_platform = Platform.ANDROID if is_jce else platform or self.platform
@@ -402,7 +406,7 @@ class Client:
             payload: dict[str, Any] = {
                 "comm": finalcomm,
             }
-            params = {}
+            params: dict[str, str] = {}
             for idx, req in enumerate(data):
                 payload[f"req_{idx}"] = {
                     "module": req["module"],
@@ -410,8 +414,12 @@ class Client:
                     "param": req["param"] if req["preserve_bool"] else bool_to_int(req["param"]),
                 }
 
+            if sign:
+                params["_"] = str(int(time.time() * 1000))
+                params["sign"] = zzc_sign(json.dumps(payload))
+
             resp = await self._session.post(
-                "https://u.y.qq.com/cgi-bin/musicu.fcg",
+                "https://u.y.qq.com/cgi-bin/musicu.fcg" if not sign else "https://u.y.qq.com/cgi-bin/musics.fcg",
                 json=payload,
                 params=params,
                 headers={"User-Agent": user_agent},
@@ -522,6 +530,7 @@ class Client:
                     platform=base_req.platform,
                     is_jce=base_req.is_jce,
                     lazy=True,
+                    sign=base_req.sign,
                 )
                 batch_responses.append((batch_indices, response_task))
 
@@ -632,5 +641,6 @@ class Client:
             credential=request.credential,
             platform=request.platform,
             is_jce=request.is_jce,
+            sign=request.sign,
         )
         return self._parse_cgi_item(self._vaildate_resp(resp, is_jce=request.is_jce)["req_0"], request)
