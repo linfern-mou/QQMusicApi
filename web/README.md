@@ -14,7 +14,7 @@ cd QQMusicApi
 #### 方式 A
 
 ```bash
-uv sync --group web
+uv sync --group web --no-dev
 ```
 
 #### 方式 B
@@ -26,7 +26,7 @@ pip install -r web/requirements.txt
 ### 启动服务
 
 ```bash
-uv run web/run.py
+uv run --no-sync web/run.py
 ```
 
 服务启动后，访问 [http://localhost:8080/docs](http://localhost:8080/docs) 查看自动生成的 API 文档。
