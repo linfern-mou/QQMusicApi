@@ -10,7 +10,7 @@ from tarsio import Struct, TarsDict, field
 class BaseModel(PydanticBaseModel):
     """基础数据模型."""
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow", frozen=True)
+    model_config = ConfigDict(populate_by_name=True, extra="ignore", frozen=True)
 
 
 class CommonParams(BaseModel):
