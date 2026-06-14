@@ -48,15 +48,15 @@ class Singer(Response):
         pmid: 图片 Media ID, 用于拼接歌手头像 URL.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "singerID", "singerId", "SingerID", "singer_id"))
+    id: int = Field(default=0, validation_alias=AliasChoices("id", "singerID", "singerId", "SingerID", "singer_id"))
     mid: str = Field(
         default="",
         validation_alias=AliasChoices("mid", "singerMid", "singerMID", "SingerMid", "singer_mid"),
     )
     name: str = Field(default="", validation_alias=AliasChoices("name", "singerName", "singer_name"))
     title: str = Field(default="", validation_alias=AliasChoices("title", "singerName", "name"))
-    type: int = Field(default=-1, validation_alias=AliasChoices("type", "SingerType", "vt"))
-    uin: int = -1
+    type: int = Field(default=0, validation_alias=AliasChoices("type", "SingerType", "vt"))
+    uin: int = 0
     pmid: str = Field(default="", validation_alias=AliasChoices("pmid", "singerPmid", "singer_pmid", "pic_mid"))
 
     def cover_url(self, size: CoverSize = 300) -> str:
@@ -77,7 +77,7 @@ class Album(Response):
         pmid: 图片 Media ID, 用于拼接封面 URL.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "albumID"))
+    id: int = Field(default=0, validation_alias=AliasChoices("id", "albumID"))
     mid: str = Field(default="", validation_alias=AliasChoices("mid", "albumMid", "albumMID", "albummid"))
     name: str = Field(default="", validation_alias=AliasChoices("name", "albumName"))
     title: str = Field(default="", validation_alias=AliasChoices("title", "albumName", "name"))
@@ -124,20 +124,20 @@ class File(Response):
     """
 
     media_mid: str = ""
-    size_24aac: int = -1
-    size_48aac: int = -1
-    size_96aac: int = -1
-    size_192ogg: int = -1
-    size_192aac: int = -1
-    size_128mp3: int = -1
-    size_320mp3: int = -1
-    size_flac: int = -1
-    size_dts: int = -1
-    size_try: int = -1
-    try_begin: int = -1
-    try_end: int = -1
-    size_96ogg: int = -1
-    size_dolby: int = -1
+    size_24aac: int = 0
+    size_48aac: int = 0
+    size_96aac: int = 0
+    size_192ogg: int = 0
+    size_192aac: int = 0
+    size_128mp3: int = 0
+    size_320mp3: int = 0
+    size_flac: int = 0
+    size_dts: int = 0
+    size_try: int = 0
+    try_begin: int = 0
+    try_end: int = 0
+    size_96ogg: int = 0
+    size_dolby: int = 0
     size_new: list[int] = Field(default_factory=list)
 
 
@@ -154,13 +154,13 @@ class Pay(Response):
         time_free: 免费试听或限免时长信息.
     """
 
-    pay_month: int = -1
-    price_track: int = -1
-    price_album: int = -1
-    pay_play: int = -1
-    pay_down: int = -1
-    pay_status: int = -1
-    time_free: int = -1
+    pay_month: int = 0
+    price_track: int = 0
+    price_album: int = 0
+    pay_play: int = 0
+    pay_down: int = 0
+    pay_status: int = 0
+    time_free: int = 0
 
 
 class MV(Response):
@@ -174,9 +174,9 @@ class MV(Response):
         title: MV 展示标题.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "sid", "mvid", "singerId"))
+    id: int = Field(default=0, validation_alias=AliasChoices("id", "sid", "mvid", "singerId"))
     vid: str = ""
-    type: int = Field(default=-1, validation_alias=AliasChoices("vt", "type"))
+    type: int = Field(default=0, validation_alias=AliasChoices("vt", "type"))
     name: str = Field(default="", validation_alias=AliasChoices("name", "mvname", "title"))
     title: str = Field(default="", validation_alias=AliasChoices("title", "title_main", "name"))
 
@@ -194,7 +194,7 @@ class SongList(Response):
         listennum: 播放量.
     """
 
-    id: int = Field(default=-1, validation_alias=AliasChoices("id", "tid", "dissid"))
+    id: int = Field(default=0, validation_alias=AliasChoices("id", "tid", "dissid"))
     dirid: int = Field(default=0, validation_alias=AliasChoices("dirid", "dirId"))
     title: str = Field(default="", validation_alias=AliasChoices("title", "dissname", "name", "dirName"))
     picurl: str = Field(default="", validation_alias=AliasChoices("picurl", "cover", "logo", "picUrl"))
@@ -241,7 +241,7 @@ class Song(Response):
             - [8]: 臻品音质(银河)试听 MID (QA00).
             - [9]: 纯人声/伴奏轨道 (O801).
             - [11]: 黑胶唱片试听 MID (VA00).
-            - [13-17]: AI 臻品音效 (钢琴、古筝、葫芦丝、曲笛、八音盒).
+            - [1307]: AI 臻品音效 (钢琴、古筝、葫芦丝、曲笛、八音盒).
             - [18]: 多轨版媒体 MID (O601).
             - [19-22]: AI 臻品音效 (唢呐、手碟、电吉他、架子鼓).
             - [23]: 人声伴奏试听 MID (O802).

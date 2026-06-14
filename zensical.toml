@@ -9,10 +9,15 @@ nav = [
   { "主页" = "index.md" },
   { "教程" = [
     { "快速开始" = "tutorial/start.md" },
-    { "Credential" = "tutorial/credential.md" },
-    { "Client" = "tutorial/client.md" },
-    { "Pagination" = "tutorial/pagination.md" },
+    { "登录" = "tutorial/login.md" },
+    { "下载歌曲" = "tutorial/download.md" },
+    { "错误处理" = "tutorial/error-handling.md" },
     { "Web 服务" = "tutorial/web.md" },
+    { "概念" = [
+      { "Client" = "tutorial/client.md" },
+      { "Credential" = "tutorial/credential.md" },
+      { "Pagination" = "tutorial/pagination.md" },
+    ] },
   ] },
   { "API 文档" = [
     { "Modules" = [
