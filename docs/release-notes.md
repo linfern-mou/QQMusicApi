@@ -1,4 +1,19 @@
 
+## What's Changed
+
+### 功能更新
+
+* **(web)** 添加 has_sheet 路由 ([9e7a143](https://github.com/L-1124/QQMusicApi/commit/9e7a1439ff597ae43a4ef99d88ec08ee32889b9a)) by [@L-1124](https://github.com/L-1124)
+
+### 文档更新
+
+* 完善快速开始文档并新增多篇核心教程 ([d6143cd](https://github.com/L-1124/QQMusicApi/commit/d6143cdc047ebeb4963b061680a21103ba3d58d4)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.6.6](https://github.com/L-1124/QQMusicApi/compare/v0.6.5..v0.6.6)] - 2026-06-13
 
 ### Bug 修复
@@ -15,6 +30,7 @@
 * **(client)** 支持 zzc 请求签名 ([eb4eb66](https://github.com/L-1124/QQMusicApi/commit/eb4eb66f5c20c2adbe430bbfb11140d0431d48d5)) by [@L-1124](https://github.com/L-1124)
 * **(core)** 支持在使用 allow_error_codes 放行时强制解析模型 ([fac2a71](https://github.com/L-1124/QQMusicApi/commit/fac2a71bfb2f2ea700d59215a439fc65b40461f2)) by [@L-1124](https://github.com/L-1124)
 * **(core)** 支持通过 override_comm 彻底替代通用请求载荷 ([72edb4f](https://github.com/L-1124/QQMusicApi/commit/72edb4f3cc96a063643f2d58b92d41722ad95e8f)) by [@L-1124](https://github.com/L-1124)
+* **(song)** 添加新的曲谱相关 API和相关示例 ([9c461db](https://github.com/L-1124/QQMusicApi/commit/9c461dbdff15acf804ae047a7bc827cd6b1e7dd5)) by [@L-1124](https://github.com/L-1124)
 * **(song)** 支持 HasSheetMusic 接口检查歌曲是否有曲谱 ([94723ff](https://github.com/L-1124/QQMusicApi/commit/94723ffda911f74d680f7f661e9436bba74c3612)) by [@L-1124](https://github.com/L-1124)
 * **(web)** 补充 requirements.txt ([d806214](https://github.com/L-1124/QQMusicApi/commit/d80621477635f6e0ad3589116cbb97c75e31dc6c)) by [@L-1124](https://github.com/L-1124)
 
