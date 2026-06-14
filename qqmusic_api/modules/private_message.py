@@ -38,7 +38,10 @@ def _build_message_list_next_params(params: dict[Any, Any], response: PrivateMes
 
 
 class PrivateMessageApi(ApiModule):
-    """私信相关 API 模块类."""
+    """私信相关 API 模块类.
+
+    所有接口固定使用 Android 平台.
+    """
 
     def get_sessions(
         self,

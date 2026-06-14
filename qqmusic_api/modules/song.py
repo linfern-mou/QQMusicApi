@@ -278,6 +278,8 @@ class SongApi(ApiModule):
     def get_detail(self, value: int | str):
         """获取歌曲详细信息.
 
+        固定使用 Web 平台.
+
         Args:
             value: 歌曲 ID 或 MID.
         """

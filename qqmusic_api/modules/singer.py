@@ -202,6 +202,8 @@ class SingerApi(ApiModule):
     def get_info(self, mid: str):
         """获取歌手主页基本信息.
 
+        固定使用 Android 平台.
+
         Args:
             mid: 歌手 MID.
         """

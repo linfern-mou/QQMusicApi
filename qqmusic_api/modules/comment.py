@@ -207,6 +207,8 @@ class CommentApi(ApiModule):
     ):
         """添加评论.
 
+        固定使用 Android 平台.
+
         Args:
             biz_id: 歌曲 ID.
             content: 评论内容.
@@ -234,6 +236,8 @@ class CommentApi(ApiModule):
         credential: Credential | None = None,
     ) -> bool:
         """删除评论.
+
+        固定使用 Android 平台.
 
         Args:
             cm_id: 评论 ID.

@@ -310,6 +310,8 @@ class LoginApi(ApiModule):
     ) -> PhoneAuthCodeResult:
         """发送手机验证码.
 
+        固定使用 Android 平台.
+
         Args:
             phone: 手机号 (int) 或加密手机号 (str).
             country_code: 国家代码, 默认为 86 (中国).
@@ -349,6 +351,8 @@ class LoginApi(ApiModule):
         auth_code: str,
     ) -> Credential:
         """使用手机验证码鉴权.
+
+        固定使用 Android 平台.
 
         Args:
             phone: 手机号 (int) 或加密手机号 (str).

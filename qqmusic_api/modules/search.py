@@ -146,6 +146,8 @@ class SearchApi(ApiModule):
     ):
         """类型搜索.
 
+        固定使用 Android 平台.
+
         Args:
             keyword: 关键词.
             search_type: 搜索类型.
