@@ -4,6 +4,7 @@ import binascii
 import hashlib
 import random
 import string
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
@@ -85,6 +86,7 @@ class Device:
     vendor_os_name: str = "qmapi"
     qimei: str | None = None
     qimei36: str | None = None
+    qimei_save_time: int | None = None
     session_uid: str | None = None
     session_sid: str | None = None
     session_vkey: str | None = None
@@ -192,4 +194,5 @@ class DeviceManager:
         device = await self.get_device()
         device.qimei = q16
         device.qimei36 = q36
+        device.qimei_save_time = int(time.time())
         await self.save_device()

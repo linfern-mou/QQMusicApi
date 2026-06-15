@@ -63,14 +63,22 @@ class QimeiManager:
 
     async def get_cached(self) -> QimeiResult:
         """获取并缓存当前设备的 QIMEI 信息."""
-        if self._cache is not None:
+        device = await self._device_store.get_device()
+        current_time = int(time())
+        is_expired = device.qimei_save_time is None or (current_time - device.qimei_save_time) >= 86400
+
+        if not is_expired and self._cache is not None:
             return self._cache
 
         async with self._lock:
-            if self._cache is not None:
-                return self._cache
             device = await self._device_store.get_device()
-            if device.qimei and device.qimei36:
+            current_time = int(time())
+            is_expired = device.qimei_save_time is None or (current_time - device.qimei_save_time) >= 86400
+
+            if not is_expired and self._cache is not None:
+                return self._cache
+
+            if not is_expired and device.qimei and device.qimei36:
                 self._cache = QimeiResult(q16=device.qimei, q36=device.qimei36)
                 return self._cache
 
