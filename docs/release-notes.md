@@ -1,18 +1,24 @@
 
-## What's Changed
+## [[0.6.7](https://github.com/L-1124/QQMusicApi/compare/v0.6.6..v0.6.7)] - 2026-06-17
 
 ### 功能更新
 
+* **(login)** 新增登录异常子类和错误码映射 ([0ef9645](https://github.com/L-1124/QQMusicApi/commit/0ef9645806c9778cfa6214dd60fa56644568c276)) by [@jinzhongjia](https://github.com/jinzhongjia) in [#269](https://github.com/L-1124/QQMusicApi/pull/269)
+* **(qimei)** 增加 24 小时过期重新获取逻辑 ([05aed29](https://github.com/L-1124/QQMusicApi/commit/05aed29096dff31b7d0cbb26ccc66ec50da38bdc)) by [@L-1124](https://github.com/L-1124)
 * **(web)** 添加 has_sheet 路由 ([9e7a143](https://github.com/L-1124/QQMusicApi/commit/9e7a1439ff597ae43a4ef99d88ec08ee32889b9a)) by [@L-1124](https://github.com/L-1124)
 
 ### 文档更新
 
+* **(coding)** 重写 API 编写指南，补充开发细节 ([9db46de](https://github.com/L-1124/QQMusicApi/commit/9db46def73ec6c2d9826c4a15bc2eb7ba9ed0f37)) by [@L-1124](https://github.com/L-1124)
+* 为固定请求平台的 API 补充 docstring 说明 ([aba712e](https://github.com/L-1124/QQMusicApi/commit/aba712e56a7485b4184941480c05f370cd53c548)) by [@L-1124](https://github.com/L-1124)
 * 完善快速开始文档并新增多篇核心教程 ([d6143cd](https://github.com/L-1124/QQMusicApi/commit/d6143cdc047ebeb4963b061680a21103ba3d58d4)) by [@L-1124](https://github.com/L-1124)
 
 ### 贡献者
 
 * @L-1124
+* @jinzhongjia [#269](https://github.com/L-1124/QQMusicApi/pull/269)
 * @github-actions[bot]
+* @renovate[bot]
 
 ## [[0.6.6](https://github.com/L-1124/QQMusicApi/compare/v0.6.5..v0.6.6)] - 2026-06-13
 
