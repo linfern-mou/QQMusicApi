@@ -15,6 +15,9 @@
     <a href="https://github.com/l-1124/QQMusicApi/actions/workflows/testing.yml">
         <img src="https://github.com/l-1124/QQMusicApi/actions/workflows/testing.yml/badge.svg?branch=main" alt="Testing">
     </a>
+    <a href="https://deepwiki.com/luren-dc/QQMusicApi">
+        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+    </a>
 </div>
 
 ---
