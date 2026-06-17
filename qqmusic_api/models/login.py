@@ -11,7 +11,14 @@ from ..models.request import Credential
 
 
 class QRCodeLoginEvents(Enum):
-    """二维码登录流程中的状态事件."""
+    """二维码登录流程中的状态事件.
+
+    + DONE: 登录完成,携带凭证信息.
+    + SCAN: 二维码未被扫描,等待扫描中.
+    + CONF: 二维码已被扫描,等待确认中.
+    + TIMEOUT: 二维码过期或登录超时.
+    + REFUSE: 用户拒绝登录.
+    """
 
     DONE = (0, 405)
     SCAN = (66, 408)
@@ -39,7 +46,12 @@ class QRCodeLoginEvents(Enum):
 
 
 class PhoneLoginEvents(Enum):
-    """手机验证码登录状态."""
+    """手机验证码登录状态.
+
+    + SEND: 验证码已发送.
+    + CAPTCHA: 需要滑块验证.
+    + FREQUENCY: 请求过于频繁,请稍后再试.
+    """
 
     SEND = 0
     CAPTCHA = 20276
