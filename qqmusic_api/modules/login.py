@@ -47,6 +47,7 @@ _WX_STATUS_RE = re.compile(r"window\.wx_errcode=(\d+);window\.wx_code='([^']*)'"
 _ERROR_CODE = 1000, 104401, 104400, 20261, 20271, 20272, 20274, 20277, 20278, 20279, 20450, 104604
 
 
+# TODO: 登录和刷新时设置 `deviceName`
 class LoginApi(ApiModule):
     """登录相关的 API."""
 

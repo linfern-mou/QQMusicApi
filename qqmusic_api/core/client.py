@@ -107,7 +107,7 @@ class Client:
 
         self._version_policy: VersionPolicy = DEFAULT_VERSION_POLICY
         self._session_lock = anyio.Lock()
-        self._session_initialized = False
+        self._session_cache: dict[str, Any] | None = None
         self._qimei_manager = QimeiManager(
             device_store=self._device_store,
             app_version=self._version_policy.get_qimei_app_version(),
@@ -116,12 +116,28 @@ class Client:
         )
 
     async def _ensure_session(self) -> None:
+        """获取 `Platform.ANDROID` 会话信息."""
+        device = await self._device_store.get_device()
+        current_time = int(time.time())
+        is_expired = device.session_save_time is None or (current_time - device.session_save_time) >= 86400
+
+        if not is_expired and self._session_cache is not None:
+            return
+
         async with self._session_lock:
-            if self._session_initialized:
-                return
             device = await self._device_store.get_device()
-            if device.session_uid and device.session_sid:
-                self._session_initialized = True
+            current_time = int(time.time())
+            is_expired = device.session_save_time is None or (current_time - device.session_save_time) >= 86400
+
+            if not is_expired and self._session_cache is not None:
+                return
+
+            if not is_expired and device.session_uid and device.session_sid:
+                self._session_cache = {
+                    "uid": device.session_uid,
+                    "sid": device.session_sid,
+                    "vkey": device.session_vkey,
+                }
                 return
 
             finalcomm = self._version_policy.build_comm(
@@ -168,8 +184,13 @@ class Client:
             device.session_uid = str(session_data["uid"])
             device.session_sid = session_data["sid"]
             device.session_vkey = session_data.get("vkey")
+            device.session_save_time = current_time
+            self._session_cache = {
+                "uid": device.session_uid,
+                "sid": device.session_sid,
+                "vkey": device.session_vkey,
+            }
             await self._device_store.save_device()
-            self._session_initialized = True
 
     @cached_property
     def comment(self) -> "CommentApi":

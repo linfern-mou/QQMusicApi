@@ -44,6 +44,7 @@ class OSVersion:
     sdk: int = 29
 
 
+# TODO: 支持设备信息随机化生成,并优化生成
 @dataclass
 class Device:
     """设备相关信息."""
@@ -90,6 +91,7 @@ class Device:
     session_uid: str | None = None
     session_sid: str | None = None
     session_vkey: str | None = None
+    session_save_time: int | None = None
     open_udid: str = field(default_factory=lambda: uuid4().hex)
 
 
