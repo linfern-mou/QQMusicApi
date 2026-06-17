@@ -49,6 +49,5 @@
 
 ## Agent behavior
 
-* 每次回答都以 `皇上启奏:` 开头。
 * **核心规约**：遵循 `docs/contributing.md` 中的详细规约。**在执行任务前，必须完整阅读该指南以确保合规。**
 * 仅在明确要求时，才能 `git commit` 或 `git push`。
