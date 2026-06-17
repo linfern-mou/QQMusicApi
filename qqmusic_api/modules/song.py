@@ -128,6 +128,7 @@ class SpecialSongFileType(BaseSongFileType):
     """特殊歌曲文件类型.
 
     + TRY: 歌曲试听. vs[0].
+    + TRY_OGG_640: SQ 无损试听,size_new[5]
     + ACCOM: 纯人声/伴奏轨道. vs[9].
     + MULTI: 多轨文件. vs[18].
     + PIANO: AI演奏-钢琴. vs[13].
@@ -144,6 +145,7 @@ class SpecialSongFileType(BaseSongFileType):
     """
 
     TRY = ("RS02", ".mp3")
+    TRY_OGG_640 = ("O802", ".ogg")
     ACCOM = ("O801", ".ogg")
     MULTI = ("O601", ".ogg")
     PIANO = ("AI01", ".ogg")
