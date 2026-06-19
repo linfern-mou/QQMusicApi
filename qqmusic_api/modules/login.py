@@ -182,6 +182,19 @@ class LoginApi(ApiModule):
         except LoginError as exc:
             raise CredentialRefreshError(message=exc.message, code=exc.code, data=exc.data) from exc
 
+    async def logout(self, credential: Credential | None = None) -> None:
+        """登出当前账号."""
+        target = credential or self._client.credential
+        self._require_login(target)
+        await self._build_request(
+            module="music.login.LoginServer",
+            method="Logout",
+            param={},
+            credential=target,
+            allow_error_codes=_ERROR_CODE,
+        )
+        self._client.credential = Credential()  # 清除凭证
+
     async def get_qrcode(self, login_type: QRLoginType) -> QR:
         """获取指定类型的登录二维码.
 
