@@ -49,6 +49,11 @@ documentation = "https://l-1124.github.io/QQMusicApi/"
 homepage = "https://l-1124.github.io/QQMusicApi/"
 repository = "https://github.com/l-1124/QQMusicApi"
 
+[project.optional-dependencies]
+upload = [
+    "cos-python-sdk-v5>=1.9.44",
+]
+
 [dependency-groups]
 dev = [
   "tarsio[cli]>=0.5.1",
@@ -56,6 +61,7 @@ dev = [
   { include-group = "docs" },
   { include-group = "linting" },
   { include-group = "testing" },
+  { include-group = "helper" },
 ]
 docs = [
   "docstring-inheritance>=3.0.0",
@@ -64,6 +70,9 @@ docs = [
   "mkdocstrings>=1.0.3",
   "mkdocstrings-python>=2.0.3",
   "zensical>=0.0.30",
+]
+helper = [
+    "cos-python-sdk-v5>=1.9.44",
 ]
 linting = [
   "prek>=0.3.5",

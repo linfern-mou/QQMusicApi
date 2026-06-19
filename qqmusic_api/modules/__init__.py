@@ -2,6 +2,7 @@
 
 from .album import AlbumApi
 from .comment import CommentApi
+from .helper import HelperApi
 from .login import LoginApi
 from .lyric import LyricApi
 from .mv import MvApi
@@ -17,6 +18,7 @@ from .user import UserApi
 __all__ = [
     "AlbumApi",
     "CommentApi",
+    "HelperApi",
     "LoginApi",
     "LyricApi",
     "MvApi",

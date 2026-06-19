@@ -35,6 +35,7 @@ from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
 if TYPE_CHECKING:
     from ..modules.album import AlbumApi
     from ..modules.comment import CommentApi
+    from ..modules.helper import HelperApi
     from ..modules.login import LoginApi
     from ..modules.lyric import LyricApi
     from ..modules.mv import MvApi
@@ -192,6 +193,13 @@ class Client:
                 "vkey": device.session_vkey,
             }
             await self._device_store.save_device()
+
+    @cached_property
+    def helper(self) -> "HelperApi":
+        """辅助模块."""
+        from ..modules.helper import HelperApi
+
+        return HelperApi(self)
 
     @cached_property
     def comment(self) -> "CommentApi":
