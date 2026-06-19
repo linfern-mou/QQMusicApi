@@ -1,11 +1,12 @@
 """用户相关 API."""
 
-from typing import ClassVar
+from typing import Any, ClassVar, cast
 
-from ..core.pagination import OffsetStrategy, PagerMeta, PageStrategy, ResponseAdapter
+from ..core.pagination import MultiFieldContinuationStrategy, OffsetStrategy, PagerMeta, PageStrategy, ResponseAdapter
 from ..models.request import Credential
 from ..models.songlist import GetSonglistDetailResponse
 from ..models.user import (
+    DislikeListData,
     UserCreatedSonglistResponse,
     UserFavAlbumResponse,
     UserFavMvResponse,
@@ -358,3 +359,119 @@ class UserApi(ApiModule):
             credential=credential,
             response_model=UserMusicGeneResponse,
         )
+
+    def get_dislike_list(
+        self,
+        cmd: int = 3,
+        page: int = 1,
+        lastid: int = 0,
+        *,
+        credential: Credential | None = None,
+    ):
+        """获取用户不喜欢列表.
+
+        Args:
+            cmd:    类型, 2=歌手 / 3=歌曲 / 4=风格.
+            page:   页码.
+            lastid: 分页游标.
+            credential: 登录凭证.
+        """
+        lastid_fields = {2: "SingersLastid", 3: "SongLastid", 4: "StyleLastid"}
+        param: dict[str, Any] = {"Cmd": cmd, "Page": page}
+        if lastid:
+            param[lastid_fields[cmd]] = lastid
+        return self._build_request(
+            module="music.feedback.FeedbackBlack",
+            method="GetDislikeList",
+            param=param,
+            credential=credential,
+            response_model=DislikeListData,
+            sign=True,
+            pager_meta=PagerMeta(
+                strategy=MultiFieldContinuationStrategy(
+                    build_next_params=lambda p, r, a: (
+                        {
+                            **cast("dict[str, Any]", p),
+                            "Page": cast("dict[str, Any]", p)["Page"] + 1,
+                            "SongLastid": r.songs[-1].id,
+                            "SingersLastid": r.singers[-1].id,
+                            "StyleLastid": r.styles[-1].id,
+                        }
+                        if (r.singers or r.songs or r.styles)
+                        else None
+                    ),
+                ),
+                adapter=ResponseAdapter(),
+            ),
+        )
+
+    async def add_dislike(self, id_type: int, values: list[int], *, credential: Credential | None = None) -> bool:
+        """添加不喜欢.
+
+        Args:
+            id_type: 类型, 1=歌曲 / 2=歌手 / 3=风格.
+            values:  对应的 ID 列表.
+            credential: 登录凭证.
+
+        Returns:
+            是否操作成功.
+        """
+        keys = {1: "Songs", 2: "Singers", 3: "Styles"}
+        result = await self._build_request(
+            module="music.feedback.FeedbackBlack",
+            method="AddDislike",
+            param={keys[id_type]: [{"ID": str(vid), "IdType": id_type} for vid in values]},
+            credential=credential,
+        )
+        return result.get("Retcode") == 0
+
+    async def cancel_dislike(
+        self,
+        id_type: int,
+        values: list[int],
+        *,
+        credential: Credential | None = None,
+    ) -> bool:
+        """取消不喜欢.
+
+        Args:
+            id_type:   类型, 1=歌曲 / 2=歌手 / 3=风格.
+            values:    对应 ID 列表.
+            credential: 登录凭证.
+
+        Returns:
+            是否操作成功.
+        """
+        keys = {1: "Songs", 2: "Singers", 3: "Styles"}
+        result = await self._build_request(
+            module="music.feedback.FeedbackBlack",
+            method="CancelDislike",
+            param={keys[id_type]: [{"ID": str(vid), "IdType": id_type} for vid in (values or [])]},
+            credential=credential,
+        )
+        return result.get("Retcode") == 0
+
+    async def cancel_all_dislike_song(self, *, credential: Credential | None = None) -> bool:
+        """清空所有不喜欢歌曲.
+
+        Args:
+            credential: 登录凭证.
+
+        Returns:
+            是否操作成功.
+        """
+        result = await self._build_request(
+            module="music.feedback.FeedbackBlack",
+            method="CancelAllDislike",
+            param={"ISOnlyGetToken": True},
+            preserve_bool=True,
+            credential=credential,
+        )
+        token = result.get("Token", "")
+        result = await self._build_request(
+            module="music.feedback.FeedbackBlack",
+            method="CancelAllDislike",
+            param={"DelType": 3, "Token": token},
+            credential=credential,
+        )
+        return result.get("Retcode") == 0

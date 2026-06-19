@@ -5,7 +5,7 @@ from typing import Any
 from pydantic import AliasChoices, Field
 
 from .base import MV, Album, Singer, SongList
-from .request import Response
+from .request import BaseModel, Response
 
 
 class UserPlaylistSummary(SongList):
@@ -477,3 +477,25 @@ class UserFavMvResponse(Response):
     sub_code: int = Field(validation_alias=AliasChoices("subCode", "subcode"))
     msg: str
     mv_list: list[UserFavMvItem] = Field(alias="mvlist")
+
+
+class DislikeItem(BaseModel):
+    """不喜欢列表中的单个条目."""
+
+    id: str = Field(alias="ID")
+    name: str = Field(alias="Name")
+    img: str = Field(default="", alias="Img")
+    id_type: int = Field(alias="IdType")
+    time: int = Field(alias="Time")
+
+
+class DislikeListData(BaseModel):
+    """GetDislikeList 响应数据."""
+
+    retcode: int = Field(alias="Retcode")
+    msg: str = Field(default="", alias="Msg")
+    singers: list[DislikeItem] = Field(default_factory=list, alias="Singers")
+    songs: list[DislikeItem] = Field(default_factory=list, alias="Songs")
+    styles: list[DislikeItem] = Field(default_factory=list, alias="Styles")
+    page: int = Field(alias="Page")
+    token: str = Field(default="", alias="Token")
