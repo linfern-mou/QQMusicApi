@@ -480,7 +480,15 @@ class UserFavMvResponse(Response):
 
 
 class DislikeItem(BaseModel):
-    """不喜欢列表中的单个条目."""
+    """不喜欢列表中的单个条目.
+
+    Attributes:
+        id:     不喜欢实体的 ID (歌手ID、歌曲ID等).
+        name:   不喜欢实体的名称.
+        img:    不喜欢实体的图片/封面 URL.
+        id_type: 实体类型标识.
+        time:   添加到不喜欢列表的时间戳.
+    """
 
     id: str = Field(alias="ID")
     name: str = Field(alias="Name")
@@ -490,7 +498,17 @@ class DislikeItem(BaseModel):
 
 
 class DislikeListData(BaseModel):
-    """GetDislikeList 响应数据."""
+    """GetDislikeList 响应数据.
+
+    Attributes:
+        retcode: 业务返回码.
+        msg:     业务返回信息.
+        singers: 不喜欢的歌手列表.
+        songs:   不喜欢的歌曲列表.
+        styles:  不喜欢的风格/流派列表.
+        page:    当前页码.
+        token:   翻页 Token.
+    """
 
     retcode: int = Field(alias="Retcode")
     msg: str = Field(default="", alias="Msg")
