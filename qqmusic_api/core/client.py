@@ -27,6 +27,7 @@ from .exceptions import (
     HTTPError,
     NetworkError,
     RatelimitedError,
+    SignatureRequiredError,
 )
 from .request import Request, RequestResultT, _build_result
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy
@@ -625,8 +626,9 @@ class Client:
                 "RequestResultT",
                 {"code": code, "data": data} if request.is_jce else item,
             )
-
         match code:
+            case 2000:
+                raise SignatureRequiredError(code=code, data=data)
             case 2001:
                 raise RatelimitedError(code=code, data=data)
             case 1000 | 104401 | 104400:

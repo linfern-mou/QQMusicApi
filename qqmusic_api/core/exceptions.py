@@ -19,6 +19,7 @@ __all__ = [
     "LoginRateLimitError",
     "NetworkError",
     "RatelimitedError",
+    "SignatureRequiredError",
 ]
 
 
@@ -202,3 +203,10 @@ class LoginRateLimitError(LoginError):
         data: Any = None,
     ):
         super().__init__(message, code=code, data=data)
+
+
+class SignatureRequiredError(CgiApiException):
+    """请求需要签名 (code=2000)."""
+
+    def __init__(self, *, code: int = 2000, data: Any = None) -> None:
+        super().__init__("请求需要签名", code=code, data=data)
