@@ -80,12 +80,12 @@ class SonglistApi(ApiModule):
             dirname: 歌单名称.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.musicasset.PlaylistBaseWrite",
             method="AddPlaylist",
             param={"dirName": dirname},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=CreateDeleteSonglistResp,
         )
 
@@ -99,12 +99,12 @@ class SonglistApi(ApiModule):
             dirid: 歌单目录 ID.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.musicasset.PlaylistBaseWrite",
             method="DelPlaylist",
             param={"dirId": dirid},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=CreateDeleteSonglistResp,
         )
 
@@ -127,13 +127,13 @@ class SonglistApi(ApiModule):
         Returns:
             操作成功与否 (歌曲已存在于歌单中也返回 True).
         """
-        target_credential = self._require_login(credential)
         try:
             data = await self._build_request(
                 module="music.musicasset.PlaylistDetailWrite",
                 method="AddSonglist",
                 param=_build_songlist_oper_param(dirid=dirid, song_info=song_info, tid=tid),
-                credential=target_credential,
+                credential=credential,
+                require_login=True,
                 preserve_bool=True,
             )
             return data.get("retCode") == 0
@@ -161,14 +161,14 @@ class SonglistApi(ApiModule):
         Returns:
             操作成功与否 (歌曲不存在于歌单中也返回 True).
         """
-        target_credential = self._require_login(credential)
         songs = song_info or []
         try:
             data = await self._build_request(
                 module="music.musicasset.PlaylistDetailWrite",
                 method="DelSonglist",
                 param=_build_songlist_oper_param(dirid=dirid, song_info=songs, tid=tid),
-                credential=target_credential,
+                credential=credential,
+                require_login=True,
             )
             return data.get("retCode") == 0
         except CgiApiException as e:

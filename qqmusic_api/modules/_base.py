@@ -94,6 +94,7 @@ class ApiModule:
         pager_meta: None = None,
         refresh_meta: None = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "Request[dict[str, Any]]": ...
 
     @overload
@@ -115,6 +116,7 @@ class ApiModule:
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "PaginatedRequest[dict[str, Any]]": ...
 
     @overload
@@ -136,6 +138,7 @@ class ApiModule:
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
         sign: bool = False,
+        require_login: bool = False,
     ) -> "RefreshableRequest[dict[str, Any]]": ...
 
     @overload
@@ -157,6 +160,7 @@ class ApiModule:
         pager_meta: None = None,
         refresh_meta: None = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "Request[TarsDict]": ...
 
     @overload
@@ -178,6 +182,7 @@ class ApiModule:
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "PaginatedRequest[TarsDict]": ...
 
     @overload
@@ -199,6 +204,7 @@ class ApiModule:
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
         sign: bool = False,
+        require_login: bool = False,
     ) -> "RefreshableRequest[TarsDict]": ...
 
     @overload
@@ -220,6 +226,7 @@ class ApiModule:
         pager_meta: None = None,
         refresh_meta: None = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "Request[ResponseModel]": ...
 
     @overload
@@ -241,6 +248,7 @@ class ApiModule:
         pager_meta: "PagerMeta",
         refresh_meta: None = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "PaginatedRequest[ResponseModel]": ...
 
     @overload
@@ -262,6 +270,7 @@ class ApiModule:
         pager_meta: None = None,
         refresh_meta: "RefreshMeta",
         sign: bool = False,
+        require_login: bool = False,
     ) -> "RefreshableRequest[ResponseModel]": ...
 
     def _build_request(
@@ -282,6 +291,7 @@ class ApiModule:
         pager_meta: "PagerMeta | None" = None,
         refresh_meta: "RefreshMeta | None" = None,
         sign: bool = False,
+        require_login: bool = False,
     ) -> "Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]":
         """构建可 await 的请求描述符.
 
@@ -301,17 +311,22 @@ class ApiModule:
             pager_meta: 分页组件元数据. 提供后则升级为 `PaginatedRequest`.
             refresh_meta: 刷新组件元数据. 提供后则升级为 `RefreshableRequest`.
             sign: 是否对请求进行签名.
+            require_login: 为 True 时, 在构建请求前校验凭证有效性.
 
         Returns:
             组装好的 Request 或衍生子类描述符.
 
         Raises:
             ValueError: 如果同时提供 pager_meta 和 refresh_meta 时抛出.
+            CredentialInvalidError: 如果 require_login 为 True 且凭证无效时抛出.
         """
         from ..core.request import PaginatedRequest, RefreshableRequest, Request
 
         if pager_meta is not None and refresh_meta is not None:
             raise ValueError("pager_meta 与 refresh_meta 不能同时声明")
+
+        if require_login:
+            credential = self._require_login(credential)
 
         common_kwargs = {
             "_client": self._client,

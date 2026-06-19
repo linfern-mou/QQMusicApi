@@ -130,8 +130,7 @@ class LoginApi(ApiModule):
         Returns:
             Credential: 刷新后的新凭证对象.
         """
-        target = credential or self._client.credential
-        self._require_login(target)
+        target = self._require_login(credential)
         match target.login_type:
             case 1:
                 param = {
@@ -184,8 +183,7 @@ class LoginApi(ApiModule):
 
     async def logout(self, credential: Credential | None = None) -> None:
         """登出当前账号."""
-        target = credential or self._client.credential
-        self._require_login(target)
+        target = self._require_login(credential)
         await self._build_request(
             module="music.login.LoginServer",
             method="Logout",

@@ -65,12 +65,12 @@ class UserApi(ApiModule):
         Args:
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="VipLogin.VipLoginInter",
             method="vip_login_base",
             param={},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=UserVipInfoResponse,
         )
 
@@ -90,12 +90,12 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.concern.RelationList",
             method="GetFollowSingerList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=UserRelationListResponse,
             pager_meta=PagerMeta(
                 strategy=OffsetStrategy(offset_key="From", page_size_key="Size"),
@@ -123,12 +123,12 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.concern.RelationList",
             method="GetFansList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=UserRelationListResponse,
             pager_meta=PagerMeta(
                 strategy=OffsetStrategy(offset_key="From", page_size_key="Size"),
@@ -154,12 +154,12 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.homepage.Friendship",
             method="GetFriendList",
             param={"PageSize": num, "Page": page - 1},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=UserFriendListResponse,
             pager_meta=PagerMeta(
                 strategy=PageStrategy(page_key="Page", page_size=num, start_page=page - 1),
@@ -183,12 +183,12 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.concern.RelationList",
             method="GetFollowUserList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=UserRelationListResponse,
             pager_meta=PagerMeta(
                 strategy=OffsetStrategy(offset_key="From", page_size_key="Size"),
@@ -336,12 +336,12 @@ class UserApi(ApiModule):
             num: 每页数量.
             credential: 登录凭证.
         """
-        target_credential = self._require_login(credential)
         return self._build_request(
             module="music.musicasset.MVFavRead",
             method="getMyFavMV_v2",
             param={"encuin": euin, "pagesize": num, "num": page - 1},
-            credential=target_credential,
+            credential=credential,
+            require_login=True,
             response_model=UserFavMvResponse,
         )
 
@@ -385,6 +385,7 @@ class UserApi(ApiModule):
             method="GetDislikeList",
             param=param,
             credential=credential,
+            require_login=True,
             response_model=DislikeListData,
             sign=True,
             pager_meta=PagerMeta(
@@ -422,6 +423,7 @@ class UserApi(ApiModule):
             method="AddDislike",
             param={keys[id_type]: [{"ID": str(vid), "IdType": id_type} for vid in values]},
             credential=credential,
+            require_login=True,
         )
         return result.get("Retcode") == 0
 
@@ -448,6 +450,7 @@ class UserApi(ApiModule):
             method="CancelDislike",
             param={keys[id_type]: [{"ID": str(vid), "IdType": id_type} for vid in (values or [])]},
             credential=credential,
+            require_login=True,
         )
         return result.get("Retcode") == 0
 
@@ -466,6 +469,7 @@ class UserApi(ApiModule):
             param={"ISOnlyGetToken": True},
             preserve_bool=True,
             credential=credential,
+            require_login=True,
         )
         token = result.get("Token", "")
         result = await self._build_request(
@@ -473,5 +477,6 @@ class UserApi(ApiModule):
             method="CancelAllDislike",
             param={"DelType": 3, "Token": token},
             credential=credential,
+            require_login=True,
         )
         return result.get("Retcode") == 0
