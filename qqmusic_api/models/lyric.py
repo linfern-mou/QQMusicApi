@@ -11,14 +11,12 @@ class GetLyricResponse(Response):
 
     Attributes:
         song_id: 歌曲 ID.
-        crypt: 是否需要按当前模型约定进行解密.
         lyric: 原始歌词内容.
         trans: 翻译歌词内容.
         roma: 罗马音歌词内容.
     """
 
     song_id: int = Field(alias="songID")
-    crypt: int
     lyric: str
     trans: str = ""
     roma: str = ""

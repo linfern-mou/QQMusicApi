@@ -13,9 +13,7 @@ async def test_get_lyric_by_id(client: Client) -> None:
 async def test_get_lyric_with_qrc(client: Client) -> None:
     """测试获取逐字歌词."""
     result = await client.lyric.get_lyric(value=100, qrc=True)
-    assert result.crypt in (0, 1)
-    if result.crypt == 1:
-        assert result.lyric
+    assert result.lyric
 
 
 async def test_get_lyric_with_trans(client: Client) -> None:
@@ -39,5 +37,3 @@ async def test_get_lyric_with_all_options(client: Client) -> None:
         roma=True,
     )
     assert result.lyric
-    if result.crypt == 1:
-        assert result.lyric
