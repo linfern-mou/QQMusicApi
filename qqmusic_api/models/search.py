@@ -38,7 +38,7 @@ class SongSearch(Song):
     hotness_desc: str
     vec_hotness: list[dict[str, Any]] = Field()
     content: str
-    new_status: int = Field(alias="newStatus")
+    new_status: int = Field(validation_alias="newStatus")
     protect: int
     relatedword_group: dict[str, Any] = Field()
 
@@ -115,10 +115,10 @@ class SingerSearch(Singer):
         subtitle: 补充描述文案.
     """
 
-    pic: str = Field(alias="singerPic")
-    song_num: int = Field(alias="songNum")
-    album_num: int = Field(alias="albumNum")
-    mv_num: int = Field(alias="mvNum")
+    pic: str = Field(validation_alias="singerPic")
+    song_num: int = Field(validation_alias="songNum")
+    album_num: int = Field(validation_alias="albumNum")
+    mv_num: int = Field(validation_alias="mvNum")
     subtitle: str
 
 
@@ -135,13 +135,13 @@ class MvSearch(MV):
         singer_name: 歌手名称.
     """
 
-    pic: str = Field(alias="pic")
-    play_count: int = Field(alias="play_count")
+    pic: str = Field(validation_alias="pic")
+    play_count: int = Field(validation_alias="play_count")
     duration: int
-    publish_date: str = Field(alias="publish_date")
-    singer_id: int = Field(alias="singerid")
-    singer_mid: str = Field(alias="singermid")
-    singer_name: str = Field(alias="singername")
+    publish_date: str = Field(validation_alias="publish_date")
+    singer_id: int = Field(validation_alias="singerid")
+    singer_mid: str = Field(validation_alias="singermid")
+    singer_name: str = Field(validation_alias="singername")
 
 
 T = TypeVar("T")
@@ -171,8 +171,8 @@ class RelatedSearchWord(Response):
         search: 相关搜索词实际搜索关键词.
     """
 
-    display: str = Field(alias="display_word")
-    search: str = Field(alias="search_word")
+    display: str = Field(validation_alias="display_word")
+    search: str = Field(validation_alias="search_word")
 
 
 class SearchByTypeResponse(Response):

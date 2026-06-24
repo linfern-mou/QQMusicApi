@@ -16,7 +16,7 @@ class GetLyricResponse(Response):
         roma: 罗马音歌词内容.
     """
 
-    song_id: int = Field(alias="songID")
+    song_id: int = Field(validation_alias="songID")
     lyric: str
     trans: str = ""
     roma: str = ""

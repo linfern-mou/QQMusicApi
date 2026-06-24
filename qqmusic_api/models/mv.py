@@ -87,9 +87,9 @@ class MvUrlItem(Response):
     code: int
     filetype: int
     m3u8: str
-    new_file_type: int = Field(alias="newFileType")
+    new_file_type: int = Field(validation_alias="newFileType")
     format: int
-    file_size: int = Field(alias="fileSize")
+    file_size: int = Field(validation_alias="fileSize")
 
 
 class MvUrlSet(Response):

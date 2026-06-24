@@ -32,7 +32,7 @@ class UrlinfoItem(Response):
                 `104004`(VKey 获取失败)、`104013`(播放设备受限).
     """
 
-    mid: str = Field(alias="songmid")
+    mid: str = Field(validation_alias="songmid")
     filename: str
     purl: str
     vkey: str
@@ -49,7 +49,7 @@ class GetSongUrlsResponse(Response):
     """
 
     expiration: int = 0
-    data: list[UrlinfoItem] = Field(default_factory=list, alias="midurlinfo")
+    data: list[UrlinfoItem] = Field(default_factory=list, validation_alias="midurlinfo")
 
 
 class ContentItem(Response):
@@ -89,7 +89,7 @@ class GetSongDetailResponse(Response):
     lan: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.lan.content"})
     pub_time: list[ContentItem] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.info.pub_time.content"})
     extras: dict[str, str] = Field(default_factory=dict)
-    track: Song = Field(alias="track_info")
+    track: Song = Field(validation_alias="track_info")
 
 
 class SimilarSongGroup(Response):
@@ -116,7 +116,7 @@ class GetSimilarSongResponse(Response):
         song: 按卡片分组组织的相似歌曲结果.
     """
 
-    tag: list[dict] = Field(default_factory=list, alias="songTagInfoList")
+    tag: list[dict] = Field(default_factory=list, validation_alias="songTagInfoList")
     song: list[SimilarSongGroup] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.vecSongNew"})
 
 
@@ -133,10 +133,10 @@ class SongLabel(Response):
     """
 
     id: int
-    tag_txt: str = Field(alias="tagTxt")
-    tag_icon: str = Field(alias="tagIcon")
-    tag_url: str = Field(alias="tagUrl")
-    tag_type: int = Field(alias="tagType")
+    tag_txt: str = Field(validation_alias="tagTxt")
+    tag_icon: str = Field(validation_alias="tagIcon")
+    tag_url: str = Field(validation_alias="tagUrl")
+    tag_type: int = Field(validation_alias="tagType")
     species: int
 
 
@@ -168,7 +168,7 @@ class GetRelatedSonglistResponse(Response):
         songlist: 按推荐分组展开后的相关歌单列表.
     """
 
-    has_more: int = Field(alias="hasMore")
+    has_more: int = Field(validation_alias="hasMore")
     songlist: list[RelatedPlaylist] = Field(
         default_factory=list,
         json_schema_extra={"jsonpath": "$.vecPlaylistNew[*].playlists[*]"},
@@ -206,8 +206,8 @@ class GetRelatedMvResponse(Response):
         mv: 当前返回的相关 MV 列表.
     """
 
-    has_more: int = Field(alias="hasmore")
-    mv: list[RelatedMv] = Field(default_factory=list, alias="list")
+    has_more: int = Field(validation_alias="hasmore")
+    mv: list[RelatedMv] = Field(default_factory=list, validation_alias="list")
 
 
 class GetOtherVersionResponse(Response):
@@ -217,7 +217,7 @@ class GetOtherVersionResponse(Response):
         data: 其他版本歌曲列表.
     """
 
-    data: list[Song] = Field(default_factory=list, alias="versionList")
+    data: list[Song] = Field(default_factory=list, validation_alias="versionList")
 
 
 class SongProducer(Response):
@@ -232,12 +232,12 @@ class SongProducer(Response):
         follow: 关注状态.
     """
 
-    type: int = Field(alias="Type")
-    name: str = Field(alias="Name")
-    icon: str = Field(alias="Icon")
-    scheme: str = Field(alias="Scheme")
-    singer_mid: str = Field(alias="SingerMid")
-    follow: int = Field(alias="Follow")
+    type: int = Field(validation_alias="Type")
+    name: str = Field(validation_alias="Name")
+    icon: str = Field(validation_alias="Icon")
+    scheme: str = Field(validation_alias="Scheme")
+    singer_mid: str = Field(validation_alias="SingerMid")
+    follow: int = Field(validation_alias="Follow")
 
 
 class SongProducerGroup(Response):
@@ -249,9 +249,9 @@ class SongProducerGroup(Response):
         type: 分组类型.
     """
 
-    title: str = Field(alias="Title")
-    producers: list[SongProducer] = Field(alias="Producers")
-    type: int = Field(alias="Type")
+    title: str = Field(validation_alias="Title")
+    producers: list[SongProducer] = Field(validation_alias="Producers")
+    type: int = Field(validation_alias="Type")
 
 
 class GetProducerResponse(Response):
@@ -262,8 +262,8 @@ class GetProducerResponse(Response):
         reinforce_msg: 附带的摘要说明文案.
     """
 
-    data: list[SongProducerGroup] = Field(default_factory=list, alias="Lst")
-    reinforce_msg: str = Field(default="", alias="ReinforceMsg")
+    data: list[SongProducerGroup] = Field(default_factory=list, validation_alias="Lst")
+    reinforce_msg: str = Field(default="", validation_alias="ReinforceMsg")
 
 
 class SheetMusic(Response):
@@ -296,30 +296,30 @@ class SheetMusic(Response):
         sheet_file: 曲谱文件地址.
     """
 
-    score_mid: str = Field(alias="scoreMID")
-    score_name: str = Field(alias="scoreName")
-    pic_urls: Annotated[list[str], NoneToEmptyList] = Field(default_factory=list, alias="picURLs")
+    score_mid: str = Field(validation_alias="scoreMID")
+    score_name: str = Field(validation_alias="scoreName")
+    pic_urls: Annotated[list[str], NoneToEmptyList] = Field(default_factory=list, validation_alias="picURLs")
     version: str
     tonality: int
-    score_type: int = Field(alias="scoreType")
-    score_type_text: str = Field(alias="strScoreType")
+    score_type: int = Field(validation_alias="scoreType")
+    score_type_text: str = Field(validation_alias="strScoreType")
     uploader: str
-    view_frequency: int = Field(alias="viewFrequency")
+    view_frequency: int = Field(validation_alias="viewFrequency")
     tonality2: int
     author: str
     composer: str
     lyricist: str
     singer: str
     performer: str
-    song_mid: str = Field(alias="songMID")
-    sub_name: str = Field(alias="subName")
+    song_mid: str = Field(validation_alias="songMID")
+    sub_name: str = Field(validation_alias="subName")
     url: str
-    album_url: str = Field(alias="albumURL")
-    ins_type: int = Field(alias="insType")
-    ins_type_text: str = Field(alias="strInsType")
-    cover_url: str = Field(alias="coverURL")
+    album_url: str = Field(validation_alias="albumURL")
+    ins_type: int = Field(validation_alias="insType")
+    ins_type_text: str = Field(validation_alias="strInsType")
+    cover_url: str = Field(validation_alias="coverURL")
     difficulty: str
-    sheet_file: str = Field(alias="sheetFile")
+    sheet_file: str = Field(validation_alias="sheetFile")
 
 
 class GetSheetResponse(Response):
@@ -331,7 +331,7 @@ class GetSheetResponse(Response):
     """
 
     result: Annotated[list[SheetMusic], NoneToEmptyList]
-    total_map: dict[str, int] = Field(alias="totalMap")
+    total_map: dict[str, int] = Field(validation_alias="totalMap")
 
 
 class HasSheetMusicResponse(Response):
@@ -345,11 +345,11 @@ class HasSheetMusicResponse(Response):
         has_chong_chong: 是否有虫虫钢琴谱.
     """
 
-    has_guitar: bool = Field(alias="hasGuitar")
-    has_more: bool = Field(alias="hasMore")
-    has_ldy: bool = Field(alias="hasLDY")
-    has_qrcx: bool = Field(alias="hasQRCX")
-    has_chong_chong: bool = Field(alias="hasChongChong")
+    has_guitar: bool = Field(validation_alias="hasGuitar")
+    has_more: bool = Field(validation_alias="hasMore")
+    has_ldy: bool = Field(validation_alias="hasLDY")
+    has_qrcx: bool = Field(validation_alias="hasQRCX")
+    has_chong_chong: bool = Field(validation_alias="hasChongChong")
 
 
 class GetFavNumResponse(Response):
@@ -360,8 +360,8 @@ class GetFavNumResponse(Response):
         show: 对应的收藏人数展示文案映射.
     """
 
-    numbers: dict[str, int] = Field(alias="m_numbers")
-    show: dict[str, str] = Field(alias="m_show")
+    numbers: dict[str, int] = Field(validation_alias="m_numbers")
+    show: dict[str, str] = Field(validation_alias="m_show")
 
 
 class CdnDispatchSipInfo(Response):
@@ -380,8 +380,8 @@ class CdnDispatchSipInfo(Response):
     quic: int = 0
     ipstack: int = 0
     quichost: str = ""
-    plaintext_quic: int = Field(default=0, alias="plaintextquic")
-    encrypt_quic: int = Field(default=0, alias="encryptquic")
+    plaintext_quic: int = Field(default=0, validation_alias="plaintextquic")
+    encrypt_quic: int = Field(default=0, validation_alias="encryptquic")
 
 
 class GetCdnDispatchResponse(Response):
@@ -402,7 +402,7 @@ class GetCdnDispatchResponse(Response):
     retcode: int
     sip: list[str] = Field(default_factory=list)
     sipinfo: list[CdnDispatchSipInfo] = Field(default_factory=list)
-    test_file: str = Field(alias="keepalivefile")
+    test_file: str = Field(validation_alias="keepalivefile")
     expiration: int
-    refresh_time: int = Field(alias="refreshTime")
-    cache_time: int = Field(alias="cacheTime")
+    refresh_time: int = Field(validation_alias="refreshTime")
+    cache_time: int = Field(validation_alias="cacheTime")

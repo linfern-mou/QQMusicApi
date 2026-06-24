@@ -26,15 +26,15 @@ class TopPreviewSong(Response):
     """
 
     rank: int
-    rank_type: int = Field(alias="rankType")
-    rank_value: str = Field(alias="rankValue")
-    id: int = Field(alias="songId")
-    name: str = Field(alias="title")
-    singer_name: str = Field(alias="singerName")
-    singer_mid: str = Field(alias="singerMid")
-    album_mid: str = Field(alias="albumMid")
+    rank_type: int = Field(validation_alias="rankType")
+    rank_value: str = Field(validation_alias="rankValue")
+    id: int = Field(validation_alias="songId")
+    name: str = Field(validation_alias="title")
+    singer_name: str = Field(validation_alias="singerName")
+    singer_mid: str = Field(validation_alias="singerMid")
+    album_mid: str = Field(validation_alias="albumMid")
     cover: str = ""
-    mv_id: int = Field(default=0, alias="mvid")
+    mv_id: int = Field(default=0, validation_alias="mvid")
 
 
 class TopSummary(Response):
@@ -57,20 +57,20 @@ class TopSummary(Response):
         special_scheme: 客户端跳转 Scheme.
     """
 
-    id: int = Field(alias="topId")
-    name: str = Field(alias="title")
-    title_detail: str = Field(alias="titleDetail")
-    title_sub: str = Field(default="", alias="titleSub")
+    id: int = Field(validation_alias="topId")
+    name: str = Field(validation_alias="title")
+    title_detail: str = Field(validation_alias="titleDetail")
+    title_sub: str = Field(default="", validation_alias="titleSub")
     intro: str = ""
     period: str = ""
-    update_time: str = Field(default="", alias="updateTime")
-    listen_num: int = Field(default=0, alias="listenNum")
-    total_num: int = Field(default=0, alias="totalNum")
-    songs: list[TopPreviewSong] = Field(default_factory=list, alias="song")
-    front_pic_url: str = Field(default="", alias="frontPicUrl")
-    head_pic_url: str = Field(default="", alias="headPicUrl")
-    h5_jump_url: str = Field(default="", alias="h5JumpUrl")
-    special_scheme: str = Field(default="", alias="specialScheme")
+    update_time: str = Field(default="", validation_alias="updateTime")
+    listen_num: int = Field(default=0, validation_alias="listenNum")
+    total_num: int = Field(default=0, validation_alias="totalNum")
+    songs: list[TopPreviewSong] = Field(default_factory=list, validation_alias="song")
+    front_pic_url: str = Field(default="", validation_alias="frontPicUrl")
+    head_pic_url: str = Field(default="", validation_alias="headPicUrl")
+    h5_jump_url: str = Field(default="", validation_alias="h5JumpUrl")
+    special_scheme: str = Field(default="", validation_alias="specialScheme")
 
 
 class TopCategory(Response):
@@ -82,8 +82,8 @@ class TopCategory(Response):
         toplist: 分类下的排行榜摘要列表.
     """
 
-    id: int = Field(alias="groupId")
-    name: str = Field(alias="groupName")
+    id: int = Field(validation_alias="groupId")
+    name: str = Field(validation_alias="groupName")
     toplist: list[TopSummary]
 
 
@@ -108,8 +108,10 @@ class TopDetailResponse(Response):
         index_info_list: 榜单索引信息列表.
     """
 
-    info: TopSummary = Field(alias="data")
-    songs: list[Song] = Field(alias="songInfoList")
-    song_tags: Annotated[list[dict], NoneToEmptyList] = Field(default_factory=list, alias="songTagInfoList")
-    ext_info_list: Annotated[list[dict], NoneToEmptyList] = Field(default_factory=list, alias="extInfoList")
-    index_info_list: Annotated[list[dict], NoneToEmptyList] = Field(default_factory=list, alias="indexInfoList")
+    info: TopSummary = Field(validation_alias="data")
+    songs: list[Song] = Field(validation_alias="songInfoList")
+    song_tags: Annotated[list[dict], NoneToEmptyList] = Field(default_factory=list, validation_alias="songTagInfoList")
+    ext_info_list: Annotated[list[dict], NoneToEmptyList] = Field(default_factory=list, validation_alias="extInfoList")
+    index_info_list: Annotated[list[dict], NoneToEmptyList] = Field(
+        default_factory=list, validation_alias="indexInfoList"
+    )

@@ -56,8 +56,8 @@ class PrivateMessageMetaData(Response):
     url: str = ""
     width: int = 0
     height: int = 0
-    duration: int = Field(default=0, alias="Duration")
-    size: int = Field(default=0, alias="Size")
+    duration: int = Field(default=0, validation_alias="Duration")
+    size: int = Field(default=0, validation_alias="Size")
 
 
 class PrivateMessageInfo(Response):
@@ -94,8 +94,8 @@ class PrivateMessageInfo(Response):
     msg_type: int = 0
     confirm: int = 0
     sort_time: int = 0
-    complain_tip: str = Field(default="", alias="complainTip")
-    complain_url: str = Field(default="", alias="complainUrl")
+    complain_tip: str = Field(default="", validation_alias="complainTip")
+    complain_url: str = Field(default="", validation_alias="complainUrl")
 
 
 class PrivateMessageTailTag(Response):
@@ -140,13 +140,13 @@ class PrivateMessageSession(Response):
     new_msg_cnt: int = 0
     sort_time: int = 0
     url: str = ""
-    create_time: int = Field(default=0, alias="create_time")
-    from_: int = Field(default=0, alias="from")
+    create_time: int = Field(default=0, validation_alias="create_time")
+    from_: int = Field(default=0, validation_alias="from")
     # 服务端字段名拼写如此, 保持 alias 与实际返回一致.
-    sm_star_virtual_uin: str = Field(default="", alias="SmStarVirtaulUin")
-    auth: str = Field(default="", alias="Auth")
-    ext: dict[str, str] = Field(default_factory=dict, alias="Ext")
-    tail_tags: list[PrivateMessageTailTag] = Field(default_factory=list, alias="TailTags")
+    sm_star_virtual_uin: str = Field(default="", validation_alias="SmStarVirtaulUin")
+    auth: str = Field(default="", validation_alias="Auth")
+    ext: dict[str, str] = Field(default_factory=dict, validation_alias="Ext")
+    tail_tags: list[PrivateMessageTailTag] = Field(default_factory=list, validation_alias="TailTags")
 
 
 class PrivateSessionListResponse(Response):
@@ -181,8 +181,8 @@ class PrivateMessagePatText(Response):
         pat_text: 拍一拍文案.
     """
 
-    nick: str = Field(default="", alias="Nick")
-    pat_text: str = Field(default="", alias="PatTxt")
+    nick: str = Field(default="", validation_alias="Nick")
+    pat_text: str = Field(default="", validation_alias="PatTxt")
 
 
 class PrivateMessageListResponse(Response):
@@ -209,12 +209,14 @@ class PrivateMessageListResponse(Response):
     session: PrivateMessageSession | None = None
     subcode: int = 0
     end_msg_seq: int = 0
-    attach: Annotated[dict[str, Any], NoneToEmptyDict] = Field(default_factory=dict, alias="Attach")
-    pat_interval: int = Field(default=0, alias="PatInterval")
-    pat_map: Annotated[dict[str, PrivateMessagePatText], NoneToEmptyDict] = Field(default_factory=dict, alias="PatMap")
-    encrypt_star: str = Field(default="", alias="EncryptStar")
-    location_tips: str = Field(default="", alias="LocationTips")
-    new_msg_cnt: int = Field(default=0, alias="NewMsgCnt")
+    attach: Annotated[dict[str, Any], NoneToEmptyDict] = Field(default_factory=dict, validation_alias="Attach")
+    pat_interval: int = Field(default=0, validation_alias="PatInterval")
+    pat_map: Annotated[dict[str, PrivateMessagePatText], NoneToEmptyDict] = Field(
+        default_factory=dict, validation_alias="PatMap"
+    )
+    encrypt_star: str = Field(default="", validation_alias="EncryptStar")
+    location_tips: str = Field(default="", validation_alias="LocationTips")
+    new_msg_cnt: int = Field(default=0, validation_alias="NewMsgCnt")
 
 
 class PrivateSendMessageResponse(Response):
@@ -299,12 +301,12 @@ class PrivateEntryItem(Response):
         ext: 扩展字段.
     """
 
-    entry_type: int = Field(default=-1, alias="EntryType")
-    icon: str = Field(default="", alias="Icon")
-    title: str = Field(default="", alias="Title")
-    skip_scheme: str = Field(default="", alias="SkipScheme")
-    right_top_tag: str = Field(default="", alias="RightTopTag")
-    ext: dict[str, str] = Field(default_factory=dict, alias="Ext")
+    entry_type: int = Field(default=-1, validation_alias="EntryType")
+    icon: str = Field(default="", validation_alias="Icon")
+    title: str = Field(default="", validation_alias="Title")
+    skip_scheme: str = Field(default="", validation_alias="SkipScheme")
+    right_top_tag: str = Field(default="", validation_alias="RightTopTag")
+    ext: dict[str, str] = Field(default_factory=dict, validation_alias="Ext")
 
 
 class PrivateChatEntriesResponse(Response):
@@ -318,11 +320,11 @@ class PrivateChatEntriesResponse(Response):
         dz_data: 未建模的搭子入口字段.
     """
 
-    ret_code: int = Field(default=0, alias="RetCode")
-    ret_msg: str = Field(default="", alias="RetMsg")
-    entries: dict[int, list[PrivateEntryItem]] = Field(default_factory=dict, alias="Entries")
-    can_be_dazi: bool | None = Field(default=None, alias="CanBeDazi")
-    dz_data: dict[str, Any] = Field(default_factory=dict, alias="DzData")
+    ret_code: int = Field(default=0, validation_alias="RetCode")
+    ret_msg: str = Field(default="", validation_alias="RetMsg")
+    entries: dict[int, list[PrivateEntryItem]] = Field(default_factory=dict, validation_alias="Entries")
+    can_be_dazi: bool | None = Field(default=None, validation_alias="CanBeDazi")
+    dz_data: dict[str, Any] = Field(default_factory=dict, validation_alias="DzData")
 
 
 class PrivateMediaMessageDetailsResponse(Response):
@@ -332,7 +334,7 @@ class PrivateMediaMessageDetailsResponse(Response):
         msg_ids: 消息 ID 到消息详情的映射.
     """
 
-    msg_ids: dict[str, PrivateMessageInfo] = Field(default_factory=dict, alias="MsgIDs")
+    msg_ids: dict[str, PrivateMessageInfo] = Field(default_factory=dict, validation_alias="MsgIDs")
 
 
 class PrivateSafetyHintResponse(Response):

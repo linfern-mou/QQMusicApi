@@ -20,10 +20,10 @@ class AlbumDetail(Album):
     """
 
     subtitle: str = ""
-    time_public: str = Field(default="", alias="publishDate")
+    time_public: str = Field(default="", validation_alias="publishDate")
     desc: str = ""
     language: str = ""
-    album_type: str = Field(default="", alias="albumType")
+    album_type: str = Field(default="", validation_alias="albumType")
     genre: str = ""
     wikiurl: str = ""
 
@@ -38,9 +38,9 @@ class AlbumCompany(Response):
         brief: 公司简介.
     """
 
-    id: int = Field(alias="ID")
+    id: int = Field(validation_alias="ID")
     name: str
-    is_show: int = Field(alias="isShow")
+    is_show: int = Field(validation_alias="isShow")
     brief: str = ""
 
 
@@ -53,7 +53,7 @@ class GetAlbumDetailResponse(Response):
         singers: 专辑署名歌手列表.
     """
 
-    album: AlbumDetail = Field(alias="basicInfo")
+    album: AlbumDetail = Field(validation_alias="basicInfo")
     company: AlbumCompany
     singers: list[Singer] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.singer.singerList"})
 
@@ -67,6 +67,6 @@ class GetAlbumSongResponse(Response):
         song_list: 当前响应携带的专辑歌曲列表.
     """
 
-    album_mid: str = Field(alias="albumMid")
-    total_num: int = Field(alias="totalNum")
+    album_mid: str = Field(validation_alias="albumMid")
+    total_num: int = Field(validation_alias="totalNum")
     song_list: list[Song] = Field(default_factory=list, json_schema_extra={"jsonpath": "$.songList[*].songInfo"})

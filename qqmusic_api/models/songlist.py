@@ -51,10 +51,10 @@ class GetSonglistDetailResponse(Response):
     code: int = 0
     subcode: int = 0
     msg: str = ""
-    info: SonglistInfo = Field(alias="dirinfo")
-    size: int = Field(alias="songlist_size")
-    songs: list[Song] = Field(alias="songlist")
-    total: int = Field(alias="total_song_num")
+    info: SonglistInfo = Field(validation_alias="dirinfo")
+    size: int = Field(validation_alias="songlist_size")
+    songs: list[Song] = Field(validation_alias="songlist")
+    total: int = Field(validation_alias="total_song_num")
     hasmore: int = 0
 
 

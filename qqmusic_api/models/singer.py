@@ -49,7 +49,7 @@ class SingerBrief(Singer):
     other_name: str = ""
     spell: str = ""
     trend: int = 0
-    concern_num: int = Field(default=0, alias="concernNum")
+    concern_num: int = Field(default=0, validation_alias="concernNum")
     singer_pic: str = ""
 
 
@@ -116,13 +116,13 @@ class HomepageBaseInfo(Response):
         user_type: 用户类型标记.
     """
 
-    encrypted_uin: str = Field(default="", alias="EncryptedUin")
-    background_image: str = Field(default="", alias="BackgroundImage")
-    avatar: str = Field(default="", alias="Avatar")
-    name: str = Field(default="", alias="Name")
-    is_host: int = Field(default=0, alias="IsHost")
-    is_singer: int = Field(default=0, alias="IsSinger")
-    user_type: int = Field(default=0, alias="UserType")
+    encrypted_uin: str = Field(default="", validation_alias="EncryptedUin")
+    background_image: str = Field(default="", validation_alias="BackgroundImage")
+    avatar: str = Field(default="", validation_alias="Avatar")
+    name: str = Field(default="", validation_alias="Name")
+    is_host: int = Field(default=0, validation_alias="IsHost")
+    is_singer: int = Field(default=0, validation_alias="IsSinger")
+    user_type: int = Field(default=0, validation_alias="UserType")
 
 
 class HomepageSinger(Response):
@@ -141,8 +141,8 @@ class HomepageSinger(Response):
     mid: str = Field(default="", validation_alias=AliasChoices("SingerMid", "singerMid", "singer_mid"))
     name: str = Field(default="", validation_alias=AliasChoices("Name", "name", "singerName"))
     type: int = Field(default=-1, validation_alias=AliasChoices("SingerType", "type"))
-    singer_pic: str = Field(default="", alias="SingerPic")
-    singer_pmid: str = Field(default="", alias="SingerPMid")
+    singer_pic: str = Field(default="", validation_alias="SingerPic")
+    singer_pmid: str = Field(default="", validation_alias="SingerPMid")
 
 
 class TabMeta(Response):
@@ -154,9 +154,9 @@ class TabMeta(Response):
         title: 标签页标题.
     """
 
-    tab_id: str = Field(default="", alias="TabID")
-    tab_name: str = Field(default="", alias="TabName")
-    title: str = Field(default="", alias="Title")
+    tab_id: str = Field(default="", validation_alias="TabID")
+    tab_name: str = Field(default="", validation_alias="TabName")
+    title: str = Field(default="", validation_alias="Title")
 
 
 class AlbumBrief(Album):
@@ -174,14 +174,14 @@ class AlbumBrief(Album):
         tags: 标签列表.
     """
 
-    id: int = Field(default=-1, alias="albumID")
-    mid: str = Field(default="", alias="albumMid")
-    name: str = Field(default="", alias="albumName")
-    subtitle: str = Field(default="", alias="albumTranName")
-    time_public: str = Field(default="", alias="publishDate")
-    total_num: int = Field(default=0, alias="totalNum")
-    album_type: str = Field(default="", alias="albumType")
-    singer_name: str = Field(default="", alias="singerName")
+    id: int = Field(default=-1, validation_alias="albumID")
+    mid: str = Field(default="", validation_alias="albumMid")
+    name: str = Field(default="", validation_alias="albumName")
+    subtitle: str = Field(default="", validation_alias="albumTranName")
+    time_public: str = Field(default="", validation_alias="publishDate")
+    total_num: int = Field(default=0, validation_alias="totalNum")
+    album_type: str = Field(default="", validation_alias="albumType")
+    singer_name: str = Field(default="", validation_alias="singerName")
     tags: Annotated[list[str], NoneToEmptyList] = Field(default_factory=list)
 
 
@@ -201,7 +201,7 @@ class VideoBrief(MV):
         icon_type: 图标类型.
     """
 
-    id: int = Field(default=-1, alias="mvid")
+    id: int = Field(default=-1, validation_alias="mvid")
     vid: str = ""
     type: int = -1
     title: str = ""
@@ -228,11 +228,11 @@ class HomepageTabDetailResponse(Response):
         video_tab: 视频标签内容.
     """
 
-    tab_id: str = Field(default="", alias="TabID")
-    has_more: int = Field(default=0, alias="HasMore")
-    need_show_tab: int = Field(default=0, alias="NeedShowTab")
-    order: int = Field(default=0, alias="Order")
-    tab_list: Annotated[list[TabMeta], NoneToEmptyList] = Field(default_factory=list, alias="TabList")
+    tab_id: str = Field(default="", validation_alias="TabID")
+    has_more: int = Field(default=0, validation_alias="HasMore")
+    need_show_tab: int = Field(default=0, validation_alias="NeedShowTab")
+    order: int = Field(default=0, validation_alias="Order")
+    tab_list: Annotated[list[TabMeta], NoneToEmptyList] = Field(default_factory=list, validation_alias="TabList")
     introduction_tab: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(
         default_factory=list,
         json_schema_extra={"jsonpath": "$.IntroductionTab.List"},
@@ -259,11 +259,11 @@ class HomepageHeaderResponse(Response):
         prompt: 附加提示信息.
     """
 
-    status: int = Field(alias="Status")
+    status: int = Field(validation_alias="Status")
     singer: HomepageSinger = Field(json_schema_extra={"jsonpath": "$.Info.Singer"})
     base_info: HomepageBaseInfo = Field(json_schema_extra={"jsonpath": "$.Info.BaseInfo"})
-    tab_detail: HomepageTabDetailResponse = Field(alias="TabDetail")
-    prompt: dict[str, Any] = Field(default_factory=dict, alias="Prompt")
+    tab_detail: HomepageTabDetailResponse = Field(validation_alias="TabDetail")
+    prompt: dict[str, Any] = Field(default_factory=dict, validation_alias="Prompt")
 
 
 class SingerBasicInfo(Singer):
@@ -279,12 +279,12 @@ class SingerBasicInfo(Singer):
         wikiurl: 百科链接.
     """
 
-    id: int = Field(default=-1, alias="singer_id")
-    mid: str = Field(default="", alias="singer_mid")
-    name: str = Field(default="", alias="name")
-    type: int = Field(default=-1, alias="type")
-    pmid: str = Field(default="", alias="singer_pmid")
-    has_photo: int = Field(default=0, alias="has_photo")
+    id: int = Field(default=-1, validation_alias="singer_id")
+    mid: str = Field(default="", validation_alias="singer_mid")
+    name: str = Field(default="", validation_alias="name")
+    type: int = Field(default=-1, validation_alias="type")
+    pmid: str = Field(default="", validation_alias="singer_pmid")
+    has_photo: int = Field(default=0, validation_alias="has_photo")
     wikiurl: str = ""
 
 
@@ -313,7 +313,7 @@ class SingerExtraInfo(Response):
     foreign_name: str = ""
     birthday: str = ""
     enter: Annotated[str, NoneOrZeroToEmptyStr] = ""
-    blog_flag: int = Field(default=0, alias="blogFlag")
+    blog_flag: int = Field(default=0, validation_alias="blogFlag")
 
 
 class SingerDetail(Response):
@@ -328,8 +328,8 @@ class SingerDetail(Response):
         group_info: 组合附加信息.
     """
 
-    basic_info: SingerBasicInfo = Field(alias="basic_info")
-    ex_info: SingerExtraInfo = Field(default_factory=SingerExtraInfo, alias="ex_info")
+    basic_info: SingerBasicInfo = Field(validation_alias="basic_info")
+    ex_info: SingerExtraInfo = Field(default_factory=SingerExtraInfo, validation_alias="ex_info")
     wiki: str = ""
     group_list: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(default_factory=list)
     photos: Annotated[list[dict[str, Any]], NoneToEmptyList] = Field(default_factory=list)
@@ -343,7 +343,7 @@ class SingerDetailResponse(Response):
         singer_list: 歌手详情列表.
     """
 
-    singer_list: list[SingerDetail] = Field(default_factory=list, alias="singer_list")
+    singer_list: list[SingerDetail] = Field(default_factory=list, validation_alias="singer_list")
 
 
 class SimilarSinger(Singer):
@@ -360,11 +360,11 @@ class SimilarSinger(Singer):
         tf: 附加标记.
     """
 
-    id: int = Field(default=-1, alias="singerId")
-    mid: str = Field(default="", alias="singerMid")
-    name: str = Field(default="", alias="singerName")
-    pmid: str = Field(default="", alias="pic_mid")
-    singer_pic: str = Field(default="", alias="singerPic")
+    id: int = Field(default=-1, validation_alias="singerId")
+    mid: str = Field(default="", validation_alias="singerMid")
+    name: str = Field(default="", validation_alias="singerName")
+    pmid: str = Field(default="", validation_alias="pic_mid")
+    singer_pic: str = Field(default="", validation_alias="singerPic")
     trace: str = ""
     abt: str = ""
     tf: str = ""
@@ -381,7 +381,7 @@ class SimilarSingerResponse(Response):
 
     singerlist: Annotated[list[SimilarSinger], NoneToEmptyList] = Field(default_factory=list)
     code: int = 0
-    err_msg: str = Field(default="", alias="errMsg")
+    err_msg: str = Field(default="", validation_alias="errMsg")
 
 
 class SingerSongListResponse(Response):
@@ -393,8 +393,8 @@ class SingerSongListResponse(Response):
         song_list: 当前页歌曲列表.
     """
 
-    singer_mid: str = Field(default="", alias="singerMid")
-    total_num: int = Field(default=0, alias="totalNum")
+    singer_mid: str = Field(default="", validation_alias="singerMid")
+    total_num: int = Field(default=0, validation_alias="totalNum")
     song_list: Annotated[list[Song], NoneToEmptyList] = Field(
         default_factory=list, json_schema_extra={"jsonpath": "$.songList[*].songInfo"}
     )
@@ -409,9 +409,9 @@ class SingerAlbumListResponse(Response):
         album_list: 当前页专辑列表.
     """
 
-    singer_mid: str = Field(default="", alias="singerMid")
+    singer_mid: str = Field(default="", validation_alias="singerMid")
     total: int = 0
-    album_list: Annotated[list[AlbumBrief], NoneToEmptyList] = Field(default_factory=list, alias="albumList")
+    album_list: Annotated[list[AlbumBrief], NoneToEmptyList] = Field(default_factory=list, validation_alias="albumList")
 
 
 class SingerMvListResponse(Response):
@@ -423,4 +423,4 @@ class SingerMvListResponse(Response):
     """
 
     total: int = 0
-    mv_list: Annotated[list[VideoBrief], NoneToEmptyList] = Field(default_factory=list, alias="list")
+    mv_list: Annotated[list[VideoBrief], NoneToEmptyList] = Field(default_factory=list, validation_alias="list")

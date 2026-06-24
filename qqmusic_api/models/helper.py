@@ -65,8 +65,8 @@ class UploadBucketInfo(BaseModel):
         region: 存储桶地域.
     """
 
-    name: str = Field(alias="Name")
-    region: str = Field(alias="Region")
+    name: str = Field(validation_alias="Name")
+    region: str = Field(validation_alias="Region")
 
 
 class UploadBucketStatus(BaseModel):
@@ -77,8 +77,8 @@ class UploadBucketStatus(BaseModel):
         upload_status: 上传状态码, 0 表示正常.
     """
 
-    bucket: UploadBucketInfo = Field(alias="Bucket")
-    upload_status: int = Field(alias="UploadStatus")
+    bucket: UploadBucketInfo = Field(validation_alias="Bucket")
+    upload_status: int = Field(validation_alias="UploadStatus")
 
 
 class UploadFileInfo(BaseModel):
@@ -90,9 +90,9 @@ class UploadFileInfo(BaseModel):
         buckets: 目标存储桶列表.
     """
 
-    file_sha1: str = Field(alias="FileSha1")
-    object_key: str = Field(alias="ObjectKey")
-    buckets: list[UploadBucketStatus] = Field(alias="Buckets")
+    file_sha1: str = Field(validation_alias="FileSha1")
+    object_key: str = Field(validation_alias="ObjectKey")
+    buckets: list[UploadBucketStatus] = Field(validation_alias="Buckets")
 
 
 class UploadAuthInfo(BaseModel):
@@ -106,11 +106,11 @@ class UploadAuthInfo(BaseModel):
         expired_time: 临时密钥过期时间戳.
     """
 
-    secret_id: str = Field(alias="SecretID")
-    secret_key: str = Field(alias="SecretKey")
-    token: str = Field(alias="Token")
-    start_time: int = Field(alias="StartTime")
-    expired_time: int = Field(alias="ExpiredTime")
+    secret_id: str = Field(validation_alias="SecretID")
+    secret_key: str = Field(validation_alias="SecretKey")
+    token: str = Field(validation_alias="Token")
+    start_time: int = Field(validation_alias="StartTime")
+    expired_time: int = Field(validation_alias="ExpiredTime")
 
 
 class InitUploadResponse(BaseModel):
@@ -121,8 +121,8 @@ class InitUploadResponse(BaseModel):
         files: 文件存储路径与存储桶信息列表.
     """
 
-    auth_info: UploadAuthInfo = Field(alias="AuthInfo")
-    files: list[UploadFileInfo] = Field(alias="Files")
+    auth_info: UploadAuthInfo = Field(validation_alias="AuthInfo")
+    files: list[UploadFileInfo] = Field(validation_alias="Files")
 
 
 class UploadStorage(BaseModel):
@@ -133,8 +133,8 @@ class UploadStorage(BaseModel):
         object_key: 文件在存储桶中的对象路径.
     """
 
-    bucket: UploadBucketInfo = Field(alias="Bucket")
-    object_key: str = Field(alias="ObjectKey")
+    bucket: UploadBucketInfo = Field(validation_alias="Bucket")
+    object_key: str = Field(validation_alias="ObjectKey")
 
 
 class UploadUrlInfo(BaseModel):
@@ -148,11 +148,11 @@ class UploadUrlInfo(BaseModel):
         internal_url: 内部网络访问 URL.
     """
 
-    file_id: str = Field(alias="FileId", default="")
-    url: str = Field(alias="URL")
-    cdn_url: str = Field(alias="CDNURL")
-    presigned_url: str = Field(alias="PresignedURL", default="")
-    internal_url: str = Field(alias="InternalURL", default="")
+    file_id: str = Field(validation_alias="FileId", default="")
+    url: str = Field(validation_alias="URL")
+    cdn_url: str = Field(validation_alias="CDNURL")
+    presigned_url: str = Field(validation_alias="PresignedURL", default="")
+    internal_url: str = Field(validation_alias="InternalURL", default="")
 
 
 class UploadObjectInfo(BaseModel):
@@ -163,8 +163,8 @@ class UploadObjectInfo(BaseModel):
         url: 文件上传成功后分配的各路访问 URL.
     """
 
-    storage: UploadStorage = Field(alias="Storage")
-    url: UploadUrlInfo = Field(alias="Url")
+    storage: UploadStorage = Field(validation_alias="Storage")
+    url: UploadUrlInfo = Field(validation_alias="Url")
 
 
 class FinishUploadResponse(BaseModel):
@@ -174,4 +174,4 @@ class FinishUploadResponse(BaseModel):
         objects: 上传成功的文件对象列表.
     """
 
-    objects: list[UploadObjectInfo] | None = Field(alias="Objects", default=None)
+    objects: list[UploadObjectInfo] | None = Field(validation_alias="Objects", default=None)
