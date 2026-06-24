@@ -78,6 +78,7 @@ def include_routes(app: FastAPI, routes: tuple[WebRoute, ...]) -> None:
             summary=summary,
             description=description,
             response_model=ApiResponse[route.response_model],
+            response_model_by_alias=False,
             openapi_extra=openapi_extra,
         )
 
