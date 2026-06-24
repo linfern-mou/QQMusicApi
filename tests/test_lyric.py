@@ -15,8 +15,7 @@ async def test_get_lyric_with_qrc(client: Client) -> None:
     result = await client.lyric.get_lyric(value=100, qrc=True)
     assert result.crypt in (0, 1)
     if result.crypt == 1:
-        decrypted = result.decrypt()
-        assert decrypted.lyric
+        assert result.lyric
 
 
 async def test_get_lyric_with_trans(client: Client) -> None:
@@ -41,5 +40,4 @@ async def test_get_lyric_with_all_options(client: Client) -> None:
     )
     assert result.lyric
     if result.crypt == 1:
-        decrypted = result.decrypt()
-        assert decrypted.lyric
+        assert result.lyric

@@ -1,6 +1,6 @@
 """Lyric API 返回模型定义."""
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from ..algorithms import qrc_decrypt
 from .request import Response
@@ -23,19 +23,14 @@ class GetLyricResponse(Response):
     trans: str = ""
     roma: str = ""
 
-    def decrypt(self) -> "GetLyricResponse":
-        """返回一个歌词内容已按需解密的响应对象.
-
-        Returns:
-            GetLyricResponse: 当 `crypt == 1` 时, 返回一个复制后的响应对象, 并将 `lyric`、`trans`、`roma` 替换为解密文本. 否则直接返回当前实例. 该方法不会原地修改当前对象字段.
-        """
-        if self.crypt != 1:
-            return self
-
-        return self.model_copy(
-            update={
-                "lyric": qrc_decrypt(self.lyric) if self.lyric else "",
-                "trans": qrc_decrypt(self.trans) if self.trans else "",
-                "roma": qrc_decrypt(self.roma) if self.roma else "",
-            },
-        )
+    @model_validator(mode="before")
+    @classmethod
+    def _decrypt_lyrics(cls, data: dict) -> dict:
+        if data.get("crypt") == 1:
+            if data.get("lyric"):
+                data["lyric"] = qrc_decrypt(data["lyric"])
+            if data.get("trans"):
+                data["trans"] = qrc_decrypt(data["trans"])
+            if data.get("roma"):
+                data["roma"] = qrc_decrypt(data["roma"])
+        return data
