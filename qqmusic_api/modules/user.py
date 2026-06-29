@@ -298,12 +298,11 @@ class UserApi(ApiModule):
         Returns:
             是否收藏成功 (歌单已在收藏中也返回 True).
         """
-        target_credential = self._require_login(credential)
         data = await self._build_request(
             module="music.musicasset.PlaylistFavWrite",
             method="FavPlaylist",
-            param={"uin": target_credential.encrypt_uin, "v_playlistId": [songlist_id]},
-            credential=target_credential,
+            param={"uin": (credential or self._client.credential).encrypt_uin, "v_playlistId": [songlist_id]},
+            credential=credential,
             require_login=True,
         )
         return data.get("result") == 0 and songlist_id not in (data.get("v_failedPlaylistId") or [])
@@ -318,12 +317,11 @@ class UserApi(ApiModule):
         Returns:
             是否取消成功 (歌单本就不在收藏中也返回 True).
         """
-        target_credential = self._require_login(credential)
         data = await self._build_request(
             module="music.musicasset.PlaylistFavWrite",
             method="CancelFavPlaylist",
-            param={"uin": target_credential.encrypt_uin, "v_playlistId": [songlist_id]},
-            credential=target_credential,
+            param={"uin": (credential or self._client.credential).encrypt_uin, "v_playlistId": [songlist_id]},
+            credential=credential,
             require_login=True,
         )
         return data.get("result") == 0 and songlist_id not in (data.get("v_failedPlaylistId") or [])
