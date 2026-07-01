@@ -29,7 +29,14 @@ pip install -r web/requirements.txt
 uv run --no-sync web/run.py
 ```
 
-服务启动后，访问 [http://localhost:8080/docs](http://localhost:8080/docs) 查看自动生成的 API 文档。
+服务启动后，可通过以下地址查看 API 文档:
+
+|                 地址                 | 说明               |
+|:------------------------------------:|--------------------|
+|    `http://localhost:8080/swagger`   | Swagger UI         |
+|     `http://localhost:8080/redoc`    | ReDo               |
+|     `http://localhost:8080/docs`     | Stoplight Elements |
+| `http://localhost:8080/openapi.json` | OpenAPI            |
 
 ### Docker 部署
 
