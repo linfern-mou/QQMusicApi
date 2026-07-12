@@ -3,12 +3,13 @@
 import asyncio
 import math
 import time
-from collections.abc import AsyncIterator, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from ipaddress import ip_address, ip_network
-from typing import Any, Literal, cast
+from typing import Literal
 
 from fastapi import FastAPI, Request
+from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.responses import Response
 
@@ -215,16 +216,11 @@ class InMemoryConcurrencyLimiter:
                 self._active -= 1
 
 
-async def _release_after_body(
-    body_iterator: AsyncIterator[bytes],
-    limiter: InMemoryConcurrencyLimiter,
-) -> AsyncIterator[bytes]:
-    """在响应体发送结束后释放并发名额."""
-    try:
-        async for chunk in body_iterator:
-            yield chunk
-    finally:
-        await limiter.release()
+def _is_streaming(response: Response) -> bool:
+    """判断响应是否为流式响应."""
+    return hasattr(response, "body_iterator") and not isinstance(
+        getattr(response, "body_iterator", None), (bytes, bytearray)
+    )
 
 
 async def apply_security_middleware(request: Request, call_next: RequestResponseEndpoint) -> Response:
@@ -268,8 +264,21 @@ async def apply_security_middleware(request: Request, call_next: RequestResponse
     except Exception:
         await concurrency_limiter.release()
         raise
-    response_body = cast("Any", response).body_iterator
-    cast("Any", response).body_iterator = _release_after_body(response_body, concurrency_limiter)
+
+    if _is_streaming(response):
+        task = BackgroundTask(concurrency_limiter.release)
+        if response.background is None:
+            response.background = task
+        elif isinstance(response.background, BackgroundTasks):
+            response.background.add_task(concurrency_limiter.release)
+        else:
+            tasks = BackgroundTasks()
+            tasks.tasks.append(response.background)
+            tasks.add_task(concurrency_limiter.release)
+            response.background = tasks
+    else:
+        await concurrency_limiter.release()
+
     return response
 
 

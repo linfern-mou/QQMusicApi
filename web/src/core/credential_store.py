@@ -64,15 +64,8 @@ class CredentialStore:
 
             with connection:
                 for account in valid_accounts:
-                    exists = connection.execute(
-                        "SELECT 1 FROM credentials WHERE musicid = ?",
-                        (account.musicid,),
-                    ).fetchone()
-                    if exists is None:
-                        logger.debug("新增账号种子: musicid %s", account.musicid)
-                        self._upsert(account.to_credential())
-                    else:
-                        logger.debug("账号种子已存在, 跳过: musicid %s", account.musicid)
+                    logger.debug("同步账号种子: musicid %s", account.musicid)
+                    self._upsert(account.to_credential())
 
                 if toml_ids:
                     placeholders = ", ".join("?" for _ in toml_ids)
@@ -178,7 +171,8 @@ class CredentialStore:
             VALUES (?, ?, ?)
             ON CONFLICT(musicid) DO UPDATE SET
               credential_json = excluded.credential_json,
-              updated_at = excluded.updated_at
+              updated_at = excluded.updated_at,
+              valid = 1
             """,
             (
                 credential.musicid,
