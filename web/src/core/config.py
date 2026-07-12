@@ -174,6 +174,12 @@ class AccountConfig(BaseModel):
         return Credential.model_validate(data)
 
 
+class ClientConfig(BaseModel):
+    """SDK Client 基础配置."""
+
+    device_path: str = Field(default="web/data/device.json", description="设备信息文件路径")
+
+
 class Settings(BaseSettings):
     """Web 服务全局配置."""
 
@@ -190,6 +196,7 @@ class Settings(BaseSettings):
     cache: CacheConfig = CacheConfig()
     security: SecurityConfig = SecurityConfig()
     credential: CredentialConfig = CredentialConfig()
+    client: ClientConfig = ClientConfig()
 
     @classmethod
     def settings_customise_sources(
@@ -208,6 +215,17 @@ class Settings(BaseSettings):
             TomlConfigSettingsSource(settings_cls),
             file_secret_settings,
         )
+
+    @model_validator(mode="after")
+    def _resolve_paths(self) -> "Settings":
+        """将相对路径统一解析为基于项目根目录的绝对路径."""
+        if not Path(self.logging.file_path).is_absolute():
+            self.logging.file_path = str(PROJECT_ROOT / self.logging.file_path)
+        if not Path(self.credential.store.path).is_absolute():
+            self.credential.store.path = str(PROJECT_ROOT / self.credential.store.path)
+        if not Path(self.client.device_path).is_absolute():
+            self.client.device_path = str(PROJECT_ROOT / self.client.device_path)
+        return self
 
 
 settings = Settings()

@@ -43,6 +43,11 @@ backend = "memory"
 # redis_prefix = "qqapi:"
 
 
+[client]
+# SDK Client 设备信息文件路径
+# device_path = "web/data/device.json"
+
+
 [credential]
 # 是否启用全局默认登录凭证。Cookie 中显式传入的登录凭证始终优先。
 enabled = false

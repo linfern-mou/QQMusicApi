@@ -90,9 +90,6 @@ def _setup_logging(config) -> None:
 if __name__ == "__main__":
     from web.src.core.config import settings
 
-    settings.logging.file_path = str(project_root / settings.logging.file_path)
-    settings.credential.store.path = str(project_root / settings.credential.store.path)
-
     _setup_logging(settings.logging)
 
     uvicorn.run(
