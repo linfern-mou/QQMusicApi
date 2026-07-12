@@ -1,4 +1,41 @@
 
+## [[0.6.9](https://github.com/L-1124/QQMusicApi/compare/v0.6.8..v0.6.9)] - 2026-07-12
+
+### Bug 修复
+
+* **(web)** 修复凭据刷新异常捕获过宽与 ETag 缓存机制形同虚设的问题 ([305a063](https://github.com/L-1124/QQMusicApi/commit/305a0637f6261b3de3710c504dc8b22ec0ec52b8)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 修复配置账号由于重置逻辑缺陷被永久标记失效与流式响应并发槽位泄露 ([56f3034](https://github.com/L-1124/QQMusicApi/commit/56f30347a5182380e14febb1b6b1a80debc74ea3)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 避免将 credential 对象盲目混入参数导致 SDK 签名报错 ([fc8b32c](https://github.com/L-1124/QQMusicApi/commit/fc8b32ca1d8d20f16c52f37272798b3688f2848b)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 修复 KeyedLock finalizer 泄漏与 Redis 序列化 Pydantic 模型问题 ([5440a5e](https://github.com/L-1124/QQMusicApi/commit/5440a5e83b1d110d29f4e1b2eab74f5a8f509847)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 修正 songlist 创建与删除路由的 HTTP 方法 ([43c9ce6](https://github.com/L-1124/QQMusicApi/commit/43c9ce6fd0779895afe70a5c7062d7ead0d69957)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 修复凭据刷新锁与限流器的内存泄漏 ([c5ed6a3](https://github.com/L-1124/QQMusicApi/commit/c5ed6a315e7de680b60b63199350fca276781a46)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 修复 search 路由声明中 Any 导致的类型检查错误 ([d1aea06](https://github.com/L-1124/QQMusicApi/commit/d1aea0631aeee866cc8b09d1d6a086b07f24e7a9)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 修复返回 bool 类型时生成的文档和数据格式问题 ([af8550d](https://github.com/L-1124/QQMusicApi/commit/af8550d08038dc8f66be39e28c9d3a905abf7e63)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(web)** 添加 UserApi 的DisLike和favor api ([b1aa67d](https://github.com/L-1124/QQMusicApi/commit/b1aa67d5e6608d722b337c53274b4d91963a008d)) by [@L-1124](https://github.com/L-1124)
+* 新增新碟上架 / MV 分类 / 收藏专辑 / 收藏歌曲接口与推荐新歌地区筛选 ([520c92b](https://github.com/L-1124/QQMusicApi/commit/520c92bd4d3546a20358c0a6daf47f67af8813d8)) by [@jinzhongjia](https://github.com/jinzhongjia) in [#284](https://github.com/L-1124/QQMusicApi/pull/284)
+
+### 功能重构
+
+* **(web)** 收敛配置修改与硬编码路径到配置层 ([0e5950c](https://github.com/L-1124/QQMusicApi/commit/0e5950c9fec28783f081c7d37754de130dcd1950)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 抽取统一的 refresh_and_store 方法消除重复，并补全重试刷新失败时的无效标记逻辑 ([a4a0729](https://github.com/L-1124/QQMusicApi/commit/a4a072984f2dce212885bc240640c9a859d9b0ed)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 移除 songlist 的动态 getattr 分发以恢复类型安全与修复潜在凭据 KeyError ([c1030e1](https://github.com/L-1124/QQMusicApi/commit/c1030e1d867eed8e42957dbf797f548a754796e5)) by [@L-1124](https://github.com/L-1124)
+
+### 性能优化
+
+* **(web)** 启用 SQLite WAL 模式并延迟反序列化随机凭据 ([7d01994](https://github.com/L-1124/QQMusicApi/commit/7d019942ae3812fe286d90eb668dc52318ccabe7)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 缓存路由参数解析以避免重复的 SDK 签名内省 ([61cc5a5](https://github.com/L-1124/QQMusicApi/commit/61cc5a5494afb750149d6689e252cb429e9d109d)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 抽取 app 为会话级 fixture 以大幅降低测试耗时 ([6d13b50](https://github.com/L-1124/QQMusicApi/commit/6d13b50ad42c1bf8f56c596a2fd810cadc23208d)) by [@L-1124](https://github.com/L-1124)
+* **(web)** 移除缓存层与响应中不必要的双重序列化 ([bbc865c](https://github.com/L-1124/QQMusicApi/commit/bbc865c8aa52da6a027064510e94c8fcf8d5ab76)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @jinzhongjia [#284](https://github.com/L-1124/QQMusicApi/pull/284)
+* @github-actions[bot]
+
 ## [[0.6.8](https://github.com/L-1124/QQMusicApi/compare/v0.6.7..v0.6.8)] - 2026-07-01
 
 ### Bug 修复
