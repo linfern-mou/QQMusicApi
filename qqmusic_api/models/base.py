@@ -18,21 +18,17 @@ _PHOTO_NEW_SIZE_SEGMENTS: Final[dict[int, str]] = {
 }
 
 
-def _normalize_cover_size(size: CoverSize) -> str:
-    """返回 `photo_new` 模板使用的尺寸片段."""
-    try:
-        return _PHOTO_NEW_SIZE_SEGMENTS[size]
-    except KeyError as exc:
-        raise ValueError("not supported size") from exc
-
-
 def _build_photo_new_cover_url(kind: str, mid: str, size: CoverSize) -> str:
     """按 `photo_new` 规则拼接封面链接."""
     normalized_mid = mid.strip()
     if not normalized_mid:
         return ""
 
-    return f"https://y.gtimg.cn/music/photo_new/{kind}{_normalize_cover_size(size)}M000{normalized_mid}.jpg"
+    try:
+        cover_size = _PHOTO_NEW_SIZE_SEGMENTS[size]
+        return f"https://y.gtimg.cn/music/photo_new/{kind}{cover_size}M000{normalized_mid}.jpg"
+    except KeyError as exc:
+        raise ValueError("not supported size") from exc
 
 
 class Singer(Response):
