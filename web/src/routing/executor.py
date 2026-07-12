@@ -22,6 +22,17 @@ from .route_types import AuthPolicy, RouteContext
 logger = logging.getLogger(__name__)
 
 _VALIDATION_ERROR_TYPES = (KeyError, TypeError, ValueError)
+_CREDENTIAL_REQUIRED_CACHE: dict[tuple[str, str], bool] = {}
+
+
+def _requires_credential(client: Any, module_name: str, method_name: str) -> bool:
+    key = (module_name, method_name)
+    if key not in _CREDENTIAL_REQUIRED_CACHE:
+        module = getattr(client, module_name)
+        bound_method = getattr(module, method_name)
+        sig = inspect.signature(bound_method)
+        _CREDENTIAL_REQUIRED_CACHE[key] = "credential" in sig.parameters
+    return _CREDENTIAL_REQUIRED_CACHE[key]
 
 
 @runtime_checkable
@@ -38,24 +49,24 @@ async def execute_route(context: RouteContext) -> Any:
     route = context.route
     params = dict(context.params)
     cache_ttl = route.cache.ttl if route.cache is not None else None
-    credential = None
+    resolved_credential = None
     logger.debug("执行路由: %s.%s, 路径: %s", route.module, route.method, route.path)
     if route.auth is AuthPolicy.COOKIE_OR_DEFAULT:
-        credential = await _resolve_credential(context)
-        params["credential"] = credential
+        resolved_credential = await _resolve_credential(context)
 
     async def invoke() -> Any:
-        return await _invoke_route(context, params)
+        return await _invoke_route(context, params, resolved_credential)
 
     async def invoke_with_retry() -> Any:
+        nonlocal resolved_credential
         try:
             return await invoke()
         except CredentialExpiredError:
-            if credential is None:
+            if resolved_credential is None:
                 raise
-            logger.warning("凭证错误, 准备刷新凭证 %s", credential.musicid)
-            refreshed = await _refresh_credential(context, credential)
-            params["credential"] = refreshed
+            logger.warning("凭证错误, 准备刷新凭证 %s", resolved_credential.musicid)
+            refreshed = await _refresh_credential(context, resolved_credential)
+            resolved_credential = refreshed
             logger.info("凭证已刷新, 重试请求: %s.%s", route.module, route.method)
             return await invoke()
 
@@ -74,7 +85,7 @@ async def execute_route(context: RouteContext) -> Any:
     return _wrap_success(await invoke_with_retry())
 
 
-async def _invoke_route(context: RouteContext, params: dict[str, Any]) -> Any:
+async def _invoke_route(context: RouteContext, params: dict[str, Any], resolved_credential: Credential | None) -> Any:
     if context.route.adapter is not None:
         adapter_context = RouteContext(
             request=context.request,
@@ -82,10 +93,15 @@ async def _invoke_route(context: RouteContext, params: dict[str, Any]) -> Any:
             cache=context.cache,
             route=context.route,
             params=params,
-            credential=params.get("credential"),
+            credential=resolved_credential,
         )
         result = context.route.adapter(adapter_context)
     else:
+        if resolved_credential is not None and _requires_credential(
+            context.client, context.route.module, context.route.method
+        ):
+            params["credential"] = resolved_credential
+
         module = getattr(context.client, context.route.module)
         bound_method = getattr(module, context.route.method)
         result = bound_method(**params)
