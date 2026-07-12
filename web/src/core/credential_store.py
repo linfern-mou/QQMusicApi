@@ -5,6 +5,7 @@ import secrets
 import sqlite3
 import threading
 import time
+from collections.abc import Iterator
 from contextlib import suppress
 from pathlib import Path
 
@@ -39,6 +40,7 @@ class CredentialStore:
             logger.info("初始化凭证存储: %s", self.path)
             self.path.parent.mkdir(parents=True, exist_ok=True)
             connection = self._connect()
+            connection.execute("PRAGMA journal_mode=WAL;")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS credentials (
@@ -80,19 +82,19 @@ class CredentialStore:
 
             logger.info("账号种子同步完成")
 
-    def random_credentials(self) -> list[Credential]:
+    def random_credentials(self) -> Iterator[Credential]:
         """随机顺序返回全部有效 Credential."""
         with self._lock:
             rows = self._connect().execute("SELECT credential_json FROM credentials WHERE valid = 1").fetchall()
-        credentials: list[Credential] = []
-        for row in rows:
-            credential = _load_credential(row[0])
-            if credential is not None and credential_has_login(credential):
-                credentials.append(credential)
-        logger.debug("获取有效凭证: %d 个", len(credentials))
+
+        json_strings = [row[0] for row in rows]
         rng = secrets.SystemRandom()
-        rng.shuffle(credentials)
-        return credentials
+        rng.shuffle(json_strings)
+
+        for json_str in json_strings:
+            credential = _load_credential(json_str)
+            if credential is not None and credential_has_login(credential):
+                yield credential
 
     def get(self, musicid: int) -> Credential | None:
         """按 musicid 获取凭证."""
