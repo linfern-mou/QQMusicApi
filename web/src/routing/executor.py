@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from qqmusic_api import Credential
 from qqmusic_api.core.exceptions import CredentialExpiredError
 
-from ..core.auth import configured_credential_for_api
+from ..core.auth import configured_credential_for_api, refresh_and_store
 from ..core.cache import cached_response, make_cache_key
 from ..core.credential_store import CredentialStore, credential_has_login
 from ..core.deps import get_credential_store
@@ -68,7 +68,14 @@ async def execute_route(context: RouteContext) -> Any:
             refreshed = await _refresh_credential(context, resolved_credential)
             resolved_credential = refreshed
             logger.info("凭证已刷新, 重试请求: %s.%s", route.module, route.method)
-            return await invoke()
+            try:
+                return await invoke()
+            except CredentialExpiredError:
+                logger.exception("凭证 %s 刷新后依然失效, 标记为无效", resolved_credential.musicid)
+                store = get_credential_store(context.request)
+                if isinstance(store, CredentialStore):
+                    await run_sync(store.mark_invalid, resolved_credential.musicid)
+                raise
 
     if cache_ttl is not None:
         cache_key = make_cache_key(route.path, params)
@@ -152,15 +159,12 @@ async def _refresh_credential(context: RouteContext, credential: Credential) -> 
         logger.error("无法刷新凭证 %s: 存储不可用或凭证无效", credential.musicid)
         raise CredentialExpiredError("登录凭证已失效", code=0)
     try:
-        logger.info("刷新凭证 %s", credential.musicid)
-        refreshed = await context.client.login.refresh_credential(credential)
-        await run_sync(store.update, refreshed)
+        logger.info("开始刷新凭证 %s", credential.musicid)
+        refreshed = await refresh_and_store(context.client, store, credential)
         logger.info("凭证 %s 刷新成功", credential.musicid)
         return refreshed
     except Exception as exc:
-        logger.error("凭证 %s 刷新失败: %s", credential.musicid, exc, exc_info=True)
-        await run_sync(store.mark_invalid, credential.musicid)
-        raise
+        raise CredentialExpiredError("登录凭证已失效", code=0) from exc
 
 
 def _wrap_success(result: Any) -> Any:

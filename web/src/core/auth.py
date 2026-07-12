@@ -85,6 +85,18 @@ async def _credential_is_expired(candidate: Credential, client: Client) -> bool:
     return False
 
 
+async def refresh_and_store(client: Client, store: CredentialStore, credential: Credential) -> Credential:
+    """尝试通过 API 刷新凭证, 成功则保存到状态库, 失败则标记无效并抛出异常."""
+    try:
+        refreshed = await client.login.refresh_credential(credential)
+        await run_sync(store.update, refreshed)
+        return refreshed
+    except Exception as exc:
+        logger.error("凭证 %s 刷新或保存失败: %s", credential.musicid, exc, exc_info=True)
+        await run_sync(store.mark_invalid, credential.musicid)
+        raise
+
+
 async def _refresh_configured_credential(
     *,
     store: CredentialStore,
@@ -100,20 +112,11 @@ async def _refresh_configured_credential(
             return current
         logger.info("开始刷新凭证 %s", current.musicid)
         try:
-            refreshed = await client.login.refresh_credential(current)
+            refreshed = await refresh_and_store(client, store, current)
             logger.info("凭证 %s 刷新成功", current.musicid)
-        except Exception as exc:
-            logger.error("凭证 %s 刷新失败: %s", current.musicid, exc, exc_info=True)
-            store.mark_invalid(candidate.musicid)
-            logger.warning("凭证 %s 已标记为无效", candidate.musicid)
+            return refreshed
+        except Exception:
             return None
-        try:
-            await run_sync(store.update, refreshed)
-            logger.debug("凭证 %s 状态已保存", refreshed.musicid)
-        except Exception as exc:
-            logger.error("凭证 %s 持久化失败: %s", current.musicid, exc, exc_info=True)
-            raise HTTPException(status_code=500, detail="Credential 刷新结果持久化失败") from exc
-        return refreshed
 
 
 async def configured_credential_for_api(
@@ -204,20 +207,17 @@ async def startup_credential_health_check(client: Client, store: CredentialStore
             if credential_needs_refresh(credential):
                 logger.info("启动检查: 凭证 %s 需要刷新", musicid)
                 try:
-                    refreshed = await client.login.refresh_credential(credential)
-                    await run_sync(store.update, refreshed)
+                    await refresh_and_store(client, store, credential)
                     logger.info("启动检查: 凭证 %s 刷新成功", musicid)
-                except Exception as exc:
-                    logger.error("启动检查: 凭证 %s 刷新失败: %s", musicid, exc, exc_info=True)
-                    await run_sync(store.mark_invalid, musicid)
+                except Exception:
+                    pass
             elif credential.musickey_create_time > 0 and credential.key_expires_in <= 0:
                 logger.debug("启动检查: 凭证 %s 进行过期检查", musicid)
                 try:
                     expired = await client.login.check_expired(credential)
                     if expired:
                         logger.info("启动检查: 凭证 %s 已过期, 开始刷新", musicid)
-                        refreshed = await client.login.refresh_credential(credential)
-                        await run_sync(store.update, refreshed)
+                        await refresh_and_store(client, store, credential)
                         logger.info("启动检查: 凭证 %s 刷新成功", musicid)
                     else:
                         logger.debug("启动检查: 凭证 %s 有效", musicid)
