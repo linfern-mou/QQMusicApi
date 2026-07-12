@@ -12,22 +12,21 @@ def _song_info_tuples(song_ids: list[int], song_types: list[int]) -> list[tuple[
     return list(zip(song_ids, song_types, strict=True))
 
 
-async def _write_songlist_songs(context: RouteContext, method_name: str):
-    """调用歌单歌曲写操作并返回业务数据."""
-    method = getattr(context.client.songlist, method_name)
-    return await method(
+async def add_songs_adapter(context: RouteContext):
+    """添加歌曲到歌单."""
+    return await context.client.songlist.add_songs(
         dirid=context.params["dirid"],
         song_info=_song_info_tuples(context.params["song_id"], context.params["song_type"]),
         tid=context.params["tid"],
-        credential=context.params["credential"],
+        credential=context.credential,
     )
-
-
-async def add_songs_adapter(context: RouteContext):
-    """添加歌曲到歌单."""
-    return await _write_songlist_songs(context, "add_songs")
 
 
 async def del_songs_adapter(context: RouteContext):
     """删除歌单中的歌曲."""
-    return await _write_songlist_songs(context, "del_songs")
+    return await context.client.songlist.del_songs(
+        dirid=context.params["dirid"],
+        song_info=_song_info_tuples(context.params["song_id"], context.params["song_type"]),
+        tid=context.params["tid"],
+        credential=context.credential,
+    )
