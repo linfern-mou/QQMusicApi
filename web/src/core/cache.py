@@ -68,7 +68,7 @@ class MemoryBackend:
             logger.debug("写入内存缓存: %s, TTL: %ds", key, ttl)
         else:
             logger.debug("写入内存缓存: %s, TTL: %ds", key, ttl)
-        self._store[key] = _CacheEntry(data=jsonable_encoder(data), expires_at=time.monotonic() + ttl)
+        self._store[key] = _CacheEntry(data=data, expires_at=time.monotonic() + ttl)
 
     async def close(self) -> None:
         """清空内存缓存."""
@@ -103,7 +103,7 @@ class RedisBackend:
             ) from exc
 
         logger.info("初始化 Redis 缓存后端: %s", url)
-        self._client: Redis = Redis.from_url(url, decode_responses=True)
+        self._client: Redis = Redis.from_url(url, decode_responses=False)
         self._prefix = prefix
 
     async def get(self, key: str) -> Any | None:
@@ -123,7 +123,7 @@ class RedisBackend:
     async def set(self, key: str, data: Any, ttl: int) -> None:
         """写入 Redis 缓存条目."""
         full_key = self._prefix + key
-        value = orjson.dumps(jsonable_encoder(data)).decode("utf-8")
+        value = orjson.dumps(data, default=str)
         await self._client.setex(full_key, ttl, value)
         logger.debug("写入 Redis 缓存: %s, TTL: %ds", full_key, ttl)
 
@@ -135,14 +135,17 @@ class RedisBackend:
 
 def make_cache_key(path: str, kwargs: dict[str, Any]) -> str:
     """基于路径与请求参数生成缓存键."""
-    serialized = orjson.dumps(jsonable_encoder(kwargs), option=orjson.OPT_SORT_KEYS)
+    serialized = orjson.dumps(kwargs, option=orjson.OPT_SORT_KEYS, default=str)
     param_hash = hashlib.sha256(serialized).hexdigest()[:16]
     return f"{path}:{param_hash}"
 
 
 def cached_response(data: Any, ttl: int) -> JSONResponse:
     """构造带 Cache-Control 头的缓存响应."""
-    content = data if isinstance(data, dict) else jsonable_encoder(data)
+    if hasattr(data, "model_dump"):
+        content = data.model_dump(mode="json")
+    else:
+        content = data if isinstance(data, dict) else jsonable_encoder(data)
     etag = hashlib.sha256(orjson.dumps(content, option=orjson.OPT_SORT_KEYS)).hexdigest()[:16]
     return JSONResponse(
         content=content,
