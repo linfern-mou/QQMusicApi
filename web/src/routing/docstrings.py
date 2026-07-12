@@ -159,6 +159,4 @@ def _split_text_sections(text_sections: list[str]) -> tuple[str, str]:
     if not text:
         return "", ""
     lines = text.splitlines()
-    summary = lines[0].strip().rstrip(".")
-    description = "\n".join(lines[1:]).strip()
-    return summary, description
+    return lines[0].strip().rstrip("."), "\n".join(lines[1:]).strip()

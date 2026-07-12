@@ -147,9 +147,8 @@ class CredentialStore:
         """返回全部已知 musicid."""
         with self._lock:
             rows = self._connect().execute("SELECT musicid FROM credentials").fetchall()
-        musicids = [row[0] for row in rows]
-        logger.debug("获取所有 musicid: %d 个", len(musicids))
-        return musicids
+        logger.debug("获取所有 musicid: %d 个", len(rows))
+        return [row[0] for row in rows]
 
     def close(self) -> None:
         """关闭 SQLite 连接."""
@@ -210,15 +209,15 @@ def credential_needs_refresh(credential: Credential) -> bool:
     """判断凭证是否需要刷新."""
     if credential.musickey_create_time <= 0 or credential.key_expires_in <= 0:
         return False
-    needs_refresh = credential.is_expired()
-    if needs_refresh:
+    if credential.is_expired():
         logger.debug(
             "凭证需要刷新 (检查 musicid %s): 创建于 %s, 有效期 %ss",
             credential.musicid,
             credential.musickey_create_time,
             credential.key_expires_in,
         )
-    return needs_refresh
+        return True
+    return False
 
 
 def credential_has_login(credential: Credential) -> bool:
