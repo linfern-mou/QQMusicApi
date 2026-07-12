@@ -9,7 +9,8 @@ from typing import Any, Protocol
 
 import orjson
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse, Response
 
 logger = logging.getLogger(__name__)
 
@@ -141,17 +142,25 @@ def make_cache_key(path: str, kwargs: dict[str, Any]) -> str:
     return f"{path}:{param_hash}"
 
 
-def cached_response(data: Any, ttl: int) -> JSONResponse:
+def cached_response(data: Any, ttl: int, request: Request | None = None) -> Response:
     """构造带 Cache-Control 头的缓存响应."""
     if hasattr(data, "model_dump"):
         content = data.model_dump(mode="json")
     else:
         content = data if isinstance(data, dict) else jsonable_encoder(data)
-    etag = hashlib.sha256(orjson.dumps(content, option=orjson.OPT_SORT_KEYS)).hexdigest()[:16]
+
+    etag = f'W/"{hashlib.sha256(orjson.dumps(content, option=orjson.OPT_SORT_KEYS)).hexdigest()[:16]}"'
+    headers = {
+        "Cache-Control": f"public, max-age={ttl}",
+        "ETag": etag,
+    }
+
+    if request is not None:
+        if_none_match = request.headers.get("if-none-match")
+        if if_none_match == etag:
+            return Response(status_code=304, headers=headers)
+
     return JSONResponse(
         content=content,
-        headers={
-            "Cache-Control": f"public, max-age={ttl}",
-            "ETag": f'W/"{etag}"',
-        },
+        headers=headers,
     )

@@ -82,12 +82,12 @@ async def execute_route(context: RouteContext) -> Any:
         hit = await context.cache.get(cache_key)
         if hit is not None:
             logger.debug("缓存命中: %s", route.path)
-            return cached_response(hit, cache_ttl)
+            return cached_response(hit, cache_ttl, context.request)
         logger.debug("缓存未命中: %s, 准备执行路由", route.path)
         result = _wrap_success(await invoke_with_retry())
         await context.cache.set(cache_key, result, cache_ttl)
         logger.debug("缓存已更新: %s", route.path)
-        return cached_response(result, cache_ttl)
+        return cached_response(result, cache_ttl, context.request)
 
     return _wrap_success(await invoke_with_retry())
 
