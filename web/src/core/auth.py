@@ -33,7 +33,12 @@ class KeyedLock:
             if key not in self._locks:
                 lock = asyncio.Lock()
                 self._locks[key] = lock
-                ref = weakref.ref(lock, lambda _: self._locks.pop(key, None))
+
+                def cleanup(_: weakref.ReferenceType, k: int = key) -> None:
+                    self._locks.pop(k, None)
+                    self._finalizers.pop(k, None)
+
+                ref = weakref.ref(lock, cleanup)
                 self._finalizers[key] = ref
         lock = self._locks[key]
         async with lock:

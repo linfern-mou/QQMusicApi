@@ -123,7 +123,8 @@ class RedisBackend:
     async def set(self, key: str, data: Any, ttl: int) -> None:
         """写入 Redis 缓存条目."""
         full_key = self._prefix + key
-        value = orjson.dumps(data, default=str)
+        content = data.model_dump(mode="json") if hasattr(data, "model_dump") else data
+        value = orjson.dumps(content, default=str)
         await self._client.setex(full_key, ttl, value)
         logger.debug("写入 Redis 缓存: %s, TTL: %ds", full_key, ttl)
 
