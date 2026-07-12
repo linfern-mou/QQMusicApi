@@ -129,6 +129,9 @@ def make_endpoint(route: WebRoute) -> tuple[Callable[..., Any], MethodDocs]:
     return endpoint, docs
 
 
+_SDK_SIGNATURE_CACHE: dict[Any, inspect.Signature] = {}
+
+
 def _resolve_route_params(route: WebRoute) -> tuple[ParamOverride, ...]:
     """按 SDK 签名解析路由参数并应用覆盖声明."""
     if route.adapter is not None:
@@ -136,7 +139,10 @@ def _resolve_route_params(route: WebRoute) -> tuple[ParamOverride, ...]:
     method = _resolve_method(route)
     if method is None:
         return route.param_overrides
-    signature = inspect.signature(method)
+
+    if method not in _SDK_SIGNATURE_CACHE:
+        _SDK_SIGNATURE_CACHE[method] = inspect.signature(method)
+    signature = _SDK_SIGNATURE_CACHE[method]
     template_names = set(re.findall(r"{([^{}]+)}", route.path))
     overrides = {param.name: param for param in route.param_overrides}
     resolved: list[ParamOverride] = []
