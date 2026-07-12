@@ -2,6 +2,9 @@
 
 import asyncio
 import logging
+import weakref
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from anyio.to_thread import run_sync
 from fastapi import HTTPException, Request
@@ -13,10 +16,31 @@ from .deps import get_credential_config, get_credential_store
 
 logger = logging.getLogger(__name__)
 
-_CREDENTIAL_LOCK_MAX_SIZE = 256
 
-_credential_refresh_locks: dict[int, asyncio.Lock] = {}
-_credential_refresh_locks_guard = asyncio.Lock()
+class KeyedLock:
+    """带有自动回收功能的每个 Key 独立的 asyncio 锁."""
+
+    def __init__(self) -> None:
+        """初始化锁的存储与保护器."""
+        self._locks: dict[int, asyncio.Lock] = {}
+        self._guard = asyncio.Lock()
+        self._finalizers: dict[int, object] = {}
+
+    @asynccontextmanager
+    async def __call__(self, key: int) -> AsyncIterator[asyncio.Lock]:
+        """获取指定 key 的独立锁, 支持上下文管理."""
+        async with self._guard:
+            if key not in self._locks:
+                lock = asyncio.Lock()
+                self._locks[key] = lock
+                ref = weakref.ref(lock, lambda _: self._locks.pop(key, None))
+                self._finalizers[key] = ref
+        lock = self._locks[key]
+        async with lock:
+            yield lock
+
+
+_credential_refresh_locks = KeyedLock()
 
 _STARTUP_CONCURRENCY = 5
 
@@ -38,24 +62,6 @@ def resolve_configured_default_credential(
     if default_credential is not None and credential_has_login(default_credential):
         return default_credential
     return cookie_credential
-
-
-async def _credential_refresh_lock(musicid: int) -> asyncio.Lock:
-    async with _credential_refresh_locks_guard:
-        lock = _credential_refresh_locks.get(musicid)
-        if lock is None:
-            lock = asyncio.Lock()
-            _credential_refresh_locks[musicid] = lock
-        if len(_credential_refresh_locks) > _CREDENTIAL_LOCK_MAX_SIZE:
-            _purge_idle_locks()
-        return lock
-
-
-def _purge_idle_locks() -> None:
-    """移除未被持有的空闲锁, 保留活跃锁."""
-    idle_keys = [mid for mid, lock in _credential_refresh_locks.items() if not lock.locked()]
-    for key in idle_keys[: len(idle_keys) // 2]:
-        del _credential_refresh_locks[key]
 
 
 async def _credential_is_expired(candidate: Credential, client: Client) -> bool:
@@ -81,8 +87,7 @@ async def _refresh_configured_credential(
     candidate: Credential,
 ) -> Credential | None:
     """刷新过期默认 Credential 并避免同账号并发刷新."""
-    lock = await _credential_refresh_lock(candidate.musicid)
-    async with lock:
+    async with _credential_refresh_locks(candidate.musicid):
         latest = await run_sync(store.get, candidate.musicid)
         current = latest or candidate
         if not credential_needs_refresh(current):

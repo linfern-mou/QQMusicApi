@@ -173,7 +173,9 @@ class InMemoryRateLimiter:
         key = (client_ip, window)
         current = self._counters.get(key, 0) + 1
         self._counters[key] = current
-        self._discard_stale_windows(window)
+
+        stale_key = (client_ip, window - 1)
+        self._counters.pop(stale_key, None)
 
         remaining = max(0, self._capacity - current)
         return RateLimitResult(
@@ -183,11 +185,6 @@ class InMemoryRateLimiter:
             reset_at=reset_at,
             retry_after=retry_after,
         )
-
-    def _discard_stale_windows(self, current_window: int) -> None:
-        stale_keys = [key for key in self._counters if key[1] < current_window]
-        for key in stale_keys:
-            del self._counters[key]
 
 
 class InMemoryConcurrencyLimiter:
