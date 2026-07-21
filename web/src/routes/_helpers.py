@@ -98,6 +98,7 @@ LYRIC_OPTIONS = (
     Q("qrc", bool, default=False, description="是否返回逐字歌词."),
     Q("trans", bool, default=False, description="是否返回翻译歌词."),
     Q("roma", bool, default=False, description="是否返回罗马音歌词."),
+    Q("song_type", int, default=1, description="歌曲类型."),
 )
 SINGER_PAGE = (Q("num", int, 10, "返回数量."), Q("page", int, 1, "页码."))
 SINGER_SIMILAR_PAGE = (Q("number", int, 10, "返回数量."),)

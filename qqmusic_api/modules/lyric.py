@@ -16,6 +16,7 @@ class LyricApi(ApiModule):
         qrc: bool = False,
         trans: bool = False,
         roma: bool = False,
+        song_type: int = 1,
     ):
         """获取歌词原始数据.
 
@@ -24,6 +25,7 @@ class LyricApi(ApiModule):
             qrc: 是否获取逐字歌词 (逐字歌词可能需要特定权限).
             trans: 是否获取翻译.
             roma: 是否获取罗马音.
+            song_type: 歌曲类型.
         """
         params: dict[str, Any] = {
             "crypt": 1,
@@ -34,9 +36,10 @@ class LyricApi(ApiModule):
             "roma_t": 0,
             "trans": trans,
             "trans_t": 0,
-            "type": 1,
+            "type": song_type,
         }
         params.update(self._build_query_common_params())
+
         if isinstance(value, int) or (isinstance(value, str) and value.isdecimal()):
             params["songId"] = int(value)
         else:
