@@ -7,12 +7,11 @@ from typing import TYPE_CHECKING, Any, Literal, cast, overload
 
 import anyio
 import orjson as json
-from niquests import AsyncSession, AsyncTokenBucketLimiter, PreparedRequest
+from niquests import AsyncSession, AsyncTokenBucketLimiter, PreparedRequest, RetryConfiguration
 from niquests.exceptions import RequestException
 from niquests.models import Response
 from niquests.typing import AsyncHookType, ProxyType, TLSClientCertType, TLSVerifyType
 from tarsio import TarsDict
-from urllib3.util.retry import Retry
 
 from ..algorithms import zzc_sign
 from ..models.request import Credential, JceRequest, JceRequestItem, JceResponse, JceResponseItem, RequestItem
@@ -86,7 +85,7 @@ class Client:
             multiplexed=True,
             hooks=AsyncTokenBucketLimiter(rate=rate or 10, capacity=capacity or 50),
             happy_eyeballs=True,
-            retries=Retry(
+            retries=RetryConfiguration(
                 total=connect_retries or 2,
                 connect=connect_retries or 2,
                 read=0,
