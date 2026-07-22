@@ -4,8 +4,10 @@ from typing import Any
 
 from ..models.lyric import (
     BatchGetMultiStyleTransLyricResponse,
+    GetAIDictResponse,
     GetLyricResponse,
     GetSingingAnnotationsInfoResponse,
+    IsAIDictExistsResponse,
 )
 from ._base import ApiModule
 
@@ -94,4 +96,36 @@ class LyricApi(ApiModule):
             method="BatchGetMultiStyleTransLyric",
             param={"songID": song_id},
             response_model=BatchGetMultiStyleTransLyricResponse,
+        )
+
+    def is_ai_dict_exists(
+        self,
+        song_id: int,
+    ):
+        """检查是否存在 AI 歌词词典.
+
+        Args:
+            song_id: 歌曲 ID.
+        """
+        return self._build_request(
+            module="music.musichallSong.PlayLyricInfo",
+            method="IsAIDictExists",
+            param={"songID": song_id},
+            response_model=IsAIDictExistsResponse,
+        )
+
+    def get_ai_dict(
+        self,
+        song_id: int,
+    ):
+        """获取 AI 歌词词典信息.
+
+        Args:
+            song_id: 歌曲 ID.
+        """
+        return self._build_request(
+            module="music.musichallSong.PlayLyricInfo",
+            method="GetAIDictInfo",
+            param={"songID": song_id},
+            response_model=GetAIDictResponse,
         )

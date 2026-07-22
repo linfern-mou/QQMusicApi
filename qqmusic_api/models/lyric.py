@@ -96,3 +96,41 @@ class BatchGetMultiStyleTransLyricResponse(Response):
     """
 
     lyrics: list[MultiStyleLyricItem] = Field(default_factory=list)
+
+
+class IsAIDictExistsResponse(Response):
+    """检查是否存在 AI 歌词词典响应模型.
+
+    Attributes:
+        exists: 是否存在 AI 歌词词典.
+    """
+
+    exists: bool = False
+
+
+class AIDictItem(Response):
+    """AI 歌词词典项模型.
+
+    Attributes:
+        phrase: 划词 / 难词短语.
+        explain: AI 详细释义与语境解析.
+        lyric_text: 词语所在的歌词原文行.
+        trans_lyric_text: 歌词原文行的中文翻译.
+        lyric_timestamp: 歌词时间戳.
+    """
+
+    phrase: str = ""
+    explain: str = ""
+    lyric_text: str = ""
+    trans_lyric_text: str = ""
+    lyric_timestamp: str = ""
+
+
+class GetAIDictResponse(Response):
+    """获取 AI 歌词词典响应模型.
+
+    Attributes:
+        dict_list: AI 歌词词典列表.
+    """
+
+    dict_list: list[AIDictItem] = Field(default_factory=list, validation_alias="dictList")

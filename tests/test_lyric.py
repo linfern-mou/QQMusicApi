@@ -56,3 +56,15 @@ async def test_get_multi_style_trans_lyric(client: Client) -> None:
     """测试获取多风格翻译歌词."""
     result = await client.lyric.get_multi_style_trans_lyric(song_id=496097762)
     assert isinstance(result.lyrics, list)
+
+
+async def test_is_ai_dict_exists(client: Client) -> None:
+    """测试检查是否存在 AI 歌词词典."""
+    result = await client.lyric.is_ai_dict_exists(song_id=7137686)
+    assert isinstance(result.exists, bool)
+
+
+async def test_get_ai_dict_info(client: Client) -> None:
+    """测试获取 AI 歌词词典信息."""
+    result = await client.lyric.get_ai_dict(song_id=7137686)
+    assert isinstance(result.dict_list, list)

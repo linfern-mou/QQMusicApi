@@ -2,8 +2,10 @@
 
 from qqmusic_api.models.lyric import (
     BatchGetMultiStyleTransLyricResponse,
+    GetAIDictResponse,
     GetLyricResponse,
     GetSingingAnnotationsInfoResponse,
+    IsAIDictExistsResponse,
 )
 
 from ..routing.route_types import PUBLIC_300, WebRoute
@@ -24,6 +26,22 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_singing_annotations_info",
         "/song/{songid}/lyric/annotations_info",
         GetSingingAnnotationsInfoResponse,
+        params=SONG_ID,
+        cache=PUBLIC_300,
+    ),
+    R(
+        "lyric",
+        "is_ai_dict_exists",
+        "/song/{songid}/lyric/ai_dict/exists",
+        IsAIDictExistsResponse,
+        params=SONG_ID,
+        cache=PUBLIC_300,
+    ),
+    R(
+        "lyric",
+        "get_ai_dict_info",
+        "/song/{songid}/lyric/ai_dict",
+        GetAIDictResponse,
         params=SONG_ID,
         cache=PUBLIC_300,
     ),
