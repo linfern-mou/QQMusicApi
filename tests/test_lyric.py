@@ -50,3 +50,9 @@ async def test_get_singing_annotations_info(client: Client) -> None:
     """测试获取助唱标注歌词信息."""
     result = await client.lyric.get_singing_annotations_info(song_id=4835784)
     assert result.has_singing_annotations_lyric is True
+
+
+async def test_get_multi_style_trans_lyric(client: Client) -> None:
+    """测试获取多风格翻译歌词."""
+    result = await client.lyric.get_multi_style_trans_lyric(song_id=496097762)
+    assert isinstance(result.lyrics, list)

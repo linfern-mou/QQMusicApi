@@ -22,9 +22,9 @@ class GetLyricResponse(Response):
         trans_t: 翻译歌词更新时间戳.
         roma_t: 罗马音歌词更新时间戳.
         singing_annotations_ts: 助唱标注歌词时间戳.
-        has_contributor: 是否包含歌词贡献者.
-        has_trans_contributor: 是否包含翻译贡献者.
-        has_multi_trans: 是否包含多风格翻译歌词.
+        has_contributor: 是否有歌词贡献者.
+        has_trans_contributor: 是否有翻译贡献者.
+        has_multi_trans: 是否有多风格翻译歌词.
     """
 
     song_id: int = Field(validation_alias="songID")
@@ -61,3 +61,38 @@ class GetSingingAnnotationsInfoResponse(Response):
     """
 
     has_singing_annotations_lyric: bool = Field(default=False, validation_alias="hasSingingAnnotationsLyric")
+
+
+class MultiStyleLyricItem(Response):
+    """多风格翻译歌词项模型.
+
+    Attributes:
+        style: 风格 ID.
+        style_name: 风格名称.
+        lyric: 翻译歌词内容.
+        timestamp: 时间戳.
+    """
+
+    style: int
+    style_name: str = Field(validation_alias="styleName")
+    lyric: str
+    timestamp: int = 0
+
+    @model_validator(mode="before")
+    @classmethod
+    def _decrypt_lyric(cls, data: dict) -> dict:
+        value = data.get("lyric")
+        if value and isinstance(value, str):
+            with contextlib.suppress(ValueError, TypeError):
+                data["lyric"] = qrc_decrypt(value)
+        return data
+
+
+class BatchGetMultiStyleTransLyricResponse(Response):
+    """多风格翻译歌词接口响应.
+
+    Attributes:
+        lyrics: 多风格翻译歌词列表.
+    """
+
+    lyrics: list[MultiStyleLyricItem] = Field(default_factory=list)

@@ -2,7 +2,11 @@
 
 from typing import Any
 
-from ..models.lyric import GetLyricResponse, GetSingingAnnotationsInfoResponse
+from ..models.lyric import (
+    BatchGetMultiStyleTransLyricResponse,
+    GetLyricResponse,
+    GetSingingAnnotationsInfoResponse,
+)
 from ._base import ApiModule
 
 
@@ -74,4 +78,20 @@ class LyricApi(ApiModule):
             },
             preserve_bool=True,
             response_model=GetSingingAnnotationsInfoResponse,
+        )
+
+    def get_multi_style_trans_lyric(
+        self,
+        song_id: int,
+    ):
+        """获取多风格翻译歌词 (如诗意、粤语、方言等).
+
+        Args:
+            song_id: 歌曲 ID.
+        """
+        return self._build_request(
+            module="music.musichallSong.PlayLyricInfo",
+            method="BatchGetMultiStyleTransLyric",
+            param={"songID": song_id},
+            response_model=BatchGetMultiStyleTransLyricResponse,
         )
