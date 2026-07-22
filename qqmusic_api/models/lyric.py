@@ -1,5 +1,7 @@
 """Lyric API 返回模型定义."""
 
+import contextlib
+
 from pydantic import Field, model_validator
 
 from ..algorithms import qrc_decrypt
@@ -7,28 +9,55 @@ from .request import Response
 
 
 class GetLyricResponse(Response):
-    """歌词接口返回的原始歌词载荷.
+    """歌词接口返回响应.
 
     Attributes:
         song_id: 歌曲 ID.
         lyric: 原始歌词内容.
         trans: 翻译歌词内容.
         roma: 罗马音歌词内容.
+        singing_annotations: 助唱标注歌词内容.
+        lrc_t: LRC 歌词更新时间戳.
+        qrc_t: QRC 歌词更新时间戳.
+        trans_t: 翻译歌词更新时间戳.
+        roma_t: 罗马音歌词更新时间戳.
+        singing_annotations_ts: 助唱标注歌词时间戳.
+        has_contributor: 是否包含歌词贡献者.
+        has_trans_contributor: 是否包含翻译贡献者.
+        has_multi_trans: 是否包含多风格翻译歌词.
     """
 
     song_id: int = Field(validation_alias="songID")
     lyric: str
     trans: str = ""
     roma: str = ""
+    singing_annotations_lyric: str = Field(default="", validation_alias="singingAnnotationsLyric")
+    lrc_t: int = 0
+    qrc_t: int = 0
+    trans_t: int = 0
+    roma_t: int = 0
+    singing_annotations_ts: int = Field(default=0, validation_alias="singingAnnotationsTs")
+    has_contributor: bool = Field(default=False, validation_alias="hasContributor")
+    has_trans_contributor: bool = Field(default=False, validation_alias="hasTransContributor")
+    has_multi_trans: bool = Field(default=False, validation_alias="hasMultiTrans")
 
     @model_validator(mode="before")
     @classmethod
     def _decrypt_lyrics(cls, data: dict) -> dict:
-        if data.get("crypt") == 1:
-            if data.get("lyric"):
-                data["lyric"] = qrc_decrypt(data["lyric"])
-            if data.get("trans"):
-                data["trans"] = qrc_decrypt(data["trans"])
-            if data.get("roma"):
-                data["roma"] = qrc_decrypt(data["roma"])
+        target_fields = ("lyric", "trans", "roma", "singingAnnotationsLyric")
+        for field in target_fields:
+            value = data.get(field)
+            if value and isinstance(value, str):
+                with contextlib.suppress(ValueError, TypeError):
+                    data[field] = qrc_decrypt(value)
         return data
+
+
+class GetSingingAnnotationsInfoResponse(Response):
+    """获取助唱标注歌词信息响应模型.
+
+    Attributes:
+        has_singing_annotations_lyric: 是否包含助唱标注歌词.
+    """
+
+    has_singing_annotations_lyric: bool = Field(default=False, validation_alias="hasSingingAnnotationsLyric")

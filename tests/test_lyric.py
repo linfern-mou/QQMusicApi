@@ -28,12 +28,25 @@ async def test_get_lyric_with_roma(client: Client) -> None:
     assert result.roma is not None
 
 
+async def test_get_lyric_with_singing_annotations(client: Client) -> None:
+    """测试获取助唱标注歌词."""
+    result = await client.lyric.get_lyric(value=4835784, singing_annotations=True)
+    assert result.song_id == 4835784
+
+
 async def test_get_lyric_with_all_options(client: Client) -> None:
     """测试获取包含所有选项的歌词."""
     result = await client.lyric.get_lyric(
-        value=100,
+        value=4835784,
         qrc=True,
         trans=True,
         roma=True,
+        singing_annotations=True,
     )
     assert result.lyric
+
+
+async def test_get_singing_annotations_info(client: Client) -> None:
+    """测试获取助唱标注歌词信息."""
+    result = await client.lyric.get_singing_annotations_info(song_id=4835784)
+    assert result.has_singing_annotations_lyric is True
