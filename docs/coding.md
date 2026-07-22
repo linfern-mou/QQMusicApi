@@ -388,7 +388,7 @@ from qqmusic_api import Client
 
 async def test_query_song(client: Client) -> None:
     """测试根据 ID 查询歌曲."""
-    result = await client.song.query_song(["003w2xz20QlUZt"])
+    result = await client.song.query_song([SongQueryInfo(mid="003w2xz20QlUZt")])
     assert result.tracks
     assert result.tracks[0].name
 ```

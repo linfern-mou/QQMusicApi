@@ -3,19 +3,38 @@
 import pytest
 
 from qqmusic_api import Client
-from qqmusic_api.modules.song import EncryptedSongFileType, SongFileInfo, SongFileType
+from qqmusic_api.core.exceptions import CgiApiException
+from qqmusic_api.modules.song import EncryptedSongFileType, SongFileInfo, SongFileType, SongQueryInfo
 
 
-@pytest.mark.parametrize("value", [[100], ["003w2xz20QlUZt"]])
-async def test_query_song(client: Client, value: list[int] | list[str]) -> None:
+@pytest.mark.parametrize(
+    "value",
+    [
+        [SongQueryInfo(id=107479170)],
+        [SongQueryInfo(mid="003w2xz20QlUZt")],
+        [SongQueryInfo(id=107479170, song_type=1)],
+        [SongQueryInfo(id=2314161, song_type=113)],
+        [SongQueryInfo(id=107479170), SongQueryInfo(id=2314161, song_type=113)],
+    ],
+)
+async def test_query_song(
+    client: Client,
+    value: list[SongQueryInfo],
+) -> None:
     """测试查询歌曲信息."""
-    result = await client.song.query_song(value)
-    assert result.tracks
+    try:
+        result = await client.song.query_song(value)
+        assert result.tracks
+    except CgiApiException as e:
+        if e.code == 103902:
+            pytest.skip("特定特殊歌曲无权限或已下架 (103902)")
+        else:
+            raise
 
 
 async def test_query_song_empty_value(client: Client) -> None:
     """测试空列表查询歌曲时抛出异常."""
-    with pytest.raises(ValueError, match="value 不能为空"):
+    with pytest.raises(ValueError, match="song_info 不能为空"):
         await client.song.query_song([])
 
 

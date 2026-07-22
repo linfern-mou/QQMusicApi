@@ -34,7 +34,7 @@ asyncio.run(main())
 通过 `query_song` 获取歌曲信息后，可从 `pay` 字段判断是否需要付费：
 
 ```python
-song = await client.song.query_song(["003w2xz20QlUZt"])
+song = await client.song.query_song([SongQueryInfo(mid="003w2xz20QlUZt")])
 track = song.tracks[0]
 
 # pay_play: 1=需要付费播放, 0=免费
@@ -72,7 +72,7 @@ for info in urls.data:
 `query_song` 返回的 `file` 字段包含各音质的文件大小，值为 `0` 表示该音质不存在：
 
 ```python
-song = await client.song.query_song(["003w2xz20QlUZt"])
+song = await client.song.query_song([SongQueryInfo(mid="003w2xz20QlUZt")])
 track = song.tracks[0]
 
 file = track.file

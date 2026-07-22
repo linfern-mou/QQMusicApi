@@ -21,11 +21,13 @@ from qqmusic_api.models.song import (
 from ..modules.song import (
     DEFAULT_SONG_FILE_TYPE,
     SONG_FILE_TYPE_MAPPING,
+    QuerySongRequest,
     SongUrlsRequest,
     get_fav_num_by_id_adapter,
     get_song_url_adapter,
     get_song_urls_adapter,
-    query_song_adapter,
+    query_song_get_adapter,
+    query_song_post_adapter,
 )
 from ..routing.route_types import PUBLIC_60, PUBLIC_300, PUBLIC_600, AuthPolicy, HttpMethod, WebRoute
 from ._helpers import MID, SONG_ID, SONG_RELATED_MV_PAGE, SONG_RELATED_SONGLIST_PAGE, VALUE, P, Q, R
@@ -118,7 +120,24 @@ ROUTES: tuple[WebRoute, ...] = (
         "query_song",
         "/song/query_song",
         QuerySongResponse,
-        params=(Q("value", list[str], description="歌曲 ID 列表或 MID 列表."),),
-        adapter=query_song_adapter,
+        methods=(HttpMethod.GET,),
+        params=(
+            Q("value", str, description="歌曲 ID 或 MID."),
+            Q("song_type", int | None, None, description="歌曲类型."),
+        ),
+        adapter=query_song_get_adapter,
+        summary="获取单首歌曲信息",
+        description="根据单个歌曲 ID 或 MID 查询歌曲信息.",
+    ),
+    R(
+        "song",
+        "query_song_post",
+        "/song/query_song",
+        QuerySongResponse,
+        methods=(HttpMethod.POST,),
+        body_model=QuerySongRequest,
+        adapter=query_song_post_adapter,
+        summary="批量查询歌曲",
+        description="通过传递 `query_info` 结构列表进行批量查询.",
     ),
 )
