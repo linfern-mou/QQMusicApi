@@ -1,4 +1,20 @@
 
+## [[0.7.0](https://github.com/L-1124/QQMusicApi/compare/v0.6.9..v0.7.0)] - 2026-07-22
+
+### Bug 修复
+
+* fix retry import path ([75d0693](https://github.com/L-1124/QQMusicApi/commit/75d069344a07c6713b4a616ed6304ca6dc1b740a)) by [@L-1124](https://github.com/L-1124)
+
+### 功能更新
+
+* **(lyric)** 支持指定特殊歌曲类型(song_type)查询歌词 ([1b0aae0](https://github.com/L-1124/QQMusicApi/commit/1b0aae0db3ee6876b3a77b8d1ce3057b4b3c9cd5)) by [@L-1124](https://github.com/L-1124)
+* **(song)** [**breaking**] 重构歌曲查询支持 SongQueryInfo 与 Web POST 批量路由 ([4cbb2c6](https://github.com/L-1124/QQMusicApi/commit/4cbb2c6e993d58db71494ce31809a144bfc33be4)) by [@L-1124](https://github.com/L-1124)
+
+### 贡献者
+
+* @L-1124
+* @github-actions[bot]
+
 ## [[0.6.9](https://github.com/L-1124/QQMusicApi/compare/v0.6.8..v0.6.9)] - 2026-07-12
 
 ### Bug 修复
