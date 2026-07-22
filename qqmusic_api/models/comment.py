@@ -1,10 +1,28 @@
 """Comment API 返回模型定义."""
 
+from enum import IntEnum
 from typing import Any
 
 from pydantic import Field
 
 from .request import Response
+
+
+class CommentBizType(IntEnum):
+    """评论业务分类.
+
+    + SONG: 单曲评论.
+    + ALBUM: 专辑评论.
+    + PLAYLIST: 歌单评论.
+    + MV: 音乐视频(MV)评论.
+    + SPECIAL_AUDIO: 特殊音频/长音频等评论.
+    """
+
+    SONG = 1
+    ALBUM = 2
+    PLAYLIST = 3
+    MV = 4
+    SPECIAL_AUDIO = 15
 
 
 class IconTextInfo(Response):

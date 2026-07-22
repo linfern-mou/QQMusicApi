@@ -5,6 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from qqmusic_api.models.comment import CommentBizType
 from qqmusic_api.modules.search import SearchType
 from qqmusic_api.modules.singer import AreaType, GenreType, IndexType, SexType
 
@@ -80,6 +81,10 @@ VALUE = (P("value", int | str, "资源 ID 或 MID."),)
 MID = (P("mid", str, "资源 MID."),)
 SONG_ID = (P("songid", int, "歌曲 ID."),)
 BIZ_ID = (P("biz_id", int, "业务歌曲 ID."),)
+COMMENT_BIZ_PARAMS = (
+    Q("biz_type", int | CommentBizType, CommentBizType.SONG, "业务类型."),
+    Q("biz_sub_type", int | None, None, "业务子类型 (可选)."),
+)
 SONGLIST_ID = (P("songlist_id", int, "歌单 ID."),)
 TOP_ID = (P("top_id", int, "排行榜 ID."),)
 UIN = (P("uin", int, "用户 UIN."),)

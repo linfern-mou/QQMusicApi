@@ -9,7 +9,7 @@ from qqmusic_api.models.comment import (
 
 from ..modules.comment import AddCommentBody, add_comment_adapter
 from ..routing.route_types import PUBLIC_60, AuthPolicy, HttpMethod, WebRoute
-from ._helpers import BIZ_ID, COMMENT_LIST_PAGE, COMMENT_MOMENT_PAGE, P, R
+from ._helpers import BIZ_ID, COMMENT_BIZ_PARAMS, COMMENT_LIST_PAGE, COMMENT_MOMENT_PAGE, P, R
 
 ROUTES: tuple[WebRoute, ...] = (
     R(
@@ -17,7 +17,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_comment_count",
         "/song/{biz_id}/comments/count",
         CommentCountResponse,
-        params=BIZ_ID,
+        params=(*BIZ_ID, *COMMENT_BIZ_PARAMS),
         cache=PUBLIC_60,
     ),
     R(
@@ -25,7 +25,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_hot_comments",
         "/song/{biz_id}/comments/hot",
         CommentListResponse,
-        params=(*BIZ_ID, *COMMENT_LIST_PAGE),
+        params=(*BIZ_ID, *COMMENT_LIST_PAGE, *COMMENT_BIZ_PARAMS),
         cache=PUBLIC_60,
     ),
     R(
@@ -33,7 +33,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_moment_comments",
         "/song/{biz_id}/comments/moments",
         MomentCommentResponse,
-        params=(*BIZ_ID, *COMMENT_MOMENT_PAGE),
+        params=(*BIZ_ID, *COMMENT_MOMENT_PAGE, *COMMENT_BIZ_PARAMS),
         cache=PUBLIC_60,
     ),
     R(
@@ -41,7 +41,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_new_comments",
         "/song/{biz_id}/comments/new",
         CommentListResponse,
-        params=(*BIZ_ID, *COMMENT_LIST_PAGE),
+        params=(*BIZ_ID, *COMMENT_LIST_PAGE, *COMMENT_BIZ_PARAMS),
         cache=PUBLIC_60,
     ),
     R(
@@ -49,7 +49,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_recommend_comments",
         "/song/{biz_id}/comments/recommended",
         CommentListResponse,
-        params=(*BIZ_ID, *COMMENT_LIST_PAGE),
+        params=(*BIZ_ID, *COMMENT_LIST_PAGE, *COMMENT_BIZ_PARAMS),
         cache=PUBLIC_60,
     ),
     R(
@@ -61,7 +61,7 @@ ROUTES: tuple[WebRoute, ...] = (
         auth=AuthPolicy.COOKIE_OR_DEFAULT,
         body_model=AddCommentBody,
         adapter=add_comment_adapter,
-        params=BIZ_ID,
+        params=(*BIZ_ID, *COMMENT_BIZ_PARAMS),
         summary="添加评论",
         description="为指定歌曲添加评论, 支持回复指定评论.",
     ),

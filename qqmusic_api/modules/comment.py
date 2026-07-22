@@ -9,8 +9,13 @@ from ..core.pagination import (
     PaginationParams,
     ResponseAdapter,
 )
-from ..core.versioning import Platform
-from ..models.comment import AddCommentResponse, CommentCountResponse, CommentListResponse, MomentCommentResponse
+from ..models.comment import (
+    AddCommentResponse,
+    CommentBizType,
+    CommentCountResponse,
+    CommentListResponse,
+    MomentCommentResponse,
+)
 from ..models.request import Credential
 from ._base import ApiModule
 
@@ -44,20 +49,30 @@ def _build_comment_pager_meta() -> PagerMeta:
 class CommentApi(ApiModule):
     """评论 API."""
 
-    def get_comment_count(self, biz_id: int):
+    def get_comment_count(
+        self,
+        biz_id: int,
+        biz_type: int | CommentBizType = CommentBizType.SONG,
+        biz_sub_type: int | None = None,
+    ):
         """获取歌曲评论数量.
 
         Args:
-            biz_id: 歌曲 ID.
+            biz_id: 业务 ID.
+            biz_type: 业务类型, 默认为普通歌曲.
+            biz_sub_type: 业务子类型.
         """
         # 支持 request_list
-        data = {
-            "request": {
-                "biz_id": str(biz_id),
-                "biz_type": 1,
-                "biz_sub_type": 2,
-            },
+        req_data: dict[str, Any] = {
+            "biz_id": str(biz_id),
+            "biz_type": int(biz_type),
         }
+        if biz_sub_type is not None:
+            req_data["biz_sub_type"] = biz_sub_type
+        elif biz_type == CommentBizType.SONG:
+            req_data["biz_sub_type"] = 2
+
+        data = {"request": req_data}
         return self._build_request(
             "music.globalComment.CommentCountSrv",
             "GetCmCount",
@@ -71,17 +86,21 @@ class CommentApi(ApiModule):
         page_num: int = 1,
         page_size: int = 15,
         last_comment_seq_no: str = "",
+        biz_type: int | CommentBizType = CommentBizType.SONG,
+        biz_sub_type: int | None = None,
     ):
         """获取歌曲热评.
 
         Args:
-            biz_id: 歌曲 ID.
+            biz_id: 业务 ID.
             page_num: 页码.
             page_size: 每页数量.
             last_comment_seq_no: 上一页最后一条评论 ID (可选).
+            biz_type: 业务类型.
+            biz_sub_type: 业务子类型.
         """
-        params = {
-            "BizType": 1,
+        params: dict[str, Any] = {
+            "BizType": int(biz_type),
             "BizId": str(biz_id),
             "LastCommentSeqNo": last_comment_seq_no,
             "PageSize": page_size,
@@ -90,6 +109,8 @@ class CommentApi(ApiModule):
             "WithAirborne": 0,
             "PicEnable": 1,
         }
+        if biz_sub_type is not None:
+            params["BizSubType"] = biz_sub_type
         return self._build_request(
             "music.globalComment.CommentRead",
             "GetHotCommentList",
@@ -104,26 +125,32 @@ class CommentApi(ApiModule):
         page_num: int = 1,
         page_size: int = 15,
         last_comment_seq_no: str = "",
+        biz_type: int | CommentBizType = CommentBizType.SONG,
+        biz_sub_type: int | None = None,
     ):
         """获取歌曲最新评论.
 
         Args:
-            biz_id: 歌曲 ID.
+            biz_id: 业务 ID.
             page_num: 页码.
             page_size: 每页数量.
             last_comment_seq_no: 上一页最后一条评论 ID (可选).
+            biz_type: 业务类型.
+            biz_sub_type: 业务子类型.
         """
-        params = {
+        params: dict[str, Any] = {
             "PageSize": page_size,
             "PageNum": page_num - 1,
             "HashTagID": "",
-            "BizType": 1,
+            "BizType": int(biz_type),
             "PicEnable": 1,
             "LastCommentSeqNo": last_comment_seq_no,
             "SelfSeeEnable": 1,
             "BizId": str(biz_id),
             "AudioEnable": 1,
         }
+        if biz_sub_type is not None:
+            params["BizSubType"] = biz_sub_type
         return self._build_request(
             "music.globalComment.CommentRead",
             "GetNewCommentList",
@@ -138,19 +165,23 @@ class CommentApi(ApiModule):
         page_num: int = 1,
         page_size: int = 15,
         last_comment_seq_no: str = "",
+        biz_type: int | CommentBizType = CommentBizType.SONG,
+        biz_sub_type: int | None = None,
     ):
         """获取歌曲推荐评论.
 
         Args:
-            biz_id: 歌曲 ID.
+            biz_id: 业务 ID.
             page_num: 页码.
             page_size: 每页数量.
             last_comment_seq_no: 上一页最后一条评论 ID (可选).
+            biz_type: 业务类型.
+            biz_sub_type: 业务子类型.
         """
-        params = {
+        params: dict[str, Any] = {
             "PageSize": page_size,
             "PageNum": page_num - 1,
-            "BizType": 1,
+            "BizType": int(biz_type),
             "PicEnable": 1,
             "Flag": 1,
             "LastCommentSeqNo": last_comment_seq_no,
@@ -158,6 +189,8 @@ class CommentApi(ApiModule):
             "BizId": str(biz_id),
             "AudioEnable": 1,
         }
+        if biz_sub_type is not None:
+            params["BizSubType"] = biz_sub_type
         return self._build_request(
             "music.globalComment.CommentRead",
             "GetRecCommentList",
@@ -171,22 +204,28 @@ class CommentApi(ApiModule):
         biz_id: int,
         page_size: int = 15,
         last_comment_seq_no: str = "",
+        biz_type: int | CommentBizType = CommentBizType.SONG,
+        biz_sub_type: int | None = None,
     ):
         """获取歌曲时刻评论.
 
         Args:
-            biz_id: 歌曲 ID.
+            biz_id: 业务 ID.
             page_size: 每页数量.
             last_comment_seq_no: 上一页最后一条评论 ID (可选).
+            biz_type: 业务类型.
+            biz_sub_type: 业务子类型.
         """
-        params = {
+        params: dict[str, Any] = {
             "LastPos": last_comment_seq_no,
             "HashTagID": "",
             "SeekTs": -1,
             "Size": page_size,
-            "BizType": 1,
+            "BizType": int(biz_type),
             "BizId": str(biz_id),
         }
+        if biz_sub_type is not None:
+            params["BizSubType"] = biz_sub_type
         return self._build_request(
             "music.globalComment.SongTsComment",
             "GetSongTsCmList",
@@ -203,29 +242,35 @@ class CommentApi(ApiModule):
         biz_id: int,
         content: str,
         reply_cmt_id: str | None = None,
+        biz_type: int | CommentBizType = CommentBizType.SONG,
+        biz_sub_type: int | None = None,
         credential: Credential | None = None,
     ):
         """添加评论.
 
-        固定使用 Android 平台.
-
         Args:
-            biz_id: 歌曲 ID.
+            biz_id: 业务 ID.
             content: 评论内容.
             reply_cmt_id: 回复的评论 ID.
+            biz_type: 业务类型.
+            biz_sub_type: 业务子类型.
             credential: 登录凭据.
         """
+        req_data: dict[str, Any] = {
+            "Content": content,
+            "BizType": int(biz_type),
+            "BizId": str(biz_id),
+        }
+        if reply_cmt_id is not None:
+            req_data["RepliedCmId"] = reply_cmt_id
+        if biz_sub_type is not None:
+            req_data["BizSubType"] = biz_sub_type
+
         return self._build_request(
             "music.globalComment.CommentWriteServer",
             "AddComment",
-            {
-                "Content": content,
-                "BizType": 1,
-                "BizId": str(biz_id),
-                "RepliedCmId": reply_cmt_id,
-            },
+            req_data,
             credential=credential,
-            platform=Platform.ANDROID,
             response_model=AddCommentResponse,
             require_login=True,
         )
@@ -236,8 +281,6 @@ class CommentApi(ApiModule):
         credential: Credential | None = None,
     ) -> bool:
         """删除评论.
-
-        固定使用 Android 平台.
 
         Args:
             cm_id: 评论 ID.
@@ -252,7 +295,6 @@ class CommentApi(ApiModule):
             {
                 "CommentId": cm_id,
             },
-            platform=Platform.ANDROID,
             credential=credential,
             require_login=True,
         )
