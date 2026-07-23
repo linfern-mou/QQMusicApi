@@ -34,9 +34,6 @@ class HelperApi(ApiModule):
             bus_id: 业务 ID, 例如 "songlist", "avatar" 等.
             files: 待上传文件信息列表, 每项需包含 "FileSha1", "FileName", "FileSize".
             credential: 请求凭证.
-
-        Returns:
-            InitUploadResponse: 初始化上传响应对象.
         """
         return self._build_request(
             module="music.filesys.FileSystem",
@@ -65,9 +62,6 @@ class HelperApi(ApiModule):
             bus_id: 业务 ID.
             results: 上传结果列表, 每项需包含 Storage 字典等信息.
             credential: 请求凭证.
-
-        Returns:
-            FinishUploadResponse: 包含上传成功后的图片 URL 的响应对象.
         """
         return self._build_request(
             module="music.filesys.FileSystem",
