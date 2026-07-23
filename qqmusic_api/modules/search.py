@@ -20,6 +20,7 @@ class SearchType(IntEnum):
     + MV: MV
     + LYRIC: 歌词
     + USER: 用户
+    + RINGTONE: 彩铃
     + AUDIO_ALBUM: 节目专辑
     + AUDIO: 节目
     """
@@ -31,6 +32,7 @@ class SearchType(IntEnum):
     MV = 4
     LYRIC = 7
     USER = 8
+    RINGTONE = 10
     AUDIO_ALBUM = 15
     AUDIO = 18
 

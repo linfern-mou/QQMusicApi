@@ -8,6 +8,7 @@ from pydantic.json_schema import SkipJsonSchema
 from qqmusic_api.modules.song import (
     BaseSongFileType,
     EncryptedSongFileType,
+    RingSongFileType,
     SongFileInfo,
     SongFileType,
     SongQueryInfo,
@@ -63,6 +64,9 @@ SONG_FILE_TYPES: tuple[BaseSongFileType, ...] = (
     SpecialSongFileType.DRUMS,
     SpecialSongFileType.KAZOO,
     SpecialSongFileType.THERAPY,
+    RingSongFileType.RING_128,
+    RingSongFileType.RING_96,
+    RingSongFileType.RING_48,
 )
 SONG_FILE_TYPE_LABELS = tuple(
     member.name

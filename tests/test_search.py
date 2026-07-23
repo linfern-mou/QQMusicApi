@@ -14,6 +14,7 @@ SEARCH_TYPE_RESULT_FIELDS = {
     SearchType.MV: "mv",
     SearchType.LYRIC: "song",
     SearchType.USER: "user",
+    SearchType.RINGTONE: "song",
     SearchType.AUDIO_ALBUM: "audio_alum",
     SearchType.AUDIO: "song",
 }
@@ -56,6 +57,7 @@ async def test_general_search(client: Client, page: int) -> None:
         (SearchType.MV, 1, 10),
         (SearchType.LYRIC, 1, 10),
         (SearchType.USER, 1, 10),
+        (SearchType.RINGTONE, 1, 10),
         (SearchType.AUDIO_ALBUM, 1, 10),
         (SearchType.AUDIO, 1, 10),
         (SearchType.SONG, 2, 5),

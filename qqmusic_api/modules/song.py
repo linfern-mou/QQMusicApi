@@ -161,6 +161,19 @@ class SpecialSongFileType(BaseSongFileType):
     THERAPY = ("AA01", ".ogg")
 
 
+class RingSongFileType(BaseSongFileType):
+    """彩铃文件类型.
+
+    + RING_128: 高品质彩铃 (128k)
+    + RING_96: 标准彩铃 (96k)
+    + RING_48: 低品质彩铃 (48k)
+    """
+
+    RING_128 = ("R500", ".mp3")
+    RING_96 = ("R400", ".m4a")
+    RING_48 = ("R200", ".m4a")
+
+
 class SongFileInfo(NamedTuple):
     """歌曲文件信息.
 
