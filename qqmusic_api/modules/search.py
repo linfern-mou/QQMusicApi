@@ -5,7 +5,7 @@ from typing import Any, cast
 
 from ..core import Platform
 from ..core.pagination import MultiFieldContinuationStrategy, PagerMeta, PageStrategy, ResponseAdapter
-from ..models.search import GeneralSearchResponse, SearchByTypeResponse
+from ..models.search import GeneralSearchResponse, SearchByTypeResponse, SearchSelector
 from ..utils import get_searchID
 from ._base import ApiModule
 
@@ -140,6 +140,7 @@ class SearchApi(ApiModule):
         search_type: int | SearchType = SearchType.SONG,
         num: int = 10,
         page: int = 1,
+        selectors: list[SearchSelector] | None = None,
         searchid: str | None = None,
         *,
         highlight: bool = True,
@@ -153,6 +154,7 @@ class SearchApi(ApiModule):
             search_type: 搜索类型.
             num: 返回结果数量.
             page: 页码.
+            selectors: 搜索筛选器列表.
             searchid: 搜索会话 ID.
             highlight: 是否高亮关键词.
         """
@@ -168,6 +170,12 @@ class SearchApi(ApiModule):
                 "page_num": page,
                 "highlight": highlight,
                 "grp": True,
+                "selectors": {str(selector.type): str(selector.id) for selector in selectors} if selectors else {},
+                "vec_selectors": [
+                    {"type": selector.type, "name": selector.name, "id": selector.id} for selector in selectors
+                ]
+                if selectors
+                else [],
             },
             platform=Platform.ANDROID,
             response_model=SearchByTypeResponse,

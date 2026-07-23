@@ -3,6 +3,7 @@
 import pytest
 
 from qqmusic_api import Client
+from qqmusic_api.models.search import SearchSelector
 from qqmusic_api.modules.search import SearchType
 
 SEARCH_TYPE_RESULT_FIELDS = {
@@ -87,3 +88,10 @@ async def test_search_by_type_paginate(client: Client) -> None:
     assert pager.has_more() is False
     with pytest.raises(StopAsyncIteration):
         await pager.next()
+
+
+async def test_search_by_type_with_selectors(client: Client) -> None:
+    """测试按类型搜索支持 selectors 筛选器参数."""
+    selectors = [SearchSelector(id=4558, name="默认", type=0)]
+    result = await client.search.search_by_type("周杰伦", search_type=SearchType.SONG, num=5, selectors=selectors)
+    assert result.song is not None

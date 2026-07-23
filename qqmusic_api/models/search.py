@@ -175,6 +175,20 @@ class RelatedSearchWord(Response):
     search: str = Field(validation_alias="search_word")
 
 
+class SearchSelector(Response):
+    """搜索筛选器选项.
+
+    Attributes:
+        id: 选项 ID.
+        name: 选项名称.
+        type: 选项类型.
+    """
+
+    id: int
+    name: str
+    type: int
+
+
 class SearchByTypeResponse(Response):
     """按指定类型搜索时的响应模型.
 
@@ -193,6 +207,7 @@ class SearchByTypeResponse(Response):
         user: 用户结果列表.
         audio_alum: 节目专辑结果列表.
         mv: MV 结果列表.
+        selectors: 搜索筛选器列表.
     """
 
     searchid: str = Field(json_schema_extra={"jsonpath": "$.meta.searchid"})
@@ -220,6 +235,10 @@ class SearchByTypeResponse(Response):
     )
     mv: list[MvSearch] = Field(
         json_schema_extra={"jsonpath": "$.body.item_mv"},
+    )
+    selectors: list[list[SearchSelector]] = Field(
+        default_factory=list,
+        json_schema_extra={"jsonpath": "$.body.multi_extern_info.selectors"},
     )
 
 
