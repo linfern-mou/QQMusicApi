@@ -176,7 +176,7 @@ class RequestParamModel(BaseModel):
 
     def to_method_kwargs(self) -> dict[str, Any]:
         """转换为 SDK 方法参数."""
-        return self.model_dump(exclude_unset=False)
+        return dict(self)
 
 
 def is_empty_model(model: type[BaseModel] | None) -> bool:
@@ -236,30 +236,43 @@ def external_param_annotation(param: ParamOverride) -> Any:
     return _external_annotation(param, annotation)
 
 
+def _json_query_schema(annotation: Any) -> dict[str, Any]:
+    """根据注解返回 JSON Query 的 Schema."""
+    origin = get_origin(annotation)
+    if origin is list or (origin is not None and any(get_origin(arg) is list for arg in get_args(annotation))):
+        return {"type": "array", "items": {"type": "object"}}
+    return {"type": "object"}
+
+
 def _json_query_param(annotation: Any) -> Any:
     """返回 JSON Query 参数注解."""
-    return Annotated[annotation, BeforeValidator(_parse_json_query), WithJsonSchema({"type": "object"})]
+    return Annotated[annotation, BeforeValidator(_parse_json_query), WithJsonSchema(_json_query_schema(annotation))]
 
 
 def _parse_json_query(value: Any) -> Any:
-    """将 Query 中的 JSON 字符串解析为对象."""
-    if value is None or isinstance(value, dict):
+    """将 Query 中的 JSON 字符串解析为对象或对象列表."""
+    if isinstance(value, list) and len(value) == 1 and isinstance(value[0], str):
+        text = value[0].strip()
+        if text.startswith(("[", "{")):
+            value = text
+
+    if value is None or isinstance(value, (dict, list)):
         return value
     if isinstance(value, str):
         text = value.strip()
         if not text:
             return None
         parsed = orjson.loads(text)
-        if not isinstance(parsed, dict):
-            raise TypeError("JSON query value must be an object")
+        if not isinstance(parsed, (dict, list)):
+            raise TypeError("JSON query value must be an object or array")
         return parsed
-    raise TypeError("JSON query value must be an object string")
+    raise TypeError("JSON query value must be an object or array string")
 
 
 def _external_annotation(param: ParamOverride, annotation: Any) -> Any:
     if param.enum_mapping is not None:
         return enum_mapping_param(param.enum_mapping)
-    if param.source is ParamSource.QUERY and _is_dict_annotation(annotation):
+    if param.source is ParamSource.QUERY and _is_json_query_annotation(annotation):
         return _json_query_param(annotation)
     raw_enum_type = enum_type(annotation)
     if raw_enum_type is None:
@@ -271,13 +284,21 @@ def _external_annotation(param: ParamOverride, annotation: Any) -> Any:
     return annotation
 
 
-def _is_dict_annotation(annotation: Any) -> bool:
-    """判断注解是否为 dict 或可选 dict."""
+def _is_json_query_annotation(annotation: Any) -> bool:
+    """判断注解是否为需要 JSON 反序列化的 Query 类型 (如 dict 或模型 list)."""
     if annotation is dict:
         return True
     origin = get_origin(annotation)
     if origin is dict:
         return True
+    if origin is list:
+        args = get_args(annotation)
+        if args and (
+            args[0] is dict
+            or get_origin(args[0]) is dict
+            or (isinstance(args[0], type) and issubclass(args[0], BaseModel))
+        ):
+            return True
     if origin is None:
         return False
-    return any(arg is not type(None) and _is_dict_annotation(arg) for arg in get_args(annotation))
+    return any(arg is not type(None) and _is_json_query_annotation(arg) for arg in get_args(annotation))

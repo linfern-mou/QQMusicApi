@@ -29,7 +29,14 @@ from ..core.deps import cache_dependency, client_dependency
 from ..core.response import ApiResponse
 from .docstrings import MethodDocs, load_method_docs
 from .executor import collect_param_values, execute_route
-from .params import build_param_model, enum_type, external_param_annotation, is_empty_model, split_params
+from .params import (
+    _is_json_query_annotation,
+    build_param_model,
+    enum_type,
+    external_param_annotation,
+    is_empty_model,
+    split_params,
+)
 from .route_types import COOKIE_SECURITY_REQUIREMENT, AuthPolicy, ParamOverride, ParamSource, RouteContext, WebRoute
 
 _MODULE_CLASSES: dict[str, type[Any]] = {
@@ -372,7 +379,7 @@ def _is_supported_query_annotation(annotation: Any, *, explicit: bool = False) -
     origin = get_origin(annotation)
     if origin is None:
         return annotation in {str, int, float, bool}
-    if origin is dict:
+    if _is_json_query_annotation(annotation):
         return explicit
     if origin in {list, tuple}:
         args = get_args(annotation)

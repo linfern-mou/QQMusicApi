@@ -132,7 +132,7 @@ def _model_values(model: BaseModel) -> dict[str, Any]:
     try:
         if isinstance(model, _MethodKwargsModel):
             return model.to_method_kwargs()
-        return model.model_dump(exclude_unset=False)
+        return dict(model)
     except _VALIDATION_ERROR_TYPES as exc:
         raise HTTPException(status_code=422, detail="请求参数校验失败") from exc
 

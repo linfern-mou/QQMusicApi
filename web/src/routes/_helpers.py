@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from qqmusic_api.models.comment import CommentBizType
+from qqmusic_api.models.search import SearchSelector
 from qqmusic_api.modules.search import SearchType
 from qqmusic_api.modules.singer import AreaType, GenreType, IndexType, SexType
 
@@ -79,7 +80,8 @@ def R(
 
 VALUE = (P("value", int | str, "资源 ID 或 MID."),)
 MID = (P("mid", str, "资源 MID."),)
-SONG_ID = (P("songid", int, "歌曲 ID."),)
+SONGID = (P("songid", int, "歌曲 ID."),)
+SONG_ID = (P("song_id", int, "歌曲 ID."),)
 BIZ_ID = (P("biz_id", int, "业务歌曲 ID."),)
 COMMENT_BIZ_PARAMS = (
     Q("biz_type", int | CommentBizType, CommentBizType.SONG, "业务类型."),
@@ -146,4 +148,6 @@ SEARCH_BY_TYPE = (
     *SEARCH_GENERAL,
     Q("search_type", SearchType, SearchType.SONG, "搜索类型."),
     Q("num", int, 10, "返回数量."),
+    Q("selectors", list[SearchSelector] | None, None, "搜索筛选器, 以 JSON 数组字符串传入."),
+    Q("searchid", str | None, None, "搜索 ID."),
 )
