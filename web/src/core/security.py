@@ -1,6 +1,7 @@
 """Web 访问控制与 IP 限流."""
 
 import asyncio
+import logging
 import math
 import time
 from collections.abc import Callable
@@ -175,8 +176,9 @@ class InMemoryRateLimiter:
         current = self._counters.get(key, 0) + 1
         self._counters[key] = current
 
-        stale_key = (client_ip, window - 1)
-        self._counters.pop(stale_key, None)
+        stale_keys = [k for k in self._counters if k[0] == client_ip and k[1] < window - 1]
+        for k in stale_keys:
+            del self._counters[k]
 
         remaining = max(0, self._capacity - current)
         return RateLimitResult(
@@ -272,8 +274,9 @@ async def apply_security_middleware(request: Request, call_next: RequestResponse
         elif isinstance(response.background, BackgroundTasks):
             response.background.add_task(concurrency_limiter.release)
         else:
+            old = response.background
             tasks = BackgroundTasks()
-            tasks.tasks.append(response.background)
+            tasks.add_task(old)
             tasks.add_task(concurrency_limiter.release)
             response.background = tasks
     else:
@@ -284,6 +287,9 @@ async def apply_security_middleware(request: Request, call_next: RequestResponse
 
 def configure_security(app: FastAPI, config: SecurityConfig) -> None:
     """安装安全组件到应用状态."""
+    if not config.enabled:
+        logging.getLogger(__name__).debug("安全模块未启用, 跳过配置")
+        return
     security = SecurityServices(
         config=config,
         client_ip_resolver=ClientIpResolver(config.trusted_proxy_ips, config.client_ip_header),

@@ -191,8 +191,12 @@ def create_app() -> FastAPI:
     configure_security(app, settings.security)
     app.middleware("http")(apply_security_middleware)
 
+    _SKIP_ACCESS_LOG_PATHS = frozenset({"/", "/health"})
+
     @app.middleware("http")
     async def _log_access(request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.url.path in _SKIP_ACCESS_LOG_PATHS:
+            return await call_next(request)
         start = perf_counter()
         response = await call_next(request)
         elapsed_ms = (perf_counter() - start) * 1000
