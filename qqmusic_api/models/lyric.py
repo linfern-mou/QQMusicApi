@@ -12,7 +12,7 @@ class GetLyricResponse(Response):
     """歌词接口返回响应.
 
     Attributes:
-        song_id: 歌曲 ID.
+        songid: 歌曲 ID.
         lyric: 原始歌词内容.
         trans: 翻译歌词内容.
         roma: 罗马音歌词内容.
@@ -27,7 +27,7 @@ class GetLyricResponse(Response):
         has_multi_trans: 是否有多风格翻译歌词.
     """
 
-    song_id: int = Field(validation_alias="songID")
+    songid: int = Field(validation_alias="songID")
     lyric: str
     trans: str = ""
     roma: str = ""

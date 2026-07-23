@@ -81,7 +81,6 @@ def R(
 VALUE = (P("value", int | str, "资源 ID 或 MID."),)
 MID = (P("mid", str, "资源 MID."),)
 SONGID = (P("songid", int, "歌曲 ID."),)
-SONG_ID = (P("song_id", int, "歌曲 ID."),)
 BIZ_ID = (P("biz_id", int, "业务歌曲 ID."),)
 COMMENT_BIZ_PARAMS = (
     Q("biz_type", int | CommentBizType, CommentBizType.SONG, "业务类型."),

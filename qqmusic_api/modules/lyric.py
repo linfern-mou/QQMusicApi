@@ -64,18 +64,18 @@ class LyricApi(ApiModule):
 
     def get_singing_annotations_info(
         self,
-        song_id: int,
+        songid: int,
     ):
         """获取助唱标注歌词信息.
 
         Args:
-            song_id: 歌曲 ID.
+            songid: 歌曲 ID.
         """
         return self._build_request(
             module="music.musichallSong.PlayLyricInfo",
             method="GetSingingAnnotationsInfo",
             param={
-                "songID": song_id,
+                "songID": songid,
                 "needNum": False,
             },
             preserve_bool=True,
@@ -84,48 +84,48 @@ class LyricApi(ApiModule):
 
     def get_multi_style_trans_lyric(
         self,
-        song_id: int,
+        songid: int,
     ):
         """获取多风格翻译歌词 (如诗意、粤语、方言等).
 
         Args:
-            song_id: 歌曲 ID.
+            songid: 歌曲 ID.
         """
         return self._build_request(
             module="music.musichallSong.PlayLyricInfo",
             method="BatchGetMultiStyleTransLyric",
-            param={"songID": song_id},
+            param={"songID": songid},
             response_model=BatchGetMultiStyleTransLyricResponse,
         )
 
     def is_ai_dict_exists(
         self,
-        song_id: int,
+        songid: int,
     ):
         """检查是否存在 AI 歌词词典.
 
         Args:
-            song_id: 歌曲 ID.
+            songid: 歌曲 ID.
         """
         return self._build_request(
             module="music.musichallSong.PlayLyricInfo",
             method="IsAIDictExists",
-            param={"songID": song_id},
+            param={"songID": songid},
             response_model=IsAIDictExistsResponse,
         )
 
     def get_ai_dict(
         self,
-        song_id: int,
+        songid: int,
     ):
         """获取 AI 歌词词典信息.
 
         Args:
-            song_id: 歌曲 ID.
+            songid: 歌曲 ID.
         """
         return self._build_request(
             module="music.musichallSong.PlayLyricInfo",
             method="GetAIDictInfo",
-            param={"songID": song_id},
+            param={"songID": songid},
             response_model=GetAIDictResponse,
         )
