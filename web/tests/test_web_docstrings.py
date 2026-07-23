@@ -53,3 +53,23 @@ def test_route_explicit_docs_override_docstring_fallback() -> None:
 
     assert docs.params.get("keyword")
     assert endpoint.__doc__ == "显式描述"
+
+
+def test_enum_member_description_formatting() -> None:
+    r"""测试枚举成员描述格式化为 `- \`value\` : desc`."""
+    from enum import IntEnum
+
+    from web.src.routing.docstrings import enum_member_description
+
+    class SampleEnum(IntEnum):
+        """示例枚举.
+
+        + FOO: 第一项
+        + BAR: 第二项
+        """
+
+        FOO = 0
+        BAR = 10
+
+    desc = enum_member_description(SampleEnum)
+    assert desc == "- `0` : 第一项\n- `10` : 第二项"
