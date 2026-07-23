@@ -24,5 +24,5 @@ async def add_comment_adapter(context: RouteContext):
         reply_cmt_id=body.reply_cmt_id,
         biz_type=context.params.get("biz_type", 1),
         biz_sub_type=context.params.get("biz_sub_type"),
-        credential=context.params["credential"],
+        credential=context.credential,
     )

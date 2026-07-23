@@ -147,7 +147,7 @@ async def get_song_urls_adapter(context: RouteContext):
             for item in body.file_info
         ],
         file_type=body.file_type,
-        credential=context.params["credential"],
+        credential=context.credential,
     )
 
 
@@ -169,7 +169,7 @@ async def get_song_url_adapter(context: RouteContext):
             )
         ],
         file_type=context.params["file_type"],
-        credential=context.params["credential"],
+        credential=context.credential,
     )
 
 

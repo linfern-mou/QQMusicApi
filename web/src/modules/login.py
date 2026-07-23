@@ -200,13 +200,13 @@ def _build_qrcode_placeholder(identifier: str, login_type: QRLoginType) -> QR:
 @adapter("login", "check_expired")
 async def check_expired_adapter(context: RouteContext) -> bool:
     """检查登录凭证是否过期."""
-    return await context.client.login.check_expired(context.params["credential"])
+    return await context.client.login.check_expired(context.credential)
 
 
 @adapter("login", "refresh_credential")
 async def refresh_credential_adapter(context: RouteContext) -> Credential:
     """刷新登录凭证."""
-    return await context.client.login.refresh_credential(context.params["credential"])
+    return await context.client.login.refresh_credential(context.credential)
 
 
 @adapter("login", "qrcode")
