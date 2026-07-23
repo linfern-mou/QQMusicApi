@@ -23,11 +23,6 @@ from ..modules.song import (
     SONG_FILE_TYPE_MAPPING,
     QuerySongRequest,
     SongUrlsRequest,
-    get_fav_num_by_id_adapter,
-    get_song_url_adapter,
-    get_song_urls_adapter,
-    query_song_get_adapter,
-    query_song_post_adapter,
 )
 from ..routing.route_types import PUBLIC_60, PUBLIC_300, PUBLIC_600, AuthPolicy, HttpMethod, WebRoute
 from ._helpers import MID, SONG_RELATED_MV_PAGE, SONG_RELATED_SONGLIST_PAGE, SONGID, VALUE, P, Q, R
@@ -50,7 +45,6 @@ ROUTES: tuple[WebRoute, ...] = (
         GetFavNumResponse,
         params=(P("id", int, "歌曲 ID."),),
         cache=PUBLIC_60,
-        adapter=get_fav_num_by_id_adapter,
         summary="获取歌曲收藏数量",
         description="根据单个歌曲 ID 获取收藏数量.",
     ),
@@ -91,7 +85,6 @@ ROUTES: tuple[WebRoute, ...] = (
         methods=(HttpMethod.POST,),
         auth=AuthPolicy.COOKIE_OR_DEFAULT,
         body_model=SongUrlsRequest,
-        adapter=get_song_urls_adapter,
     ),
     R(
         "song",
@@ -111,13 +104,12 @@ ROUTES: tuple[WebRoute, ...] = (
             Q("media_mid", str | None, None, "媒体文件 MID."),
         ),
         auth=AuthPolicy.COOKIE_OR_DEFAULT,
-        adapter=get_song_url_adapter,
         summary="获取单首歌曲文件链接",
         description="根据单个歌曲 MID 获取文件链接.",
     ),
     R(
         "song",
-        "query_song",
+        "query_song_get",
         "/song/query_song",
         QuerySongResponse,
         methods=(HttpMethod.GET,),
@@ -125,7 +117,6 @@ ROUTES: tuple[WebRoute, ...] = (
             Q("value", str, description="歌曲 ID 或 MID."),
             Q("song_type", int | None, None, description="歌曲类型."),
         ),
-        adapter=query_song_get_adapter,
         summary="获取单首歌曲信息",
         description="根据单个歌曲 ID 或 MID 查询歌曲信息.",
     ),
@@ -136,7 +127,6 @@ ROUTES: tuple[WebRoute, ...] = (
         QuerySongResponse,
         methods=(HttpMethod.POST,),
         body_model=QuerySongRequest,
-        adapter=query_song_post_adapter,
         summary="批量查询歌曲",
         description="通过传递 `query_info` 结构列表进行批量查询.",
     ),

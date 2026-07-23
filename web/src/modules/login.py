@@ -17,6 +17,7 @@ from qqmusic_api.models.login import (
     QRLoginType,
 )
 
+from ..routing.adapter_registry import adapter
 from ..routing.params import path_enum_value
 from ..routing.route_types import RouteContext
 
@@ -196,16 +197,19 @@ def _build_qrcode_placeholder(identifier: str, login_type: QRLoginType) -> QR:
     return QR(data=b"", qr_type=login_type, mimetype="image/png", identifier=identifier)
 
 
+@adapter("login", "check_expired")
 async def check_expired_adapter(context: RouteContext) -> bool:
     """检查登录凭证是否过期."""
     return await context.client.login.check_expired(context.params["credential"])
 
 
+@adapter("login", "refresh_credential")
 async def refresh_credential_adapter(context: RouteContext) -> Credential:
     """刷新登录凭证."""
     return await context.client.login.refresh_credential(context.params["credential"])
 
 
+@adapter("login", "qrcode")
 async def qrcode_adapter(context: RouteContext) -> QRCodeData:
     """获取登录二维码."""
     login_type = _validate_web_qr_login_type(context.params["login_type"])
@@ -213,6 +217,7 @@ async def qrcode_adapter(context: RouteContext) -> QRCodeData:
     return _serialize_qrcode(qrcode)
 
 
+@adapter("login", "qrcode_status")
 async def qrcode_status_adapter(context: RouteContext) -> QRCodeStatusData:
     """检查二维码登录状态."""
     login_type = _validate_web_qr_login_type(context.params["login_type"])
@@ -221,6 +226,7 @@ async def qrcode_status_adapter(context: RouteContext) -> QRCodeStatusData:
     return _serialize_qrcode_status(result, qrcode)
 
 
+@adapter("login", "phone_authcode")
 async def phone_authcode_adapter(context: RouteContext) -> PhoneAuthCodeData:
     """发送手机验证码."""
     query = _validate_model(SendAuthcodeRequest, dict(context.params))
@@ -228,6 +234,7 @@ async def phone_authcode_adapter(context: RouteContext) -> PhoneAuthCodeData:
     return _serialize_phone_authcode(result)
 
 
+@adapter("login", "phone_authorize")
 async def phone_authorize_adapter(context: RouteContext) -> Credential:
     """使用手机验证码登录."""
     query = _validate_model(PhoneAuthorizeRequest, dict(context.params))

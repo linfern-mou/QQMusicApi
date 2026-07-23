@@ -7,7 +7,7 @@ from qqmusic_api.models.comment import (
     MomentCommentResponse,
 )
 
-from ..modules.comment import AddCommentBody, add_comment_adapter
+from ..modules.comment import AddCommentBody
 from ..routing.route_types import PUBLIC_60, AuthPolicy, HttpMethod, WebRoute
 from ._helpers import BIZ_ID, COMMENT_BIZ_PARAMS, COMMENT_LIST_PAGE, COMMENT_MOMENT_PAGE, P, R
 
@@ -60,7 +60,6 @@ ROUTES: tuple[WebRoute, ...] = (
         methods=(HttpMethod.POST,),
         auth=AuthPolicy.COOKIE_OR_DEFAULT,
         body_model=AddCommentBody,
-        adapter=add_comment_adapter,
         params=(*BIZ_ID, *COMMENT_BIZ_PARAMS),
         summary="添加评论",
         description="为指定歌曲添加评论, 支持回复指定评论.",

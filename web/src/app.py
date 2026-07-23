@@ -26,6 +26,7 @@ from qqmusic_api.core.exceptions import (
     RatelimitedError,
 )
 
+from . import modules  # noqa: F401
 from .core.auth import startup_credential_health_check
 from .core.cache import MemoryBackend, RedisBackend
 from .core.config import SecurityConfig, settings

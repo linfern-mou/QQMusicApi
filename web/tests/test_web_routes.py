@@ -5,12 +5,14 @@ from fastapi.routing import APIRoute
 
 from web.src.routes import ROUTES
 from web.src.routing.route_types import AuthPolicy
-from web.src.routing.router_factory import validate_routes
+from web.src.routing.router_factory import _resolve_route, validate_routes
+
+RESOLVED_ROUTES = tuple(_resolve_route(r) for r in ROUTES)
 
 
 def test_app_creation_and_route_validation_succeed(app: FastAPI) -> None:
     """测试应用创建与路由契约校验成功."""
-    assert validate_routes(ROUTES) == ()
+    assert validate_routes(RESOLVED_ROUTES) == ()
     assert len(app.openapi()["paths"]) == len({route.path for route in ROUTES})
 
 
@@ -102,7 +104,7 @@ def test_auth_routes_include_cookie_security_requirement(app: FastAPI) -> None:
     """测试认证路由包含 Cookie 安全需求."""
     schema = app.openapi()
 
-    for route in ROUTES:
+    for route in RESOLVED_ROUTES:
         if route.auth is not AuthPolicy.COOKIE_OR_DEFAULT:
             continue
         operation = schema["paths"][route.path][route.methods[0].value.lower()]
@@ -111,7 +113,7 @@ def test_auth_routes_include_cookie_security_requirement(app: FastAPI) -> None:
 
 def test_public_cache_routes_are_not_auth_routes(app: FastAPI) -> None:
     """测试 public 缓存路由不是认证路由."""
-    assert all(route.auth is AuthPolicy.NONE for route in ROUTES if route.cache is not None)
+    assert all(route.auth is AuthPolicy.NONE for route in RESOLVED_ROUTES if route.cache is not None)
 
 
 def test_representative_route_parameters_are_registered(app: FastAPI) -> None:

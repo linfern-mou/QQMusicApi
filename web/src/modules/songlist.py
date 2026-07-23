@@ -2,6 +2,7 @@
 
 from fastapi import HTTPException
 
+from ..routing.adapter_registry import adapter
 from ..routing.route_types import RouteContext
 
 
@@ -12,6 +13,7 @@ def _song_info_tuples(song_ids: list[int], song_types: list[int]) -> list[tuple[
     return list(zip(song_ids, song_types, strict=True))
 
 
+@adapter("songlist", "add_songs")
 async def add_songs_adapter(context: RouteContext):
     """添加歌曲到歌单."""
     return await context.client.songlist.add_songs(
@@ -22,6 +24,7 @@ async def add_songs_adapter(context: RouteContext):
     )
 
 
+@adapter("songlist", "del_songs")
 async def del_songs_adapter(context: RouteContext):
     """删除歌单中的歌曲."""
     return await context.client.songlist.del_songs(

@@ -13,7 +13,6 @@ from qqmusic_api.models.singer import (
 )
 from qqmusic_api.modules.singer import TabType
 
-from ..modules.singer import get_desc_by_mid_adapter
 from ..routing.route_types import PUBLIC_300, PUBLIC_600, WebRoute
 from ._helpers import MID, SINGER_INDEX, SINGER_PAGE, SINGER_SIMILAR_PAGE, SINGER_TAB_PAGE, SINGER_TYPE, P, Q, R
 
@@ -41,7 +40,6 @@ ROUTES: tuple[WebRoute, ...] = (
         SingerDetailResponse,
         params=MID,
         cache=PUBLIC_300,
-        adapter=get_desc_by_mid_adapter,
     ),
     R("singer", "get_info", "/singer/{mid}/info", HomepageHeaderResponse, params=MID, cache=PUBLIC_300),
     R(

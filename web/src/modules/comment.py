@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
+from ..routing.adapter_registry import adapter
 from ..routing.route_types import RouteContext
 
 
@@ -13,6 +14,7 @@ class AddCommentBody(BaseModel):
     reply_cmt_id: str | SkipJsonSchema[None] = Field(default=None, description="回复的评论 ID.")
 
 
+@adapter("comment", "add_comment")
 async def add_comment_adapter(context: RouteContext):
     """添加评论适配器."""
     body: AddCommentBody = context.params["body"]
