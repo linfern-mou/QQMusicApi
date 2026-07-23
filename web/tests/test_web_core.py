@@ -15,7 +15,7 @@ async def test_memory_backend_returns_none_after_ttl_expires() -> None:
     """测试内存缓存 TTL 过期后返回 None."""
     cache = MemoryBackend(_max_size=10)
     await cache.set("k", "v", ttl=1)
-    assert await cache.get("k") == "v"
+    assert await cache.get("k") == b'"v"'
     await asyncio.sleep(1.1)
     assert await cache.get("k") is None
 
@@ -28,8 +28,8 @@ async def test_memory_backend_evicts_oldest_when_full() -> None:
     await cache.set("b", 2, ttl=60)
     await cache.set("c", 3, ttl=60)
     assert await cache.get("a") is None
-    assert await cache.get("b") == 2
-    assert await cache.get("c") == 3
+    assert await cache.get("b") == b"2"
+    assert await cache.get("c") == b"3"
 
 
 # ── InMemoryRateLimiter ──

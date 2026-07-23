@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.responses import Response
 
@@ -56,8 +57,10 @@ _HTTP_ERROR_MESSAGES = {
 }
 
 
-def _http_exception_message(exc: HTTPException) -> str:
+def _http_exception_message(exc: StarletteHTTPException) -> str:
     """返回稳定且面向调用方的 HTTP 错误说明."""
+    if exc.status_code in _HTTP_ERROR_MESSAGES:
+        return _HTTP_ERROR_MESSAGES[exc.status_code]
     if isinstance(exc.detail, str) and exc.detail:
         return exc.detail
     return _HTTP_ERROR_MESSAGES.get(exc.status_code, "HTTP 请求错误")
@@ -227,7 +230,8 @@ def create_app() -> FastAPI:
         )
 
     @app.exception_handler(HTTPException)
-    async def _handle_http_exception(_request: Request, exc: HTTPException) -> JSONResponse:
+    @app.exception_handler(StarletteHTTPException)
+    async def _handle_http_exception(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
         return error_response(
             status_code=exc.status_code,
             msg=_http_exception_message(exc),
