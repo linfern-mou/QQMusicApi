@@ -17,7 +17,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "check_expired",
         "/login/check_expired",
         bool,
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R(
         "login",

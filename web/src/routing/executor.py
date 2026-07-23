@@ -51,8 +51,8 @@ async def execute_route(context: RouteContext) -> Any:
     cache_ttl = route.cache.ttl if route.cache is not None else None
     resolved_credential = None
     logger.debug("执行路由: %s.%s, 路径: %s", route.module, route.method, route.path)
-    if route.auth is AuthPolicy.COOKIE_OR_DEFAULT:
-        resolved_credential = await _resolve_credential(context)
+    if route.auth in (AuthPolicy.COOKIE_OR_DEFAULT, AuthPolicy.OPTIONAL):
+        resolved_credential = await _resolve_credential(context, strict=(route.auth is AuthPolicy.COOKIE_OR_DEFAULT))
 
     async def invoke() -> Any:
         return await _invoke_route(context, params, resolved_credential)
@@ -137,7 +137,7 @@ def _model_values(model: BaseModel) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="请求参数校验失败") from exc
 
 
-async def _resolve_credential(context: RouteContext) -> Credential:
+async def _resolve_credential(context: RouteContext, *, strict: bool = True) -> Credential | None:
     credential = context.credential or Credential()
     logger.debug("解析凭证, 初始 musicid: %s", credential.musicid)
     resolved = await configured_credential_for_api(
@@ -147,8 +147,11 @@ async def _resolve_credential(context: RouteContext) -> Credential:
         credential,
     )
     if not credential_has_login(resolved):
-        logger.error("凭证解析失败: 无有效登录凭证")
-        raise HTTPException(status_code=401, detail="未提供有效的登录凭证")
+        if strict:
+            logger.error("凭证解析失败: 无有效登录凭证")
+            raise HTTPException(status_code=401, detail="未提供有效的登录凭证")
+        logger.debug("未提供登录凭证 (可选认证, 继续放行)")
+        return None
     logger.debug("凭证解析成功: musicid %s", resolved.musicid)
     return resolved
 

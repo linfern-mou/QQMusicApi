@@ -78,7 +78,9 @@ def include_routes(app: FastAPI, routes: tuple[WebRoute, ...]) -> None:
         summary = route.summary or docs.summary or f"{route.module}.{route.method}"
         description = route.description or docs.description or summary
         openapi_extra = (
-            {"security": [COOKIE_SECURITY_REQUIREMENT]} if route.auth is AuthPolicy.COOKIE_OR_DEFAULT else None
+            {"security": [COOKIE_SECURITY_REQUIREMENT]}
+            if route.auth in (AuthPolicy.COOKIE_OR_DEFAULT, AuthPolicy.OPTIONAL)
+            else None
         )
         actual_response_model = type(None) if route.response_model is bool else route.response_model
         app.add_api_route(
@@ -108,7 +110,7 @@ def make_endpoint(route: WebRoute) -> tuple[Callable[..., Any], MethodDocs]:
         _model_name(route, "Body"), split[ParamSource.BODY], source=ParamSource.BODY, docs=param_docs
     )
     body_model = route.body_model or generated_body_model
-    expose_credential = route.auth is AuthPolicy.COOKIE_OR_DEFAULT
+    expose_credential = route.auth in (AuthPolicy.COOKIE_OR_DEFAULT, AuthPolicy.OPTIONAL)
     endpoint_signature = _build_endpoint_signature(
         split[ParamSource.PATH],
         query_model,

@@ -24,7 +24,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/user/{uin}/created_songlists",
         UserCreatedSonglistResponse,
         params=UIN,
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R(
         "user",
@@ -40,7 +40,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/user/{euin}/fav/albums",
         UserFavAlbumResponse,
         params=(*EUIN, *USER_PAGE),
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R(
         "user",
@@ -56,7 +56,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/user/{euin}/fav/songs",
         GetSonglistDetailResponse,
         params=(*EUIN, *USER_PAGE),
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R(
         "user",
@@ -64,7 +64,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/user/{euin}/fav/songlists",
         UserFavSonglistResponse,
         params=(*EUIN, *USER_PAGE),
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R(
         "user",
@@ -96,7 +96,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/user/{euin}/homepage",
         UserHomepageResponse,
         params=EUIN,
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R(
         "user",
@@ -104,7 +104,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/user/{euin}/music_gene",
         UserMusicGeneResponse,
         params=EUIN,
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R("user", "get_vip_info", "/user/get_vip_info", UserVipInfoResponse, auth=AuthPolicy.COOKIE_OR_DEFAULT),
     # -- 收藏/取消收藏歌单 --

@@ -83,7 +83,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "/song/get_song_urls",
         GetSongUrlsResponse,
         methods=(HttpMethod.POST,),
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
         body_model=SongUrlsRequest,
     ),
     R(
@@ -103,7 +103,7 @@ ROUTES: tuple[WebRoute, ...] = (
             Q("song_type", int | None, None, "歌曲类型."),
             Q("media_mid", str | None, None, "媒体文件 MID."),
         ),
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
         summary="获取单首歌曲文件链接",
         description="根据单个歌曲 MID 获取文件链接.",
     ),

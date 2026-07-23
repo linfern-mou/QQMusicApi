@@ -105,7 +105,7 @@ def test_auth_routes_include_cookie_security_requirement(app: FastAPI) -> None:
     schema = app.openapi()
 
     for route in RESOLVED_ROUTES:
-        if route.auth is not AuthPolicy.COOKIE_OR_DEFAULT:
+        if route.auth not in (AuthPolicy.COOKIE_OR_DEFAULT, AuthPolicy.OPTIONAL):
             continue
         operation = schema["paths"][route.path][route.methods[0].value.lower()]
         assert operation["security"] == [{"MusicId": [], "MusicKey": []}]

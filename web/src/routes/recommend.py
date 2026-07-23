@@ -17,7 +17,7 @@ ROUTES: tuple[WebRoute, ...] = (
         "get_guess_recommend",
         "/recommend/get_guess_recommend",
         GuessRecommendResponse,
-        auth=AuthPolicy.COOKIE_OR_DEFAULT,
+        auth=AuthPolicy.OPTIONAL,
     ),
     R("recommend", "get_home_feed", "/recommend/get_home_feed", RecommendFeedCardResponse, cache=PUBLIC_60),
     R(

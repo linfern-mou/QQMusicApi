@@ -40,6 +40,7 @@ class AuthPolicy(str, Enum):
 
     NONE = "none"
     COOKIE_OR_DEFAULT = "cookie_or_default"
+    OPTIONAL = "optional"
 
 
 @dataclass(frozen=True)
