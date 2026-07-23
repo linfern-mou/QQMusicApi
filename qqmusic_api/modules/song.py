@@ -450,8 +450,6 @@ class SongApi(ApiModule):
 
         Args:
             mid: 歌曲 MID.
-            begin: 起始偏移.
-            end: 返回数量.
             ttype: 曲谱来源类型. 0=用户上传, 1=引擎/AI曲谱, 2=虫虫钢琴.
         """
         if ttype == 2:
